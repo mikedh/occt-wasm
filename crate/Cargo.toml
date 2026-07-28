@@ -18,7 +18,11 @@ brotli = "8"
 thiserror = "2"
 
 [features]
-default = []
+default = ["embed-module"]
+# Embed the brotli-compressed kernel module via include_bytes! (the zero-config
+# path). Disable to keep kernel bytes out of your artifact and supply the
+# module at runtime with `OcctKernel::from_module_bytes` and friends.
+embed-module = []
 async = ["wasmtime/async", "dep:tokio"]
 
 [dependencies.tokio]

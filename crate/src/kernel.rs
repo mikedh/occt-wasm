@@ -15,7 +15,10 @@ use crate::types::{
 /// Brotli-compressed WASM binary, embedded at compile time.
 ///
 /// The uncompressed binary is ~21 MB; brotli brings it to ~4 MB.
-/// This is decompressed once during `OcctKernel::new()`.
+/// This is decompressed once during `OcctKernel::new()`. Disable the
+/// `embed-module` feature to keep kernel bytes out of your binary entirely and
+/// supply the module at runtime via [`OcctKernel::from_module_bytes`].
+#[cfg(feature = "embed-module")]
 static WASM_BINARY: &[u8] = include_bytes!("occt-wasm.wasm.br");
 
 /// The OCCT CAD kernel, backed by a sandboxed WASM module.
@@ -139,30 +142,90 @@ pub struct OcctKernel {
 }
 
 impl OcctKernel {
-    /// Create a new OCCT kernel instance.
+    /// Create a new OCCT kernel instance from the embedded WASM binary.
     ///
     /// Decompresses the embedded WASM binary, compiles it with `wasmtime`,
     /// and initializes the OCCT runtime. This takes ~100-500ms depending
     /// on the platform.
-    #[allow(clippy::too_many_lines)]
+    #[cfg(feature = "embed-module")]
     pub fn new() -> OcctResult<Self> {
+        Self::from_compressed_module_bytes(WASM_BINARY)
+    }
+
+    /// Create a kernel from caller-supplied brotli-compressed module bytes
+    /// (the format shipped as `occt-wasm.wasm.br`).
+    pub fn from_compressed_module_bytes(compressed: &[u8]) -> OcctResult<Self> {
+        let mut wasm_bytes = Vec::new();
+        let mut input = compressed;
+        brotli::BrotliDecompress(&mut input, &mut wasm_bytes)
+            .map_err(|e| OcctError::Memory(format!("brotli decompression failed: {e}")))?;
+        Self::from_module_bytes(&wasm_bytes)
+    }
+
+    /// Create a kernel from caller-supplied uncompressed WASM module bytes.
+    ///
+    /// This is the custody-free constructor: with `default-features = false`
+    /// the crate embeds no kernel bytes and the application decides where the
+    /// module comes from (a data dir, a lazy fetch, a test fixture).
+    pub fn from_module_bytes(wasm_bytes: &[u8]) -> OcctResult<Self> {
+        let engine = Engine::new(&Self::engine_config())?;
+        let module = Module::new(&engine, wasm_bytes)?;
+        Self::from_module(&engine, &module)
+    }
+
+    /// Ahead-of-time compile module bytes into wasmtime's serialized form for
+    /// [`OcctKernel::from_precompiled_file`]. Compiling takes seconds; loading
+    /// the precompiled artifact takes milliseconds. The artifact is
+    /// wasmtime-version-specific — cache it keyed on the module hash and
+    /// rebuild on mismatch.
+    pub fn precompile_module(wasm_bytes: &[u8]) -> OcctResult<Vec<u8>> {
+        let engine = Engine::new(&Self::engine_config())?;
+        Ok(engine.precompile_module(wasm_bytes)?)
+    }
+
+    /// Create a kernel from a [`OcctKernel::precompile_module`] artifact on
+    /// disk (~ms instead of the multi-second JIT).
+    // SAFETY-BOUNDARY: `Module::deserialize_file` is `unsafe` because a
+    // corrupted or attacker-controlled artifact is undefined behavior. The
+    // contract here is that callers pass only paths they wrote themselves via
+    // `precompile_module` (a private cache dir keyed on content hash).
+    #[allow(unsafe_code)]
+    pub fn from_precompiled_file(path: &std::path::Path) -> OcctResult<Self> {
+        let engine = Engine::new(&Self::engine_config())?;
+        // SAFETY: see SAFETY-BOUNDARY above — the artifact must originate from
+        // `precompile_module` on this host.
+        let module = unsafe { Module::deserialize_file(&engine, path)? };
+        Self::from_module(&engine, &module)
+    }
+
+    fn engine_config() -> wasmtime::Config {
         let mut config = wasmtime::Config::new();
         config.wasm_simd(true);
         config.wasm_tail_call(true);
         // The WASM binary uses wasm-opt --experimental-new-eh to convert
         // Emscripten's legacy exceptions to the new (exnref) encoding.
         config.wasm_exceptions(true);
+        config
+    }
 
-        let engine = Engine::new(&config)?;
-        let wasm_bytes = decompress_wasm()?;
-        let module = Module::new(&engine, &wasm_bytes)?;
-        let mut store = Store::new(&engine, ());
-        let linker = Linker::new(&engine);
-        let instance = linker.instantiate(&mut store, &module)?;
+    /// Instantiate a compiled module and initialize the OCCT runtime.
+    #[allow(clippy::too_many_lines)]
+    fn from_module(engine: &Engine, module: &Module) -> OcctResult<Self> {
+        let mut store = Store::new(engine, ());
+        let mut linker = Linker::new(engine);
+        define_host_imports(&mut linker, module)?;
+        let instance = linker.instantiate(&mut store, module)?;
 
         let memory = instance
             .get_memory(&mut store, "memory")
             .ok_or_else(|| OcctError::Memory("no memory export".to_owned()))?;
+
+        // Run emscripten-standalone constructors (vtables, static init) before
+        // any other export — without this the first kernel call traps with
+        // "uninitialized element".
+        if let Some(initialize) = instance.get_func(&mut store, "_initialize") {
+            initialize.typed::<(), ()>(&store)?.call(&mut store, ())?;
+        }
 
         // Call occt_init
         let init: TypedFunc<(), i32> = instance.get_typed_func(&mut store, "occt_init")?;
@@ -591,11 +654,110 @@ impl Drop for OcctKernel {
     }
 }
 
-/// Decompress the embedded brotli-compressed WASM binary.
-fn decompress_wasm() -> OcctResult<Vec<u8>> {
-    let mut output = Vec::new();
-    let mut input: &[u8] = WASM_BINARY;
-    brotli::BrotliDecompress(&mut input, &mut output)
-        .map_err(|e| OcctError::Memory(format!("brotli decompression failed: {e}")))?;
-    Ok(output)
+/// Satisfy the module's imports so the emcc-standalone blob instantiates under
+/// a bare wasmtime `Linker`.
+///
+/// The blob is mostly WASI-free but emcc leaves a handful of
+/// `wasi_snapshot_preview1::*` and `env::*` imports. Two need real behavior:
+/// `clock_time_get` (OCCT date handling rejects a zero clock) and `fd_write`
+/// (the writev loop spins forever unless `nwritten` is set). Everything else
+/// (`emscripten_*`, `__syscall_*` filesystem shims) is stubbed to return zero —
+/// the compute paths never exercise them, and an unexpected use fails loudly at
+/// the operation level rather than at instantiation.
+fn define_host_imports(linker: &mut Linker<()>, module: &Module) -> OcctResult<()> {
+    const WASI: &str = "wasi_snapshot_preview1";
+    linker.func_wrap(
+        WASI,
+        "clock_time_get",
+        |mut caller: wasmtime::Caller<'_, ()>, _clock_id: i32, _precision: i64, out: i32| -> i32 {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0u64, |elapsed| {
+                    u64::try_from(elapsed.as_nanos()).unwrap_or(u64::MAX)
+                });
+            let Some(wasmtime::Extern::Memory(memory)) = caller.get_export("memory") else {
+                return 8; // WASI errno: badf
+            };
+            let Ok(offset) = usize::try_from(out) else {
+                return 21; // WASI errno: fault
+            };
+            match memory.write(&mut caller, offset, &now.to_le_bytes()) {
+                Ok(()) => 0,
+                Err(_) => 21,
+            }
+        },
+    )?;
+    linker.func_wrap(
+        WASI,
+        "fd_write",
+        |mut caller: wasmtime::Caller<'_, ()>,
+         _fd: i32,
+         iovs: i32,
+         iovs_len: i32,
+         nwritten: i32|
+         -> i32 {
+            // Pretend every byte was written: sum the iovec lengths and report
+            // them back. Returning success WITHOUT setting `nwritten` makes
+            // emcc's writev loop spin forever.
+            let Some(wasmtime::Extern::Memory(memory)) = caller.get_export("memory") else {
+                return 8;
+            };
+            let (Ok(base), Ok(count), Ok(out)) = (
+                usize::try_from(iovs),
+                usize::try_from(iovs_len),
+                usize::try_from(nwritten),
+            ) else {
+                return 21;
+            };
+            let mut total: u32 = 0;
+            for index in 0..count {
+                let mut length_bytes = [0u8; 4];
+                if memory
+                    .read(&caller, base + index * 8 + 4, &mut length_bytes)
+                    .is_err()
+                {
+                    return 21;
+                }
+                total = total.wrapping_add(u32::from_le_bytes(length_bytes));
+            }
+            match memory.write(&mut caller, out, &total.to_le_bytes()) {
+                Ok(()) => 0,
+                Err(_) => 21,
+            }
+        },
+    )?;
+    let already_defined = [(WASI, "clock_time_get"), (WASI, "fd_write")];
+    for import in module.imports() {
+        if already_defined
+            .iter()
+            .any(|(module_name, name)| *module_name == import.module() && *name == import.name())
+        {
+            continue;
+        }
+        if let wasmtime::ExternType::Func(func_type) = import.ty() {
+            let results: Vec<wasmtime::ValType> = func_type.results().collect();
+            linker.func_new(
+                import.module(),
+                import.name(),
+                func_type.clone(),
+                move |_caller, _params, out| {
+                    for (slot, value_type) in out.iter_mut().zip(&results) {
+                        *slot = match value_type {
+                            wasmtime::ValType::I32 => wasmtime::Val::I32(0),
+                            wasmtime::ValType::I64 => wasmtime::Val::I64(0),
+                            wasmtime::ValType::F32 => wasmtime::Val::F32(0),
+                            wasmtime::ValType::F64 => wasmtime::Val::F64(0),
+                            other => {
+                                return Err(wasmtime::Error::msg(format!(
+                                    "unstubable import result type {other}"
+                                )));
+                            }
+                        };
+                    }
+                    Ok(())
+                },
+            )?;
+        }
+    }
+    Ok(())
 }
