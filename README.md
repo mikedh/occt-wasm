@@ -45,7 +45,7 @@ npm install occt-wasm
 
 ## Quick Start
 
-```typescript
+```typescript check
 import { OcctKernel } from "occt-wasm";
 
 // Recommended: deterministic cleanup via Symbol.dispose
@@ -56,29 +56,44 @@ import { OcctKernel } from "occt-wasm";
   const box = kernel.makeBox(20, 20, 20);
   const cyl = kernel.makeCylinder(8, 30);
 
-  // Booleans
-  const fused = kernel.fuse(box, cyl);
+  // Modeling -- fillet takes a solid, so round the box before combining
+  const edges = kernel.getSubShapes(box, "edge");
+  const filleted = kernel.fillet(box, edges.slice(0, 4), 2.0);
 
-  // Modeling
-  const edges = kernel.getSubShapes(fused, "edge");
-  const filleted = kernel.fillet(fused, edges.slice(0, 4), 2.0);
+  // Booleans
+  const fused = kernel.fuse(filleted, cyl);
 
   // Tessellation -> Three.js / Babylon.js
-  const mesh = kernel.tessellate(filleted);
+  const mesh = kernel.tessellate(fused);
   // mesh.positions (Float32Array), mesh.normals, mesh.indices
 
   // STEP I/O
-  const step = kernel.exportStep(filleted);
+  const step = kernel.exportStep(fused);
   const reimported = kernel.importStep(step);
 
   // Query
-  const vol = kernel.getVolume(filleted);
-  const bbox = kernel.getBoundingBox(filleted);
-  const com = kernel.getCenterOfMass(filleted);
+  const vol = kernel.getVolume(fused);
+  const bbox = kernel.getBoundingBox(fused);
+  const com = kernel.getCenterOfMass(fused);
 
   // kernel is disposed at end of block
 }
 ```
+
+> **Boolean results are compounds.** OCCT's `BRepAlgoAPI` operations wrap their
+> output in a `TopoDS_Compound` — a boolean can produce several disjoint solids.
+> The operations that downcast to a solid (`fillet`, `chamfer`, `filletVariable`,
+> `filletBatch`, `healSolid`) reject one, so unwrap first:
+>
+> ```typescript check kernel,fused
+> const [solid] = kernel.getSubShapes(fused, "solid");
+> if (!solid) throw new Error("boolean produced no solid");
+> ```
+>
+> **Not every edge is filletable.** Seam and degenerate edges are not, so on a
+> shape you didn't build yourself, select edges by geometry rather than by index.
+> The `slice(0, 4)` above is safe only because all 12 edges of a plain box round
+> cleanly — on the box-plus-cylinder fusion, only 13 of 20 edges do.
 
 ## Rust Crate
 
@@ -106,26 +121,26 @@ The crate embeds a brotli-compressed WASM binary (~4.7 MB) and runs it via [wasm
 
 By default, `OcctKernel.init()` auto-locates the `.wasm` file next to the JS module. You can also provide explicit paths or pre-loaded binaries:
 
-```typescript
+```typescript check
+import { OcctKernel } from "occt-wasm";
+
 // Auto-detect (browser, Node.js, or Worker):
 const kernel = await OcctKernel.init();
 
-// Explicit URL or path:
-const kernel = await OcctKernel.init({ wasm: "/assets/occt-wasm.wasm" });
+// ...or point at an explicit URL / path:
+await OcctKernel.init({ wasm: "/assets/occt-wasm.wasm" });
 
-// Pre-fetched binary (skip the fetch):
+// ...or hand over a pre-fetched binary, skipping the fetch:
 const binary = await fetch("/occt-wasm.wasm").then((r) => r.arrayBuffer());
-const kernel = await OcctKernel.init({ wasm: binary });
-
-// Uint8Array also accepted:
-const kernel = await OcctKernel.init({ wasm: new Uint8Array(binary) });
+await OcctKernel.init({ wasm: binary });
+await OcctKernel.init({ wasm: new Uint8Array(binary) });
 ```
 
 ## Error Handling
 
 All errors are instances of `OcctError` with a structured `code` field for programmatic handling:
 
-```typescript
+```typescript check kernel,a,b
 import { OcctError, OcctErrorCode } from "occt-wasm";
 
 try {
@@ -163,11 +178,17 @@ Available error codes:
 | `KernelError`        | OCCT `Standard_Failure` (unclassified)          |
 | `Unknown`            | Error from outside the kernel                   |
 
+> **`OcctWorker` is the exception.** Comlink serializes a thrown error down to
+> `{ message, name, stack }`, so an error crossing the worker boundary arrives
+> as a plain `Error`: the message survives intact, but `code`, `operation`, and
+> `instanceof OcctError` do not. Match on `e.message` there, or do the
+> `switch (e.code)` inside the worker.
+
 ## Named Enums
 
 Sweep, offset, and boolean operations use self-documenting enums instead of opaque numbers:
 
-```typescript
+```typescript check kernel,profile,spine,wire,base,tool1,tool2
 import { TransitionMode, JoinType, BooleanOp } from "occt-wasm";
 
 // Sweep with round-corner transitions
@@ -186,7 +207,7 @@ Numeric values (0, 1, 2) are still accepted for backwards compatibility.
 
 Convenience methods for checking shape topology:
 
-```typescript
+```typescript check kernel,shape
 if (kernel.isSolid(shape)) {
   /* ... */
 }
@@ -214,7 +235,7 @@ if (kernel.isCompound(shape)) {
 
 For browser apps, heavy CAD operations can block the main thread. `OcctWorker` runs a full kernel in a Web Worker with the same API:
 
-```typescript
+```typescript check edge
 import { OcctWorker } from "occt-wasm/worker";
 
 // Spawn a worker with its own kernel
@@ -240,7 +261,7 @@ The worker helper uses [Comlink](https://github.com/GoogleChromeLabs/comlink) (~
 
 Create assembly documents with colors, names, and component hierarchies:
 
-```typescript
+```typescript check kernel,box,gear,stepData
 // Factory method auto-injects Emscripten FS for glTF export
 const doc = kernel.createXCAFDocument();
 
@@ -290,7 +311,7 @@ module.exports = {
 
 ### Node.js
 
-```typescript
+```typescript check
 // Works out of the box with Node.js 18+
 import { OcctKernel } from "occt-wasm";
 const kernel = await OcctKernel.init();
