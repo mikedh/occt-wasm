@@ -31,6 +31,12 @@ enum Cli {
         /// Enable release optimizations (LTO, wasm-opt)
         #[arg(long)]
         release: bool,
+        /// Root the export set at `build.minimal` (repo-root allowlist) and
+        /// install to dist/occt-wasm-minimal.wasm.br instead of crate/src/ —
+        /// dead-code elimination drops everything unreachable (STEP, XCAF,
+        /// glTF, HLR, ...).
+        #[arg(long)]
+        minimal: bool,
     },
     /// Run the facade code generator (v0.1.1)
     Codegen,
@@ -54,7 +60,7 @@ fn main() -> Result<()> {
     match cli {
         Cli::Build { release, size } => build::build(release, size),
         Cli::BuildOcct => build::build_occt(),
-        Cli::BuildWasi { release } => build_wasi::build_wasi(release),
+        Cli::BuildWasi { release, minimal } => build_wasi::build_wasi(release, minimal),
         Cli::Codegen => codegen::run::run(),
         Cli::Clean { keep_generated } => build::clean(keep_generated),
         Cli::Test { watch } => build::test(watch),

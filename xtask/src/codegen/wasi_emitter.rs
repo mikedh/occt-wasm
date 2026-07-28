@@ -388,6 +388,17 @@ pub fn emit_wasi_exports(methods: &[&MethodSpec]) -> String {
     let _ = writeln!(buf, "    g_kernel = nullptr;");
     let _ = writeln!(buf, "}}");
     let _ = writeln!(buf);
+    // Extension point: out-of-tree hand-written facade files (facade/src/*.cpp
+    // beyond kernel.cpp) resolve the live kernel through this non-static
+    // accessor instead of reaching into this file's internal-linkage globals.
+    let _ = writeln!(
+        buf,
+        "// Extension point for out-of-tree facade files (C linkage: inside extern \"C\")."
+    );
+    let _ = writeln!(buf, "OcctKernel* occt_wasi_kernel_for_extensions() {{");
+    let _ = writeln!(buf, "    return g_kernel;");
+    let _ = writeln!(buf, "}}");
+    let _ = writeln!(buf);
 
     // Error accessors
     let _ = writeln!(buf, "// === Error handling ===");

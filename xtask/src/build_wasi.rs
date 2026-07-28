@@ -48,7 +48,15 @@ fn compile_facade(sh: &Shell, root: &Path) -> Result<Vec<PathBuf>> {
     }
     let facade_inc = root.join("facade/include");
 
-    let mut sources: Vec<PathBuf> = vec![root.join("facade/src/kernel.cpp")];
+    // Every hand-written facade file participates (kernel.cpp plus any
+    // out-of-tree extensions like rmesh_brep.cpp).
+    let mut sources: Vec<PathBuf> = Vec::new();
+    for entry in std::fs::read_dir(root.join("facade/src"))?.flatten() {
+        let path = entry.path();
+        if path.extension().is_some_and(|e| e == "cpp") {
+            sources.push(path);
+        }
+    }
 
     let gen_dir = root.join("facade/generated");
     if gen_dir.is_dir() {
@@ -96,7 +104,7 @@ fn compile_facade(sh: &Shell, root: &Path) -> Result<Vec<PathBuf>> {
 }
 
 /// Step 2: Link facade + OCCT static libs → standalone WASI .wasm.
-fn link(root: &Path, objects: &[PathBuf], release: bool) -> Result<PathBuf> {
+fn link(root: &Path, objects: &[PathBuf], release: bool, minimal: bool) -> Result<PathBuf> {
     let dist_dir = root.join("dist");
     std::fs::create_dir_all(&dist_dir)?;
 
@@ -114,7 +122,19 @@ fn link(root: &Path, objects: &[PathBuf], release: bool) -> Result<PathBuf> {
     occt_libs.sort();
 
     let output = dist_dir.join("occt-wasm-wasi.wasm");
-    let export_names = extract_export_names(&root.join("facade/generated/wasi_exports.cpp"))?;
+    let mut export_names = extract_export_names(&root.join("facade/generated/wasi_exports.cpp"))?;
+    // Hand-written facade files export their own occt_* symbols too.
+    for entry in std::fs::read_dir(root.join("facade/src"))?.flatten() {
+        let path = entry.path();
+        if path.extension().is_some_and(|e| e == "cpp") {
+            export_names.extend(extract_export_names(&path).unwrap_or_default());
+        }
+    }
+    export_names.sort();
+    export_names.dedup();
+    if minimal {
+        export_names = filter_minimal(root, export_names)?;
+    }
     eprintln!("  Exporting {} occt_* functions.", export_names.len());
 
     let opt_level = if release { "-O3" } else { "-O2" };
@@ -176,6 +196,31 @@ fn extract_export_names(wasi_exports_path: &Path) -> Result<Vec<String>> {
     Ok(names)
 }
 
+/// `--minimal`: intersect the scraped export names with the `build.minimal`
+/// allowlist at the repo root (one name per line, `#` comments). The allowlist
+/// IS the dead-code root set — everything unreachable from it is dropped by
+/// wasm-ld. A name listed but not scraped is an error (typo guard).
+fn filter_minimal(root: &Path, names: Vec<String>) -> Result<Vec<String>> {
+    let path = root.join("build.minimal");
+    let content = std::fs::read_to_string(&path)
+        .with_context(|| format!("--minimal requires an allowlist at {}", path.display()))?;
+    let mut keep: Vec<String> = Vec::new();
+    for line in content.lines() {
+        let entry = line.split('#').next().unwrap_or("").trim();
+        if !entry.is_empty() {
+            keep.push(entry.to_owned());
+        }
+    }
+    for entry in &keep {
+        if !names.contains(entry) {
+            bail!("build.minimal lists unknown export `{entry}` (typo?)");
+        }
+    }
+    let kept: Vec<String> = names.into_iter().filter(|n| keep.contains(n)).collect();
+    eprintln!("  minimal profile: {} exports kept", kept.len());
+    Ok(kept)
+}
+
 /// Step 3: Run wasm-opt to convert emcc's legacy exception encoding to the
 /// new exnref encoding that wasmtime accepts when `wasm_exceptions(true)` is set.
 fn convert_eh(sh: &Shell, wasm: &Path) -> Result<()> {
@@ -196,9 +241,14 @@ fn convert_eh(sh: &Shell, wasm: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Step 4: Brotli-compress and install into crate/src/.
-fn compress_and_install(root: &Path, wasm: &Path) -> Result<()> {
-    let output = root.join("crate/src/occt-wasm.wasm.br");
+/// Step 4: Brotli-compress and install (crate/src/ for the full profile,
+/// dist/ for the minimal profile — the crate's embedded blob stays full).
+fn compress_and_install(root: &Path, wasm: &Path, minimal: bool) -> Result<()> {
+    let output = if minimal {
+        root.join("dist/occt-wasm-minimal.wasm.br")
+    } else {
+        root.join("crate/src/occt-wasm.wasm.br")
+    };
     if !wasm.exists() {
         bail!("WASI WASM not found at {}", wasm.display());
     }
@@ -222,7 +272,7 @@ fn compress_and_install(root: &Path, wasm: &Path) -> Result<()> {
 }
 
 /// Full WASI build pipeline.
-pub fn build_wasi(release: bool) -> Result<()> {
+pub fn build_wasi(release: bool, minimal: bool) -> Result<()> {
     let root = project_root()?;
     let sh = Shell::new()?;
 
@@ -235,9 +285,9 @@ pub fn build_wasi(release: bool) -> Result<()> {
     let objects = compile_facade(&sh, &root)?;
     eprintln!("  {} object files ready.", objects.len());
 
-    let wasm = link(&root, &objects, release)?;
+    let wasm = link(&root, &objects, release, minimal)?;
     convert_eh(&sh, &wasm)?;
-    compress_and_install(&root, &wasm)?;
+    compress_and_install(&root, &wasm, minimal)?;
 
     let size_mb = bytes_to_mb(std::fs::metadata(&wasm)?.len());
     eprintln!("WASI build complete: {} ({size_mb:.1}MB)", wasm.display());

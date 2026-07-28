@@ -5,8 +5,8 @@ use wasmtime::TypedFunc;
 
 use crate::error::OcctResult;
 use crate::types::{
-    BoundingBox, EdgeData, EvolutionData, LabelInfo, Mesh, MeshBatch, NurbsCurveData,
-    ProjectionData, ShapeHandle,
+    BoundingBox, EdgeData, EvolutionData, LabelInfo, Mesh, MeshBatch,
+    NurbsCurveData, ProjectionData, ShapeHandle,
 };
 
 /// Cached WASM function handles for kernel methods.
@@ -19,11 +19,7 @@ use crate::types::{
 ///     generated: GeneratedFuncs,
 /// }
 /// ```
-#[allow(
-    clippy::type_complexity,
-    clippy::redundant_pub_crate,
-    clippy::struct_field_names
-)]
+#[allow(clippy::type_complexity, clippy::redundant_pub_crate, clippy::struct_field_names)]
 pub(crate) struct GeneratedFuncs {
     fn_make_box: TypedFunc<(f64, f64, f64), u32>,
     fn_make_box_from_corners: TypedFunc<(f64, f64, f64, f64, f64, f64), u32>,
@@ -148,8 +144,7 @@ pub(crate) struct GeneratedFuncs {
     fn_project_point_on_edge: TypedFunc<(u32, f64, f64, f64), i32>,
     fn_curve_is_periodic: TypedFunc<(u32,), i32>,
     fn_approximate_points: TypedFunc<(i32, i32, f64), u32>,
-    fn_lift_curve2d_to_plane:
-        TypedFunc<(i32, i32, f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
+    fn_lift_curve2d_to_plane: TypedFunc<(i32, i32, f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
     fn_get_nurbs_curve_data: TypedFunc<(u32,), i32>,
     fn_curve_degree_elevate: TypedFunc<(u32, i32), u32>,
     fn_curve_knot_insert: TypedFunc<(u32, f64, i32), u32>,
@@ -230,8 +225,7 @@ impl GeneratedFuncs {
     ) -> OcctResult<Self> {
         Ok(Self {
             fn_make_box: instance.get_typed_func(&mut store, "occt_make_box")?,
-            fn_make_box_from_corners: instance
-                .get_typed_func(&mut store, "occt_make_box_from_corners")?,
+            fn_make_box_from_corners: instance.get_typed_func(&mut store, "occt_make_box_from_corners")?,
             fn_make_cylinder: instance.get_typed_func(&mut store, "occt_make_cylinder")?,
             fn_make_sphere: instance.get_typed_func(&mut store, "occt_make_sphere")?,
             fn_make_cone: instance.get_typed_func(&mut store, "occt_make_cone")?,
@@ -245,8 +239,7 @@ impl GeneratedFuncs {
             fn_section: instance.get_typed_func(&mut store, "occt_section")?,
             fn_intersect: instance.get_typed_func(&mut store, "occt_intersect")?,
             fn_fuse_all: instance.get_typed_func(&mut store, "occt_fuse_all")?,
-            fn_intersection_cells: instance
-                .get_typed_func(&mut store, "occt_intersection_cells")?,
+            fn_intersection_cells: instance.get_typed_func(&mut store, "occt_intersection_cells")?,
             fn_cut_all: instance.get_typed_func(&mut store, "occt_cut_all")?,
             fn_boolean_pipeline: instance.get_typed_func(&mut store, "occt_boolean_pipeline")?,
             fn_split: instance.get_typed_func(&mut store, "occt_split")?,
@@ -254,8 +247,7 @@ impl GeneratedFuncs {
             fn_revolve: instance.get_typed_func(&mut store, "occt_revolve")?,
             fn_fillet: instance.get_typed_func(&mut store, "occt_fillet")?,
             fn_chamfer: instance.get_typed_func(&mut store, "occt_chamfer")?,
-            fn_chamfer_dist_angle: instance
-                .get_typed_func(&mut store, "occt_chamfer_dist_angle")?,
+            fn_chamfer_dist_angle: instance.get_typed_func(&mut store, "occt_chamfer_dist_angle")?,
             fn_shell: instance.get_typed_func(&mut store, "occt_shell")?,
             fn_offset: instance.get_typed_func(&mut store, "occt_offset")?,
             fn_draft: instance.get_typed_func(&mut store, "occt_draft")?,
@@ -286,8 +278,7 @@ impl GeneratedFuncs {
             fn_make_edge: instance.get_typed_func(&mut store, "occt_make_edge")?,
             fn_make_wire: instance.get_typed_func(&mut store, "occt_make_wire")?,
             fn_make_face: instance.get_typed_func(&mut store, "occt_make_face")?,
-            fn_make_face_on_surface: instance
-                .get_typed_func(&mut store, "occt_make_face_on_surface")?,
+            fn_make_face_on_surface: instance.get_typed_func(&mut store, "occt_make_face_on_surface")?,
             fn_make_solid: instance.get_typed_func(&mut store, "occt_make_solid")?,
             fn_sew: instance.get_typed_func(&mut store, "occt_sew")?,
             fn_make_compound: instance.get_typed_func(&mut store, "occt_make_compound")?,
@@ -297,18 +288,14 @@ impl GeneratedFuncs {
             fn_make_arc_edge: instance.get_typed_func(&mut store, "occt_make_arc_edge")?,
             fn_make_ellipse_edge: instance.get_typed_func(&mut store, "occt_make_ellipse_edge")?,
             fn_make_bezier_edge: instance.get_typed_func(&mut store, "occt_make_bezier_edge")?,
-            fn_make_b_spline_edge: instance
-                .get_typed_func(&mut store, "occt_make_b_spline_edge")?,
+            fn_make_b_spline_edge: instance.get_typed_func(&mut store, "occt_make_b_spline_edge")?,
             fn_make_ellipse_arc: instance.get_typed_func(&mut store, "occt_make_ellipse_arc")?,
             fn_make_helix_wire: instance.get_typed_func(&mut store, "occt_make_helix_wire")?,
-            fn_make_non_planar_face: instance
-                .get_typed_func(&mut store, "occt_make_non_planar_face")?,
+            fn_make_non_planar_face: instance.get_typed_func(&mut store, "occt_make_non_planar_face")?,
             fn_add_holes_in_face: instance.get_typed_func(&mut store, "occt_add_holes_in_face")?,
-            fn_remove_holes_from_face: instance
-                .get_typed_func(&mut store, "occt_remove_holes_from_face")?,
+            fn_remove_holes_from_face: instance.get_typed_func(&mut store, "occt_remove_holes_from_face")?,
             fn_solid_from_shell: instance.get_typed_func(&mut store, "occt_solid_from_shell")?,
-            fn_build_solid_from_faces: instance
-                .get_typed_func(&mut store, "occt_build_solid_from_faces")?,
+            fn_build_solid_from_faces: instance.get_typed_func(&mut store, "occt_build_solid_from_faces")?,
             fn_sew_and_solidify: instance.get_typed_func(&mut store, "occt_sew_and_solidify")?,
             fn_build_tri_face: instance.get_typed_func(&mut store, "occt_build_tri_face")?,
             fn_make_tangent_arc: instance.get_typed_func(&mut store, "occt_make_tangent_arc")?,
@@ -332,51 +319,37 @@ impl GeneratedFuncs {
             fn_get_volume: instance.get_typed_func(&mut store, "occt_get_volume")?,
             fn_get_surface_area: instance.get_typed_func(&mut store, "occt_get_surface_area")?,
             fn_get_length: instance.get_typed_func(&mut store, "occt_get_length")?,
-            fn_get_center_of_mass: instance
-                .get_typed_func(&mut store, "occt_get_center_of_mass")?,
+            fn_get_center_of_mass: instance.get_typed_func(&mut store, "occt_get_center_of_mass")?,
             fn_get_inertia: instance.get_typed_func(&mut store, "occt_get_inertia")?,
             fn_contains_point: instance.get_typed_func(&mut store, "occt_contains_point")?,
-            fn_get_surface_center_of_mass: instance
-                .get_typed_func(&mut store, "occt_get_surface_center_of_mass")?,
+            fn_get_surface_center_of_mass: instance.get_typed_func(&mut store, "occt_get_surface_center_of_mass")?,
             fn_vertex_position: instance.get_typed_func(&mut store, "occt_vertex_position")?,
             fn_surface_type: instance.get_typed_func(&mut store, "occt_surface_type")?,
             fn_surface_normal: instance.get_typed_func(&mut store, "occt_surface_normal")?,
             fn_point_on_surface: instance.get_typed_func(&mut store, "occt_point_on_surface")?,
             fn_outer_wire: instance.get_typed_func(&mut store, "occt_outer_wire")?,
-            fn_get_linear_center_of_mass: instance
-                .get_typed_func(&mut store, "occt_get_linear_center_of_mass")?,
+            fn_get_linear_center_of_mass: instance.get_typed_func(&mut store, "occt_get_linear_center_of_mass")?,
             fn_surface_curvature: instance.get_typed_func(&mut store, "occt_surface_curvature")?,
             fn_uv_bounds: instance.get_typed_func(&mut store, "occt_uv_bounds")?,
-            fn_get_face_cylinder_data: instance
-                .get_typed_func(&mut store, "occt_get_face_cylinder_data")?,
+            fn_get_face_cylinder_data: instance.get_typed_func(&mut store, "occt_get_face_cylinder_data")?,
             fn_reverse_surface_u: instance.get_typed_func(&mut store, "occt_reverse_surface_u")?,
             fn_uv_from_point: instance.get_typed_func(&mut store, "occt_uv_from_point")?,
-            fn_project_point_on_face: instance
-                .get_typed_func(&mut store, "occt_project_point_on_face")?,
-            fn_classify_point_on_face: instance
-                .get_typed_func(&mut store, "occt_classify_point_on_face")?,
+            fn_project_point_on_face: instance.get_typed_func(&mut store, "occt_project_point_on_face")?,
+            fn_classify_point_on_face: instance.get_typed_func(&mut store, "occt_classify_point_on_face")?,
             fn_curve_type: instance.get_typed_func(&mut store, "occt_curve_type")?,
-            fn_curve_point_at_param: instance
-                .get_typed_func(&mut store, "occt_curve_point_at_param")?,
+            fn_curve_point_at_param: instance.get_typed_func(&mut store, "occt_curve_point_at_param")?,
             fn_curve_tangent: instance.get_typed_func(&mut store, "occt_curve_tangent")?,
             fn_curve_parameters: instance.get_typed_func(&mut store, "occt_curve_parameters")?,
             fn_curve_is_closed: instance.get_typed_func(&mut store, "occt_curve_is_closed")?,
             fn_curve_length: instance.get_typed_func(&mut store, "occt_curve_length")?,
-            fn_interpolate_points: instance
-                .get_typed_func(&mut store, "occt_interpolate_points")?,
-            fn_interpolate_points_with_tangents: instance
-                .get_typed_func(&mut store, "occt_interpolate_points_with_tangents")?,
-            fn_project_point_on_edge: instance
-                .get_typed_func(&mut store, "occt_project_point_on_edge")?,
+            fn_interpolate_points: instance.get_typed_func(&mut store, "occt_interpolate_points")?,
+            fn_interpolate_points_with_tangents: instance.get_typed_func(&mut store, "occt_interpolate_points_with_tangents")?,
+            fn_project_point_on_edge: instance.get_typed_func(&mut store, "occt_project_point_on_edge")?,
             fn_curve_is_periodic: instance.get_typed_func(&mut store, "occt_curve_is_periodic")?,
-            fn_approximate_points: instance
-                .get_typed_func(&mut store, "occt_approximate_points")?,
-            fn_lift_curve2d_to_plane: instance
-                .get_typed_func(&mut store, "occt_lift_curve2d_to_plane")?,
-            fn_get_nurbs_curve_data: instance
-                .get_typed_func(&mut store, "occt_get_nurbs_curve_data")?,
-            fn_curve_degree_elevate: instance
-                .get_typed_func(&mut store, "occt_curve_degree_elevate")?,
+            fn_approximate_points: instance.get_typed_func(&mut store, "occt_approximate_points")?,
+            fn_lift_curve2d_to_plane: instance.get_typed_func(&mut store, "occt_lift_curve2d_to_plane")?,
+            fn_get_nurbs_curve_data: instance.get_typed_func(&mut store, "occt_get_nurbs_curve_data")?,
+            fn_curve_degree_elevate: instance.get_typed_func(&mut store, "occt_curve_degree_elevate")?,
             fn_curve_knot_insert: instance.get_typed_func(&mut store, "occt_curve_knot_insert")?,
             fn_curve_knot_remove: instance.get_typed_func(&mut store, "occt_curve_knot_remove")?,
             fn_curve_split: instance.get_typed_func(&mut store, "occt_curve_split")?,
@@ -386,8 +359,7 @@ impl GeneratedFuncs {
             fn_simple_pipe: instance.get_typed_func(&mut store, "occt_simple_pipe")?,
             fn_revolve_vec: instance.get_typed_func(&mut store, "occt_revolve_vec")?,
             fn_loft: instance.get_typed_func(&mut store, "occt_loft")?,
-            fn_loft_with_vertices: instance
-                .get_typed_func(&mut store, "occt_loft_with_vertices")?,
+            fn_loft_with_vertices: instance.get_typed_func(&mut store, "occt_loft_with_vertices")?,
             fn_sweep: instance.get_typed_func(&mut store, "occt_sweep")?,
             fn_sweep_pipe_shell: instance.get_typed_func(&mut store, "occt_sweep_pipe_shell")?,
             fn_sweep_oriented: instance.get_typed_func(&mut store, "occt_sweep_oriented")?,
@@ -398,47 +370,32 @@ impl GeneratedFuncs {
             fn_heal_solid: instance.get_typed_func(&mut store, "occt_heal_solid")?,
             fn_heal_face: instance.get_typed_func(&mut store, "occt_heal_face")?,
             fn_heal_wire: instance.get_typed_func(&mut store, "occt_heal_wire")?,
-            fn_fix_face_orientations: instance
-                .get_typed_func(&mut store, "occt_fix_face_orientations")?,
+            fn_fix_face_orientations: instance.get_typed_func(&mut store, "occt_fix_face_orientations")?,
             fn_build_curves3d: instance.get_typed_func(&mut store, "occt_build_curves3d")?,
             fn_fix_wire_on_face: instance.get_typed_func(&mut store, "occt_fix_wire_on_face")?,
-            fn_remove_degenerate_edges: instance
-                .get_typed_func(&mut store, "occt_remove_degenerate_edges")?,
+            fn_remove_degenerate_edges: instance.get_typed_func(&mut store, "occt_remove_degenerate_edges")?,
             fn_import_step: instance.get_typed_func(&mut store, "occt_import_step")?,
             fn_export_step: instance.get_typed_func(&mut store, "occt_export_step")?,
             fn_export_stl: instance.get_typed_func(&mut store, "occt_export_stl")?,
             fn_import_stl: instance.get_typed_func(&mut store, "occt_import_stl")?,
             fn_to_brep: instance.get_typed_func(&mut store, "occt_to_brep")?,
             fn_from_brep: instance.get_typed_func(&mut store, "occt_from_brep")?,
-            fn_export_brep_binary: instance
-                .get_typed_func(&mut store, "occt_export_brep_binary")?,
-            fn_import_brep_binary: instance
-                .get_typed_func(&mut store, "occt_import_brep_binary")?,
-            fn_translate_with_history: instance
-                .get_typed_func(&mut store, "occt_translate_with_history")?,
+            fn_export_brep_binary: instance.get_typed_func(&mut store, "occt_export_brep_binary")?,
+            fn_import_brep_binary: instance.get_typed_func(&mut store, "occt_import_brep_binary")?,
+            fn_translate_with_history: instance.get_typed_func(&mut store, "occt_translate_with_history")?,
             fn_fuse_with_history: instance.get_typed_func(&mut store, "occt_fuse_with_history")?,
             fn_cut_with_history: instance.get_typed_func(&mut store, "occt_cut_with_history")?,
-            fn_fillet_with_history: instance
-                .get_typed_func(&mut store, "occt_fillet_with_history")?,
-            fn_rotate_with_history: instance
-                .get_typed_func(&mut store, "occt_rotate_with_history")?,
-            fn_mirror_with_history: instance
-                .get_typed_func(&mut store, "occt_mirror_with_history")?,
-            fn_scale_with_history: instance
-                .get_typed_func(&mut store, "occt_scale_with_history")?,
-            fn_intersect_with_history: instance
-                .get_typed_func(&mut store, "occt_intersect_with_history")?,
-            fn_chamfer_with_history: instance
-                .get_typed_func(&mut store, "occt_chamfer_with_history")?,
-            fn_shell_with_history: instance
-                .get_typed_func(&mut store, "occt_shell_with_history")?,
-            fn_offset_with_history: instance
-                .get_typed_func(&mut store, "occt_offset_with_history")?,
-            fn_thicken_with_history: instance
-                .get_typed_func(&mut store, "occt_thicken_with_history")?,
+            fn_fillet_with_history: instance.get_typed_func(&mut store, "occt_fillet_with_history")?,
+            fn_rotate_with_history: instance.get_typed_func(&mut store, "occt_rotate_with_history")?,
+            fn_mirror_with_history: instance.get_typed_func(&mut store, "occt_mirror_with_history")?,
+            fn_scale_with_history: instance.get_typed_func(&mut store, "occt_scale_with_history")?,
+            fn_intersect_with_history: instance.get_typed_func(&mut store, "occt_intersect_with_history")?,
+            fn_chamfer_with_history: instance.get_typed_func(&mut store, "occt_chamfer_with_history")?,
+            fn_shell_with_history: instance.get_typed_func(&mut store, "occt_shell_with_history")?,
+            fn_offset_with_history: instance.get_typed_func(&mut store, "occt_offset_with_history")?,
+            fn_thicken_with_history: instance.get_typed_func(&mut store, "occt_thicken_with_history")?,
             fn_tessellate: instance.get_typed_func(&mut store, "occt_tessellate")?,
-            fn_tessellate_relative: instance
-                .get_typed_func(&mut store, "occt_tessellate_relative")?,
+            fn_tessellate_relative: instance.get_typed_func(&mut store, "occt_tessellate_relative")?,
             fn_mesh_shape: instance.get_typed_func(&mut store, "occt_mesh_shape")?,
             fn_mesh_batch: instance.get_typed_func(&mut store, "occt_mesh_batch")?,
             fn_wireframe: instance.get_typed_func(&mut store, "occt_wireframe")?,
@@ -452,16 +409,12 @@ impl GeneratedFuncs {
             fn_xcaf_new_document: instance.get_typed_func(&mut store, "occt_xcaf_new_document")?,
             fn_xcaf_close: instance.get_typed_func(&mut store, "occt_xcaf_close")?,
             fn_xcaf_add_shape: instance.get_typed_func(&mut store, "occt_xcaf_add_shape")?,
-            fn_xcaf_add_component: instance
-                .get_typed_func(&mut store, "occt_xcaf_add_component")?,
+            fn_xcaf_add_component: instance.get_typed_func(&mut store, "occt_xcaf_add_component")?,
             fn_xcaf_set_color: instance.get_typed_func(&mut store, "occt_xcaf_set_color")?,
             fn_xcaf_set_name: instance.get_typed_func(&mut store, "occt_xcaf_set_name")?,
-            fn_xcaf_get_label_info: instance
-                .get_typed_func(&mut store, "occt_xcaf_get_label_info")?,
-            fn_xcaf_get_child_labels: instance
-                .get_typed_func(&mut store, "occt_xcaf_get_child_labels")?,
-            fn_xcaf_get_root_labels: instance
-                .get_typed_func(&mut store, "occt_xcaf_get_root_labels")?,
+            fn_xcaf_get_label_info: instance.get_typed_func(&mut store, "occt_xcaf_get_label_info")?,
+            fn_xcaf_get_child_labels: instance.get_typed_func(&mut store, "occt_xcaf_get_child_labels")?,
+            fn_xcaf_get_root_labels: instance.get_typed_func(&mut store, "occt_xcaf_get_root_labels")?,
             fn_xcaf_export_step: instance.get_typed_func(&mut store, "occt_xcaf_export_step")?,
             fn_xcaf_import_step: instance.get_typed_func(&mut store, "occt_xcaf_import_step")?,
             fn_xcaf_export_gltf: instance.get_typed_func(&mut store, "occt_xcaf_export_gltf")?,
@@ -475,10 +428,7 @@ impl GeneratedFuncs {
 #[allow(missing_docs, clippy::too_many_arguments)]
 impl crate::kernel::OcctKernel {
     pub fn make_box(&mut self, dx: f64, dy: f64, dz: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_box
-            .call(&mut self.store, (dx, dy, dz))?;
+        let result = self.generated.fn_make_box.call(&mut self.store, (dx, dy, dz))?;
         self.check_error("make_box")?;
         if result == 0 {
             return Err(self.read_last_error("make_box"));
@@ -486,19 +436,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_box_from_corners(
-        &mut self,
-        x1: f64,
-        y1: f64,
-        z1: f64,
-        x2: f64,
-        y2: f64,
-        z2: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_box_from_corners
-            .call(&mut self.store, (x1, y1, z1, x2, y2, z2))?;
+    pub fn make_box_from_corners(&mut self, x1: f64, y1: f64, z1: f64, x2: f64, y2: f64, z2: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_box_from_corners.call(&mut self.store, (x1, y1, z1, x2, y2, z2))?;
         self.check_error("make_box_from_corners")?;
         if result == 0 {
             return Err(self.read_last_error("make_box_from_corners"));
@@ -507,10 +446,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_cylinder(&mut self, radius: f64, height: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_cylinder
-            .call(&mut self.store, (radius, height))?;
+        let result = self.generated.fn_make_cylinder.call(&mut self.store, (radius, height))?;
         self.check_error("make_cylinder")?;
         if result == 0 {
             return Err(self.read_last_error("make_cylinder"));
@@ -519,10 +455,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_sphere(&mut self, radius: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_sphere
-            .call(&mut self.store, (radius,))?;
+        let result = self.generated.fn_make_sphere.call(&mut self.store, (radius,))?;
         self.check_error("make_sphere")?;
         if result == 0 {
             return Err(self.read_last_error("make_sphere"));
@@ -531,10 +464,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_cone(&mut self, r1: f64, r2: f64, height: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_cone
-            .call(&mut self.store, (r1, r2, height))?;
+        let result = self.generated.fn_make_cone.call(&mut self.store, (r1, r2, height))?;
         self.check_error("make_cone")?;
         if result == 0 {
             return Err(self.read_last_error("make_cone"));
@@ -543,10 +473,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_torus(&mut self, major_radius: f64, minor_radius: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_torus
-            .call(&mut self.store, (major_radius, minor_radius))?;
+        let result = self.generated.fn_make_torus.call(&mut self.store, (major_radius, minor_radius))?;
         self.check_error("make_torus")?;
         if result == 0 {
             return Err(self.read_last_error("make_torus"));
@@ -555,10 +482,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_ellipsoid(&mut self, rx: f64, ry: f64, rz: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_ellipsoid
-            .call(&mut self.store, (rx, ry, rz))?;
+        let result = self.generated.fn_make_ellipsoid.call(&mut self.store, (rx, ry, rz))?;
         self.check_error("make_ellipsoid")?;
         if result == 0 {
             return Err(self.read_last_error("make_ellipsoid"));
@@ -566,19 +490,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn half_space(
-        &mut self,
-        ox: f64,
-        oy: f64,
-        oz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_half_space
-            .call(&mut self.store, (ox, oy, oz, nx, ny, nz))?;
+    pub fn half_space(&mut self, ox: f64, oy: f64, oz: f64, nx: f64, ny: f64, nz: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_half_space.call(&mut self.store, (ox, oy, oz, nx, ny, nz))?;
         self.check_error("half_space")?;
         if result == 0 {
             return Err(self.read_last_error("half_space"));
@@ -587,10 +500,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_rectangle(&mut self, width: f64, height: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_rectangle
-            .call(&mut self.store, (width, height))?;
+        let result = self.generated.fn_make_rectangle.call(&mut self.store, (width, height))?;
         self.check_error("make_rectangle")?;
         if result == 0 {
             return Err(self.read_last_error("make_rectangle"));
@@ -626,10 +536,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn section(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_section
-            .call(&mut self.store, (a.0, b.0))?;
+        let result = self.generated.fn_section.call(&mut self.store, (a.0, b.0))?;
         self.check_error("section")?;
         if result == 0 {
             return Err(self.read_last_error("section"));
@@ -638,10 +545,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn intersect(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_intersect
-            .call(&mut self.store, (a.0, b.0))?;
+        let result = self.generated.fn_intersect.call(&mut self.store, (a.0, b.0))?;
         self.check_error("intersect")?;
         if result == 0 {
             return Err(self.read_last_error("intersect"));
@@ -653,10 +557,7 @@ impl crate::kernel::OcctKernel {
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_fuse_all.call(
-            &mut self.store,
-            (shape_ids_ptr as i32, shape_ids_len as i32),
-        );
+        let result = self.generated.fn_fuse_all.call(&mut self.store, (shape_ids_ptr as i32, shape_ids_len as i32));
         self.free_bytes(shape_ids_ptr)?;
         let result = result?;
         self.check_error("fuse_all")?;
@@ -670,10 +571,7 @@ impl crate::kernel::OcctKernel {
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_intersection_cells.call(
-            &mut self.store,
-            (shape_ids_ptr as i32, shape_ids_len as i32),
-        );
+        let result = self.generated.fn_intersection_cells.call(&mut self.store, (shape_ids_ptr as i32, shape_ids_len as i32));
         self.free_bytes(shape_ids_ptr)?;
         let result = result?;
         self.check_error("intersection_cells")?;
@@ -683,18 +581,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn cut_all(
-        &mut self,
-        shape_id: ShapeHandle,
-        tool_ids: &[ShapeHandle],
-    ) -> OcctResult<ShapeHandle> {
+    pub fn cut_all(&mut self, shape_id: ShapeHandle, tool_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
         let tool_ids_bytes: Vec<u8> = tool_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let tool_ids_ptr = self.write_bytes(&tool_ids_bytes)?;
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_cut_all.call(
-            &mut self.store,
-            (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32),
-        );
+        let result = self.generated.fn_cut_all.call(&mut self.store, (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32));
         self.free_bytes(tool_ids_ptr)?;
         let result = result?;
         self.check_error("cut_all")?;
@@ -704,12 +595,7 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn boolean_pipeline(
-        &mut self,
-        base_id: ShapeHandle,
-        op_codes: &[i32],
-        tool_ids: &[ShapeHandle],
-    ) -> OcctResult<ShapeHandle> {
+    pub fn boolean_pipeline(&mut self, base_id: ShapeHandle, op_codes: &[i32], tool_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
         let op_codes_bytes: Vec<u8> = op_codes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let op_codes_ptr = self.write_bytes(&op_codes_bytes)?;
         let op_codes_len = op_codes.len() as u32;
@@ -722,16 +608,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_boolean_pipeline.call(
-            &mut self.store,
-            (
-                base_id.0,
-                op_codes_ptr as i32,
-                op_codes_len as i32,
-                tool_ids_ptr as i32,
-                tool_ids_len as i32,
-            ),
-        );
+        let result = self.generated.fn_boolean_pipeline.call(&mut self.store, (base_id.0, op_codes_ptr as i32, op_codes_len as i32, tool_ids_ptr as i32, tool_ids_len as i32));
         self.free_bytes(op_codes_ptr)?;
         self.free_bytes(tool_ids_ptr)?;
         let result = result?;
@@ -742,18 +619,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn split(
-        &mut self,
-        shape_id: ShapeHandle,
-        tool_ids: &[ShapeHandle],
-    ) -> OcctResult<ShapeHandle> {
+    pub fn split(&mut self, shape_id: ShapeHandle, tool_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
         let tool_ids_bytes: Vec<u8> = tool_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let tool_ids_ptr = self.write_bytes(&tool_ids_bytes)?;
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_split.call(
-            &mut self.store,
-            (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32),
-        );
+        let result = self.generated.fn_split.call(&mut self.store, (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32));
         self.free_bytes(tool_ids_ptr)?;
         let result = result?;
         self.check_error("split")?;
@@ -763,17 +633,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn extrude(
-        &mut self,
-        shape_id: ShapeHandle,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_extrude
-            .call(&mut self.store, (shape_id.0, dx, dy, dz))?;
+    pub fn extrude(&mut self, shape_id: ShapeHandle, dx: f64, dy: f64, dz: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_extrude.call(&mut self.store, (shape_id.0, dx, dy, dz))?;
         self.check_error("extrude")?;
         if result == 0 {
             return Err(self.read_last_error("extrude"));
@@ -781,21 +642,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn revolve(
-        &mut self,
-        shape_id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        angle_rad: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_revolve.call(
-            &mut self.store,
-            (shape_id.0, px, py, pz, dx, dy, dz, angle_rad),
-        )?;
+    pub fn revolve(&mut self, shape_id: ShapeHandle, px: f64, py: f64, pz: f64, dx: f64, dy: f64, dz: f64, angle_rad: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_revolve.call(&mut self.store, (shape_id.0, px, py, pz, dx, dy, dz, angle_rad))?;
         self.check_error("revolve")?;
         if result == 0 {
             return Err(self.read_last_error("revolve"));
@@ -803,19 +651,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn fillet(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_ids: &[ShapeHandle],
-        radius: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn fillet(&mut self, solid_id: ShapeHandle, edge_ids: &[ShapeHandle], radius: f64) -> OcctResult<ShapeHandle> {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_fillet.call(
-            &mut self.store,
-            (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, radius),
-        );
+        let result = self.generated.fn_fillet.call(&mut self.store, (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, radius));
         self.free_bytes(edge_ids_ptr)?;
         let result = result?;
         self.check_error("fillet")?;
@@ -825,24 +665,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn chamfer(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_ids: &[ShapeHandle],
-        distance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn chamfer(&mut self, solid_id: ShapeHandle, edge_ids: &[ShapeHandle], distance: f64) -> OcctResult<ShapeHandle> {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_chamfer.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                edge_ids_ptr as i32,
-                edge_ids_len as i32,
-                distance,
-            ),
-        );
+        let result = self.generated.fn_chamfer.call(&mut self.store, (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, distance));
         self.free_bytes(edge_ids_ptr)?;
         let result = result?;
         self.check_error("chamfer")?;
@@ -852,26 +679,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn chamfer_dist_angle(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_ids: &[ShapeHandle],
-        distance: f64,
-        angle_deg: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn chamfer_dist_angle(&mut self, solid_id: ShapeHandle, edge_ids: &[ShapeHandle], distance: f64, angle_deg: f64) -> OcctResult<ShapeHandle> {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_chamfer_dist_angle.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                edge_ids_ptr as i32,
-                edge_ids_len as i32,
-                distance,
-                angle_deg,
-            ),
-        );
+        let result = self.generated.fn_chamfer_dist_angle.call(&mut self.store, (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, distance, angle_deg));
         self.free_bytes(edge_ids_ptr)?;
         let result = result?;
         self.check_error("chamfer_dist_angle")?;
@@ -881,26 +693,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn shell(
-        &mut self,
-        solid_id: ShapeHandle,
-        face_ids: &[ShapeHandle],
-        thickness: f64,
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn shell(&mut self, solid_id: ShapeHandle, face_ids: &[ShapeHandle], thickness: f64, tolerance: f64) -> OcctResult<ShapeHandle> {
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_shell.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                face_ids_ptr as i32,
-                face_ids_len as i32,
-                thickness,
-                tolerance,
-            ),
-        );
+        let result = self.generated.fn_shell.call(&mut self.store, (solid_id.0, face_ids_ptr as i32, face_ids_len as i32, thickness, tolerance));
         self.free_bytes(face_ids_ptr)?;
         let result = result?;
         self.check_error("shell")?;
@@ -910,16 +707,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn offset(
-        &mut self,
-        solid_id: ShapeHandle,
-        distance: f64,
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_offset
-            .call(&mut self.store, (solid_id.0, distance, tolerance))?;
+    pub fn offset(&mut self, solid_id: ShapeHandle, distance: f64, tolerance: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_offset.call(&mut self.store, (solid_id.0, distance, tolerance))?;
         self.check_error("offset")?;
         if result == 0 {
             return Err(self.read_last_error("offset"));
@@ -927,19 +716,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn draft(
-        &mut self,
-        shape_id: ShapeHandle,
-        face_id: ShapeHandle,
-        angle_rad: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_draft.call(
-            &mut self.store,
-            (shape_id.0, face_id.0, angle_rad, dx, dy, dz),
-        )?;
+    pub fn draft(&mut self, shape_id: ShapeHandle, face_id: ShapeHandle, angle_rad: f64, dx: f64, dy: f64, dz: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_draft.call(&mut self.store, (shape_id.0, face_id.0, angle_rad, dx, dy, dz))?;
         self.check_error("draft")?;
         if result == 0 {
             return Err(self.read_last_error("draft"));
@@ -947,16 +725,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn thicken(
-        &mut self,
-        shape_id: ShapeHandle,
-        thickness: f64,
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_thicken
-            .call(&mut self.store, (shape_id.0, thickness, tolerance))?;
+    pub fn thicken(&mut self, shape_id: ShapeHandle, thickness: f64, tolerance: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_thicken.call(&mut self.store, (shape_id.0, thickness, tolerance))?;
         self.check_error("thicken")?;
         if result == 0 {
             return Err(self.read_last_error("thicken"));
@@ -964,24 +734,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn defeature(
-        &mut self,
-        shape_id: ShapeHandle,
-        face_ids: &[ShapeHandle],
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn defeature(&mut self, shape_id: ShapeHandle, face_ids: &[ShapeHandle], tolerance: f64) -> OcctResult<ShapeHandle> {
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_defeature.call(
-            &mut self.store,
-            (
-                shape_id.0,
-                face_ids_ptr as i32,
-                face_ids_len as i32,
-                tolerance,
-            ),
-        );
+        let result = self.generated.fn_defeature.call(&mut self.store, (shape_id.0, face_ids_ptr as i32, face_ids_len as i32, tolerance));
         self.free_bytes(face_ids_ptr)?;
         let result = result?;
         self.check_error("defeature")?;
@@ -992,10 +749,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn reverse_shape(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_reverse_shape
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_reverse_shape.call(&mut self.store, (id.0,))?;
         self.check_error("reverse_shape")?;
         if result == 0 {
             return Err(self.read_last_error("reverse_shape"));
@@ -1012,17 +766,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn fillet_variable(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_id: ShapeHandle,
-        start_radius: f64,
-        end_radius: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_fillet_variable.call(
-            &mut self.store,
-            (solid_id.0, edge_id.0, start_radius, end_radius),
-        )?;
+    pub fn fillet_variable(&mut self, solid_id: ShapeHandle, edge_id: ShapeHandle, start_radius: f64, end_radius: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_fillet_variable.call(&mut self.store, (solid_id.0, edge_id.0, start_radius, end_radius))?;
         self.check_error("fillet_variable")?;
         if result == 0 {
             return Err(self.read_last_error("fillet_variable"));
@@ -1030,13 +775,7 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn fillet_batch(
-        &mut self,
-        solid_ids: &[ShapeHandle],
-        edge_counts: &[i32],
-        flat_edge_ids: &[ShapeHandle],
-        radii: &[f64],
-    ) -> OcctResult<Vec<u32>> {
+    pub fn fillet_batch(&mut self, solid_ids: &[ShapeHandle], edge_counts: &[i32], flat_edge_ids: &[ShapeHandle], radii: &[f64]) -> OcctResult<Vec<u32>> {
         let solid_ids_bytes: Vec<u8> = solid_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let solid_ids_ptr = self.write_bytes(&solid_ids_bytes)?;
         let solid_ids_len = solid_ids.len() as u32;
@@ -1049,10 +788,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let edge_counts_len = edge_counts.len() as u32;
-        let flat_edge_ids_bytes: Vec<u8> = flat_edge_ids
-            .iter()
-            .flat_map(|h| h.0.to_le_bytes())
-            .collect();
+        let flat_edge_ids_bytes: Vec<u8> = flat_edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let flat_edge_ids_ptr = match self.write_bytes(&flat_edge_ids_bytes) {
             Ok(ptr) => ptr,
             Err(e) => {
@@ -1073,19 +809,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let radii_len = radii.len() as u32;
-        let len = self.generated.fn_fillet_batch.call(
-            &mut self.store,
-            (
-                solid_ids_ptr as i32,
-                solid_ids_len as i32,
-                edge_counts_ptr as i32,
-                edge_counts_len as i32,
-                flat_edge_ids_ptr as i32,
-                flat_edge_ids_len as i32,
-                radii_ptr as i32,
-                radii_len as i32,
-            ),
-        );
+        let len = self.generated.fn_fillet_batch.call(&mut self.store, (solid_ids_ptr as i32, solid_ids_len as i32, edge_counts_ptr as i32, edge_counts_len as i32, flat_edge_ids_ptr as i32, flat_edge_ids_len as i32, radii_ptr as i32, radii_len as i32));
         self.free_bytes(solid_ids_ptr)?;
         self.free_bytes(edge_counts_ptr)?;
         self.free_bytes(flat_edge_ids_ptr)?;
@@ -1097,16 +821,8 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
-    pub fn offset_wire2_d(
-        &mut self,
-        wire_id: ShapeHandle,
-        offset: f64,
-        join_type: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_offset_wire2_d
-            .call(&mut self.store, (wire_id.0, offset, join_type))?;
+    pub fn offset_wire2_d(&mut self, wire_id: ShapeHandle, offset: f64, join_type: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_offset_wire2_d.call(&mut self.store, (wire_id.0, offset, join_type))?;
         self.check_error("offset_wire2_d")?;
         if result == 0 {
             return Err(self.read_last_error("offset_wire2_d"));
@@ -1114,17 +830,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn translate(
-        &mut self,
-        id: ShapeHandle,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_translate
-            .call(&mut self.store, (id.0, dx, dy, dz))?;
+    pub fn translate(&mut self, id: ShapeHandle, dx: f64, dy: f64, dz: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_translate.call(&mut self.store, (id.0, dx, dy, dz))?;
         self.check_error("translate")?;
         if result == 0 {
             return Err(self.read_last_error("translate"));
@@ -1132,21 +839,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn rotate(
-        &mut self,
-        id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        angle_rad: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_rotate
-            .call(&mut self.store, (id.0, px, py, pz, dx, dy, dz, angle_rad))?;
+    pub fn rotate(&mut self, id: ShapeHandle, px: f64, py: f64, pz: f64, dx: f64, dy: f64, dz: f64, angle_rad: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_rotate.call(&mut self.store, (id.0, px, py, pz, dx, dy, dz, angle_rad))?;
         self.check_error("rotate")?;
         if result == 0 {
             return Err(self.read_last_error("rotate"));
@@ -1154,18 +848,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn scale(
-        &mut self,
-        id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        factor: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_scale
-            .call(&mut self.store, (id.0, px, py, pz, factor))?;
+    pub fn scale(&mut self, id: ShapeHandle, px: f64, py: f64, pz: f64, factor: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_scale.call(&mut self.store, (id.0, px, py, pz, factor))?;
         self.check_error("scale")?;
         if result == 0 {
             return Err(self.read_last_error("scale"));
@@ -1173,20 +857,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn mirror(
-        &mut self,
-        id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_mirror
-            .call(&mut self.store, (id.0, px, py, pz, nx, ny, nz))?;
+    pub fn mirror(&mut self, id: ShapeHandle, px: f64, py: f64, pz: f64, nx: f64, ny: f64, nz: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_mirror.call(&mut self.store, (id.0, px, py, pz, nx, ny, nz))?;
         self.check_error("mirror")?;
         if result == 0 {
             return Err(self.read_last_error("mirror"));
@@ -1203,19 +875,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn linear_pattern(
-        &mut self,
-        id: ShapeHandle,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        spacing: f64,
-        count: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_linear_pattern
-            .call(&mut self.store, (id.0, dx, dy, dz, spacing, count))?;
+    pub fn linear_pattern(&mut self, id: ShapeHandle, dx: f64, dy: f64, dz: f64, spacing: f64, count: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_linear_pattern.call(&mut self.store, (id.0, dx, dy, dz, spacing, count))?;
         self.check_error("linear_pattern")?;
         if result == 0 {
             return Err(self.read_last_error("linear_pattern"));
@@ -1223,22 +884,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn circular_pattern(
-        &mut self,
-        id: ShapeHandle,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        ax: f64,
-        ay: f64,
-        az: f64,
-        angle: f64,
-        count: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_circular_pattern.call(
-            &mut self.store,
-            (id.0, cx, cy, cz, ax, ay, az, angle, count),
-        )?;
+    pub fn circular_pattern(&mut self, id: ShapeHandle, cx: f64, cy: f64, cz: f64, ax: f64, ay: f64, az: f64, angle: f64, count: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_circular_pattern.call(&mut self.store, (id.0, cx, cy, cz, ax, ay, az, angle, count))?;
         self.check_error("circular_pattern")?;
         if result == 0 {
             return Err(self.read_last_error("circular_pattern"));
@@ -1250,10 +897,7 @@ impl crate::kernel::OcctKernel {
         let matrix_bytes: Vec<u8> = matrix.iter().flat_map(|v| v.to_le_bytes()).collect();
         let matrix_ptr = self.write_bytes(&matrix_bytes)?;
         let matrix_len = matrix.len() as u32;
-        let result = self.generated.fn_transform.call(
-            &mut self.store,
-            (id.0, matrix_ptr as i32, matrix_len as i32),
-        );
+        let result = self.generated.fn_transform.call(&mut self.store, (id.0, matrix_ptr as i32, matrix_len as i32));
         self.free_bytes(matrix_ptr)?;
         let result = result?;
         self.check_error("transform")?;
@@ -1267,10 +911,7 @@ impl crate::kernel::OcctKernel {
         let matrix_bytes: Vec<u8> = matrix.iter().flat_map(|v| v.to_le_bytes()).collect();
         let matrix_ptr = self.write_bytes(&matrix_bytes)?;
         let matrix_len = matrix.len() as u32;
-        let result = self.generated.fn_located.call(
-            &mut self.store,
-            (id.0, matrix_ptr as i32, matrix_len as i32),
-        );
+        let result = self.generated.fn_located.call(&mut self.store, (id.0, matrix_ptr as i32, matrix_len as i32));
         self.free_bytes(matrix_ptr)?;
         let result = result?;
         self.check_error("located")?;
@@ -1280,18 +921,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn general_transform(
-        &mut self,
-        id: ShapeHandle,
-        matrix: &[f64],
-    ) -> OcctResult<ShapeHandle> {
+    pub fn general_transform(&mut self, id: ShapeHandle, matrix: &[f64]) -> OcctResult<ShapeHandle> {
         let matrix_bytes: Vec<u8> = matrix.iter().flat_map(|v| v.to_le_bytes()).collect();
         let matrix_ptr = self.write_bytes(&matrix_bytes)?;
         let matrix_len = matrix.len() as u32;
-        let result = self.generated.fn_general_transform.call(
-            &mut self.store,
-            (id.0, matrix_ptr as i32, matrix_len as i32),
-        );
+        let result = self.generated.fn_general_transform.call(&mut self.store, (id.0, matrix_ptr as i32, matrix_len as i32));
         self.free_bytes(matrix_ptr)?;
         let result = result?;
         self.check_error("general_transform")?;
@@ -1301,11 +935,7 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn translate_batch(
-        &mut self,
-        ids: &[ShapeHandle],
-        offsets: &[f64],
-    ) -> OcctResult<Vec<u32>> {
+    pub fn translate_batch(&mut self, ids: &[ShapeHandle], offsets: &[f64]) -> OcctResult<Vec<u32>> {
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1318,15 +948,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let offsets_len = offsets.len() as u32;
-        let len = self.generated.fn_translate_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                offsets_ptr as i32,
-                offsets_len as i32,
-            ),
-        );
+        let len = self.generated.fn_translate_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, offsets_ptr as i32, offsets_len as i32));
         self.free_bytes(ids_ptr)?;
         self.free_bytes(offsets_ptr)?;
         let len = len?;
@@ -1349,10 +971,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let m2_len = m2.len() as u32;
-        let len = self.generated.fn_compose_transform.call(
-            &mut self.store,
-            (m1_ptr as i32, m1_len as i32, m2_ptr as i32, m2_len as i32),
-        );
+        let len = self.generated.fn_compose_transform.call(&mut self.store, (m1_ptr as i32, m1_len as i32, m2_ptr as i32, m2_len as i32));
         self.free_bytes(m1_ptr)?;
         self.free_bytes(m2_ptr)?;
         let len = len?;
@@ -1362,11 +981,7 @@ impl crate::kernel::OcctKernel {
         self.read_vec_f64_result()
     }
 
-    pub fn transform_batch(
-        &mut self,
-        ids: &[ShapeHandle],
-        matrices: &[f64],
-    ) -> OcctResult<Vec<u32>> {
+    pub fn transform_batch(&mut self, ids: &[ShapeHandle], matrices: &[f64]) -> OcctResult<Vec<u32>> {
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1379,15 +994,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let matrices_len = matrices.len() as u32;
-        let len = self.generated.fn_transform_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                matrices_ptr as i32,
-                matrices_len as i32,
-            ),
-        );
+        let len = self.generated.fn_transform_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, matrices_ptr as i32, matrices_len as i32));
         self.free_bytes(ids_ptr)?;
         self.free_bytes(matrices_ptr)?;
         let len = len?;
@@ -1410,15 +1017,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_rotate_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                params_ptr as i32,
-                params_len as i32,
-            ),
-        );
+        let len = self.generated.fn_rotate_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, params_ptr as i32, params_len as i32));
         self.free_bytes(ids_ptr)?;
         self.free_bytes(params_ptr)?;
         let len = len?;
@@ -1441,15 +1040,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_scale_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                params_ptr as i32,
-                params_len as i32,
-            ),
-        );
+        let len = self.generated.fn_scale_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, params_ptr as i32, params_len as i32));
         self.free_bytes(ids_ptr)?;
         self.free_bytes(params_ptr)?;
         let len = len?;
@@ -1472,15 +1063,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_mirror_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                params_ptr as i32,
-                params_len as i32,
-            ),
-        );
+        let len = self.generated.fn_mirror_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, params_ptr as i32, params_len as i32));
         self.free_bytes(ids_ptr)?;
         self.free_bytes(params_ptr)?;
         let len = len?;
@@ -1491,10 +1074,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_vertex(&mut self, x: f64, y: f64, z: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_vertex
-            .call(&mut self.store, (x, y, z))?;
+        let result = self.generated.fn_make_vertex.call(&mut self.store, (x, y, z))?;
         self.check_error("make_vertex")?;
         if result == 0 {
             return Err(self.read_last_error("make_vertex"));
@@ -1503,10 +1083,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_edge(&mut self, v1: ShapeHandle, v2: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_edge
-            .call(&mut self.store, (v1.0, v2.0))?;
+        let result = self.generated.fn_make_edge.call(&mut self.store, (v1.0, v2.0))?;
         self.check_error("make_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_edge"));
@@ -1518,10 +1095,7 @@ impl crate::kernel::OcctKernel {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self
-            .generated
-            .fn_make_wire
-            .call(&mut self.store, (edge_ids_ptr as i32, edge_ids_len as i32));
+        let result = self.generated.fn_make_wire.call(&mut self.store, (edge_ids_ptr as i32, edge_ids_len as i32));
         self.free_bytes(edge_ids_ptr)?;
         let result = result?;
         self.check_error("make_wire")?;
@@ -1532,10 +1106,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_face(&mut self, wire_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_face
-            .call(&mut self.store, (wire_id.0,))?;
+        let result = self.generated.fn_make_face.call(&mut self.store, (wire_id.0,))?;
         self.check_error("make_face")?;
         if result == 0 {
             return Err(self.read_last_error("make_face"));
@@ -1543,15 +1114,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_face_on_surface(
-        &mut self,
-        face_id: ShapeHandle,
-        wire_id: ShapeHandle,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_face_on_surface
-            .call(&mut self.store, (face_id.0, wire_id.0))?;
+    pub fn make_face_on_surface(&mut self, face_id: ShapeHandle, wire_id: ShapeHandle) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_face_on_surface.call(&mut self.store, (face_id.0, wire_id.0))?;
         self.check_error("make_face_on_surface")?;
         if result == 0 {
             return Err(self.read_last_error("make_face_on_surface"));
@@ -1560,10 +1124,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_solid(&mut self, shell_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_solid
-            .call(&mut self.store, (shell_id.0,))?;
+        let result = self.generated.fn_make_solid.call(&mut self.store, (shell_id.0,))?;
         self.check_error("make_solid")?;
         if result == 0 {
             return Err(self.read_last_error("make_solid"));
@@ -1575,10 +1136,7 @@ impl crate::kernel::OcctKernel {
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_sew.call(
-            &mut self.store,
-            (shape_ids_ptr as i32, shape_ids_len as i32, tolerance),
-        );
+        let result = self.generated.fn_sew.call(&mut self.store, (shape_ids_ptr as i32, shape_ids_len as i32, tolerance));
         self.free_bytes(shape_ids_ptr)?;
         let result = result?;
         self.check_error("sew")?;
@@ -1592,10 +1150,7 @@ impl crate::kernel::OcctKernel {
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_make_compound.call(
-            &mut self.store,
-            (shape_ids_ptr as i32, shape_ids_len as i32),
-        );
+        let result = self.generated.fn_make_compound.call(&mut self.store, (shape_ids_ptr as i32, shape_ids_len as i32));
         self.free_bytes(shape_ids_ptr)?;
         let result = result?;
         self.check_error("make_compound")?;
@@ -1605,19 +1160,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_line_edge(
-        &mut self,
-        x1: f64,
-        y1: f64,
-        z1: f64,
-        x2: f64,
-        y2: f64,
-        z2: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_line_edge
-            .call(&mut self.store, (x1, y1, z1, x2, y2, z2))?;
+    pub fn make_line_edge(&mut self, x1: f64, y1: f64, z1: f64, x2: f64, y2: f64, z2: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_line_edge.call(&mut self.store, (x1, y1, z1, x2, y2, z2))?;
         self.check_error("make_line_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_line_edge"));
@@ -1625,20 +1169,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_circle_edge(
-        &mut self,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-        radius: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_circle_edge
-            .call(&mut self.store, (cx, cy, cz, nx, ny, nz, radius))?;
+    pub fn make_circle_edge(&mut self, cx: f64, cy: f64, cz: f64, nx: f64, ny: f64, nz: f64, radius: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_circle_edge.call(&mut self.store, (cx, cy, cz, nx, ny, nz, radius))?;
         self.check_error("make_circle_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_circle_edge"));
@@ -1646,22 +1178,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_circle_arc(
-        &mut self,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-        radius: f64,
-        start_angle: f64,
-        end_angle: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_circle_arc.call(
-            &mut self.store,
-            (cx, cy, cz, nx, ny, nz, radius, start_angle, end_angle),
-        )?;
+    pub fn make_circle_arc(&mut self, cx: f64, cy: f64, cz: f64, nx: f64, ny: f64, nz: f64, radius: f64, start_angle: f64, end_angle: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_circle_arc.call(&mut self.store, (cx, cy, cz, nx, ny, nz, radius, start_angle, end_angle))?;
         self.check_error("make_circle_arc")?;
         if result == 0 {
             return Err(self.read_last_error("make_circle_arc"));
@@ -1669,22 +1187,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_arc_edge(
-        &mut self,
-        x1: f64,
-        y1: f64,
-        z1: f64,
-        x2: f64,
-        y2: f64,
-        z2: f64,
-        x3: f64,
-        y3: f64,
-        z3: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_arc_edge
-            .call(&mut self.store, (x1, y1, z1, x2, y2, z2, x3, y3, z3))?;
+    pub fn make_arc_edge(&mut self, x1: f64, y1: f64, z1: f64, x2: f64, y2: f64, z2: f64, x3: f64, y3: f64, z3: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_arc_edge.call(&mut self.store, (x1, y1, z1, x2, y2, z2, x3, y3, z3))?;
         self.check_error("make_arc_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_arc_edge"));
@@ -1692,21 +1196,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_ellipse_edge(
-        &mut self,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-        major_radius: f64,
-        minor_radius: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_ellipse_edge.call(
-            &mut self.store,
-            (cx, cy, cz, nx, ny, nz, major_radius, minor_radius),
-        )?;
+    pub fn make_ellipse_edge(&mut self, cx: f64, cy: f64, cz: f64, nx: f64, ny: f64, nz: f64, major_radius: f64, minor_radius: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_ellipse_edge.call(&mut self.store, (cx, cy, cz, nx, ny, nz, major_radius, minor_radius))?;
         self.check_error("make_ellipse_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_ellipse_edge"));
@@ -1718,10 +1209,7 @@ impl crate::kernel::OcctKernel {
         let flat_points_bytes: Vec<u8> = flat_points.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points_ptr = self.write_bytes(&flat_points_bytes)?;
         let flat_points_len = flat_points.len() as u32;
-        let result = self.generated.fn_make_bezier_edge.call(
-            &mut self.store,
-            (flat_points_ptr as i32, flat_points_len as i32),
-        );
+        let result = self.generated.fn_make_bezier_edge.call(&mut self.store, (flat_points_ptr as i32, flat_points_len as i32));
         self.free_bytes(flat_points_ptr)?;
         let result = result?;
         self.check_error("make_bezier_edge")?;
@@ -1731,15 +1219,7 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_b_spline_edge(
-        &mut self,
-        poles: &[f64],
-        weights: &[f64],
-        knots: &[f64],
-        multiplicities: &[i32],
-        degree: i32,
-        periodic: bool,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn make_b_spline_edge(&mut self, poles: &[f64], weights: &[f64], knots: &[f64], multiplicities: &[i32], degree: i32, periodic: bool) -> OcctResult<ShapeHandle> {
         let poles_bytes: Vec<u8> = poles.iter().flat_map(|v| v.to_le_bytes()).collect();
         let poles_ptr = self.write_bytes(&poles_bytes)?;
         let poles_len = poles.len() as u32;
@@ -1762,10 +1242,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let knots_len = knots.len() as u32;
-        let multiplicities_bytes: Vec<u8> = multiplicities
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+        let multiplicities_bytes: Vec<u8> = multiplicities.iter().flat_map(|v| v.to_le_bytes()).collect();
         let multiplicities_ptr = match self.write_bytes(&multiplicities_bytes) {
             Ok(ptr) => ptr,
             Err(e) => {
@@ -1776,21 +1253,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let multiplicities_len = multiplicities.len() as u32;
-        let result = self.generated.fn_make_b_spline_edge.call(
-            &mut self.store,
-            (
-                poles_ptr as i32,
-                poles_len as i32,
-                weights_ptr as i32,
-                weights_len as i32,
-                knots_ptr as i32,
-                knots_len as i32,
-                multiplicities_ptr as i32,
-                multiplicities_len as i32,
-                degree,
-                i32::from(periodic),
-            ),
-        );
+        let result = self.generated.fn_make_b_spline_edge.call(&mut self.store, (poles_ptr as i32, poles_len as i32, weights_ptr as i32, weights_len as i32, knots_ptr as i32, knots_len as i32, multiplicities_ptr as i32, multiplicities_len as i32, degree, i32::from(periodic)));
         self.free_bytes(poles_ptr)?;
         self.free_bytes(weights_ptr)?;
         self.free_bytes(knots_ptr)?;
@@ -1803,34 +1266,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_ellipse_arc(
-        &mut self,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-        major_radius: f64,
-        minor_radius: f64,
-        start_angle: f64,
-        end_angle: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_ellipse_arc.call(
-            &mut self.store,
-            (
-                cx,
-                cy,
-                cz,
-                nx,
-                ny,
-                nz,
-                major_radius,
-                minor_radius,
-                start_angle,
-                end_angle,
-            ),
-        )?;
+    pub fn make_ellipse_arc(&mut self, cx: f64, cy: f64, cz: f64, nx: f64, ny: f64, nz: f64, major_radius: f64, minor_radius: f64, start_angle: f64, end_angle: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_ellipse_arc.call(&mut self.store, (cx, cy, cz, nx, ny, nz, major_radius, minor_radius, start_angle, end_angle))?;
         self.check_error("make_ellipse_arc")?;
         if result == 0 {
             return Err(self.read_last_error("make_ellipse_arc"));
@@ -1838,22 +1275,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_helix_wire(
-        &mut self,
-        px: f64,
-        py: f64,
-        pz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        pitch: f64,
-        height: f64,
-        radius: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_helix_wire.call(
-            &mut self.store,
-            (px, py, pz, dx, dy, dz, pitch, height, radius),
-        )?;
+    pub fn make_helix_wire(&mut self, px: f64, py: f64, pz: f64, dx: f64, dy: f64, dz: f64, pitch: f64, height: f64, radius: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_helix_wire.call(&mut self.store, (px, py, pz, dx, dy, dz, pitch, height, radius))?;
         self.check_error("make_helix_wire")?;
         if result == 0 {
             return Err(self.read_last_error("make_helix_wire"));
@@ -1862,10 +1285,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn make_non_planar_face(&mut self, wire_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_non_planar_face
-            .call(&mut self.store, (wire_id.0,))?;
+        let result = self.generated.fn_make_non_planar_face.call(&mut self.store, (wire_id.0,))?;
         self.check_error("make_non_planar_face")?;
         if result == 0 {
             return Err(self.read_last_error("make_non_planar_face"));
@@ -1873,25 +1293,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn add_holes_in_face(
-        &mut self,
-        face_id: ShapeHandle,
-        hole_wire_ids: &[ShapeHandle],
-    ) -> OcctResult<ShapeHandle> {
-        let hole_wire_ids_bytes: Vec<u8> = hole_wire_ids
-            .iter()
-            .flat_map(|h| h.0.to_le_bytes())
-            .collect();
+    pub fn add_holes_in_face(&mut self, face_id: ShapeHandle, hole_wire_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
+        let hole_wire_ids_bytes: Vec<u8> = hole_wire_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let hole_wire_ids_ptr = self.write_bytes(&hole_wire_ids_bytes)?;
         let hole_wire_ids_len = hole_wire_ids.len() as u32;
-        let result = self.generated.fn_add_holes_in_face.call(
-            &mut self.store,
-            (
-                face_id.0,
-                hole_wire_ids_ptr as i32,
-                hole_wire_ids_len as i32,
-            ),
-        );
+        let result = self.generated.fn_add_holes_in_face.call(&mut self.store, (face_id.0, hole_wire_ids_ptr as i32, hole_wire_ids_len as i32));
         self.free_bytes(hole_wire_ids_ptr)?;
         let result = result?;
         self.check_error("add_holes_in_face")?;
@@ -1901,19 +1307,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn remove_holes_from_face(
-        &mut self,
-        face_id: ShapeHandle,
-        hole_indices: &[i32],
-    ) -> OcctResult<ShapeHandle> {
-        let hole_indices_bytes: Vec<u8> =
-            hole_indices.iter().flat_map(|v| v.to_le_bytes()).collect();
+    pub fn remove_holes_from_face(&mut self, face_id: ShapeHandle, hole_indices: &[i32]) -> OcctResult<ShapeHandle> {
+        let hole_indices_bytes: Vec<u8> = hole_indices.iter().flat_map(|v| v.to_le_bytes()).collect();
         let hole_indices_ptr = self.write_bytes(&hole_indices_bytes)?;
         let hole_indices_len = hole_indices.len() as u32;
-        let result = self.generated.fn_remove_holes_from_face.call(
-            &mut self.store,
-            (face_id.0, hole_indices_ptr as i32, hole_indices_len as i32),
-        );
+        let result = self.generated.fn_remove_holes_from_face.call(&mut self.store, (face_id.0, hole_indices_ptr as i32, hole_indices_len as i32));
         self.free_bytes(hole_indices_ptr)?;
         let result = result?;
         self.check_error("remove_holes_from_face")?;
@@ -1924,10 +1322,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn solid_from_shell(&mut self, shell_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_solid_from_shell
-            .call(&mut self.store, (shell_id.0,))?;
+        let result = self.generated.fn_solid_from_shell.call(&mut self.store, (shell_id.0,))?;
         self.check_error("solid_from_shell")?;
         if result == 0 {
             return Err(self.read_last_error("solid_from_shell"));
@@ -1935,18 +1330,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn build_solid_from_faces(
-        &mut self,
-        face_ids: &[ShapeHandle],
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn build_solid_from_faces(&mut self, face_ids: &[ShapeHandle], tolerance: f64) -> OcctResult<ShapeHandle> {
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_build_solid_from_faces.call(
-            &mut self.store,
-            (face_ids_ptr as i32, face_ids_len as i32, tolerance),
-        );
+        let result = self.generated.fn_build_solid_from_faces.call(&mut self.store, (face_ids_ptr as i32, face_ids_len as i32, tolerance));
         self.free_bytes(face_ids_ptr)?;
         let result = result?;
         self.check_error("build_solid_from_faces")?;
@@ -1956,18 +1344,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn sew_and_solidify(
-        &mut self,
-        face_ids: &[ShapeHandle],
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn sew_and_solidify(&mut self, face_ids: &[ShapeHandle], tolerance: f64) -> OcctResult<ShapeHandle> {
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_sew_and_solidify.call(
-            &mut self.store,
-            (face_ids_ptr as i32, face_ids_len as i32, tolerance),
-        );
+        let result = self.generated.fn_sew_and_solidify.call(&mut self.store, (face_ids_ptr as i32, face_ids_len as i32, tolerance));
         self.free_bytes(face_ids_ptr)?;
         let result = result?;
         self.check_error("sew_and_solidify")?;
@@ -1977,22 +1358,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn build_tri_face(
-        &mut self,
-        ax: f64,
-        ay: f64,
-        az: f64,
-        bx: f64,
-        by: f64,
-        bz: f64,
-        cx2: f64,
-        cy2: f64,
-        cz2: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_build_tri_face
-            .call(&mut self.store, (ax, ay, az, bx, by, bz, cx2, cy2, cz2))?;
+    pub fn build_tri_face(&mut self, ax: f64, ay: f64, az: f64, bx: f64, by: f64, bz: f64, cx2: f64, cy2: f64, cz2: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_build_tri_face.call(&mut self.store, (ax, ay, az, bx, by, bz, cx2, cy2, cz2))?;
         self.check_error("build_tri_face")?;
         if result == 0 {
             return Err(self.read_last_error("build_tri_face"));
@@ -2000,22 +1367,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn make_tangent_arc(
-        &mut self,
-        x1: f64,
-        y1: f64,
-        z1: f64,
-        tx: f64,
-        ty: f64,
-        tz: f64,
-        x2: f64,
-        y2: f64,
-        z2: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_tangent_arc
-            .call(&mut self.store, (x1, y1, z1, tx, ty, tz, x2, y2, z2))?;
+    pub fn make_tangent_arc(&mut self, x1: f64, y1: f64, z1: f64, tx: f64, ty: f64, tz: f64, x2: f64, y2: f64, z2: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_tangent_arc.call(&mut self.store, (x1, y1, z1, tx, ty, tz, x2, y2, z2))?;
         self.check_error("make_tangent_arc")?;
         if result == 0 {
             return Err(self.read_last_error("make_tangent_arc"));
@@ -2023,19 +1376,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn bspline_surface(
-        &mut self,
-        flat_points: &[f64],
-        rows: i32,
-        cols: i32,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn bspline_surface(&mut self, flat_points: &[f64], rows: i32, cols: i32) -> OcctResult<ShapeHandle> {
         let flat_points_bytes: Vec<u8> = flat_points.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points_ptr = self.write_bytes(&flat_points_bytes)?;
         let flat_points_len = flat_points.len() as u32;
-        let result = self.generated.fn_bspline_surface.call(
-            &mut self.store,
-            (flat_points_ptr as i32, flat_points_len as i32, rows, cols),
-        );
+        let result = self.generated.fn_bspline_surface.call(&mut self.store, (flat_points_ptr as i32, flat_points_len as i32, rows, cols));
         self.free_bytes(flat_points_ptr)?;
         let result = result?;
         self.check_error("bspline_surface")?;
@@ -2046,10 +1391,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_shape_type(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_get_shape_type
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_get_shape_type.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_shape_type"));
         }
@@ -2059,10 +1401,7 @@ impl crate::kernel::OcctKernel {
     pub fn get_sub_shapes(&mut self, id: ShapeHandle, shape_type: &str) -> OcctResult<Vec<u32>> {
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let len = self.generated.fn_get_sub_shapes.call(
-            &mut self.store,
-            (id.0, shape_type_ptr as i32, shape_type_len as i32),
-        );
+        let len = self.generated.fn_get_sub_shapes.call(&mut self.store, (id.0, shape_type_ptr as i32, shape_type_len as i32));
         self.free_bytes(shape_type_ptr)?;
         let len = len?;
         if len < 0 {
@@ -2074,33 +1413,17 @@ impl crate::kernel::OcctKernel {
     pub fn sub_shape_count(&mut self, id: ShapeHandle, shape_type: &str) -> OcctResult<i32> {
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let result = self.generated.fn_sub_shape_count.call(
-            &mut self.store,
-            (id.0, shape_type_ptr as i32, shape_type_len as i32),
-        );
+        let result = self.generated.fn_sub_shape_count.call(&mut self.store, (id.0, shape_type_ptr as i32, shape_type_len as i32));
         self.free_bytes(shape_type_ptr)?;
         let result = result?;
         self.check_error("sub_shape_count")?;
         Ok(result)
     }
 
-    pub fn sub_shape_hashes(
-        &mut self,
-        id: ShapeHandle,
-        shape_type: &str,
-        hash_upper_bound: i32,
-    ) -> OcctResult<Vec<i32>> {
+    pub fn sub_shape_hashes(&mut self, id: ShapeHandle, shape_type: &str, hash_upper_bound: i32) -> OcctResult<Vec<i32>> {
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let len = self.generated.fn_sub_shape_hashes.call(
-            &mut self.store,
-            (
-                id.0,
-                shape_type_ptr as i32,
-                shape_type_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let len = self.generated.fn_sub_shape_hashes.call(&mut self.store, (id.0, shape_type_ptr as i32, shape_type_len as i32, hash_upper_bound));
         self.free_bytes(shape_type_ptr)?;
         let len = len?;
         if len < 0 {
@@ -2110,19 +1433,13 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn distance_between(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_distance_between
-            .call(&mut self.store, (a.0, b.0))?;
+        let result = self.generated.fn_distance_between.call(&mut self.store, (a.0, b.0))?;
         self.check_error("distance_between")?;
         Ok(result)
     }
 
     pub fn is_same(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_is_same
-            .call(&mut self.store, (a.0, b.0))?;
+        let result = self.generated.fn_is_same.call(&mut self.store, (a.0, b.0))?;
         if result < 0 {
             return Err(self.read_last_error("is_same"));
         }
@@ -2130,10 +1447,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn is_equal(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_is_equal
-            .call(&mut self.store, (a.0, b.0))?;
+        let result = self.generated.fn_is_equal.call(&mut self.store, (a.0, b.0))?;
         if result < 0 {
             return Err(self.read_last_error("is_equal"));
         }
@@ -2149,19 +1463,13 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn hash_code(&mut self, id: ShapeHandle, upper_bound: i32) -> OcctResult<i32> {
-        let result = self
-            .generated
-            .fn_hash_code
-            .call(&mut self.store, (id.0, upper_bound))?;
+        let result = self.generated.fn_hash_code.call(&mut self.store, (id.0, upper_bound))?;
         self.check_error("hash_code")?;
         Ok(result)
     }
 
     pub fn shape_orientation(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_shape_orientation
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_shape_orientation.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("shape_orientation"));
         }
@@ -2169,25 +1477,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn iter_shapes(&mut self, id: ShapeHandle) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_iter_shapes
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_iter_shapes.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("iter_shapes"));
         }
         self.read_vec_u32_result()
     }
 
-    pub fn edge_to_face_map(
-        &mut self,
-        id: ShapeHandle,
-        hash_upper_bound: i32,
-    ) -> OcctResult<Vec<i32>> {
-        let len = self
-            .generated
-            .fn_edge_to_face_map
-            .call(&mut self.store, (id.0, hash_upper_bound))?;
+    pub fn edge_to_face_map(&mut self, id: ShapeHandle, hash_upper_bound: i32) -> OcctResult<Vec<i32>> {
+        let len = self.generated.fn_edge_to_face_map.call(&mut self.store, (id.0, hash_upper_bound))?;
         if len < 0 {
             return Err(self.read_last_error("edge_to_face_map"));
         }
@@ -2197,10 +1495,7 @@ impl crate::kernel::OcctKernel {
     pub fn downcast(&mut self, id: ShapeHandle, target_type: &str) -> OcctResult<ShapeHandle> {
         let target_type_ptr = self.write_bytes(target_type.as_bytes())?;
         let target_type_len = target_type.len() as u32;
-        let result = self.generated.fn_downcast.call(
-            &mut self.store,
-            (id.0, target_type_ptr as i32, target_type_len as i32),
-        );
+        let result = self.generated.fn_downcast.call(&mut self.store, (id.0, target_type_ptr as i32, target_type_len as i32));
         self.free_bytes(target_type_ptr)?;
         let result = result?;
         self.check_error("downcast")?;
@@ -2210,45 +1505,24 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn adjacent_faces(
-        &mut self,
-        shape_id: ShapeHandle,
-        face_id: ShapeHandle,
-    ) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_adjacent_faces
-            .call(&mut self.store, (shape_id.0, face_id.0))?;
+    pub fn adjacent_faces(&mut self, shape_id: ShapeHandle, face_id: ShapeHandle) -> OcctResult<Vec<u32>> {
+        let len = self.generated.fn_adjacent_faces.call(&mut self.store, (shape_id.0, face_id.0))?;
         if len < 0 {
             return Err(self.read_last_error("adjacent_faces"));
         }
         self.read_vec_u32_result()
     }
 
-    pub fn shared_edges(
-        &mut self,
-        face_a: ShapeHandle,
-        face_b: ShapeHandle,
-    ) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_shared_edges
-            .call(&mut self.store, (face_a.0, face_b.0))?;
+    pub fn shared_edges(&mut self, face_a: ShapeHandle, face_b: ShapeHandle) -> OcctResult<Vec<u32>> {
+        let len = self.generated.fn_shared_edges.call(&mut self.store, (face_a.0, face_b.0))?;
         if len < 0 {
             return Err(self.read_last_error("shared_edges"));
         }
         self.read_vec_u32_result()
     }
 
-    pub fn get_bounding_box(
-        &mut self,
-        id: ShapeHandle,
-        use_triangulation: bool,
-    ) -> OcctResult<BoundingBox> {
-        let status = self
-            .generated
-            .fn_get_bounding_box
-            .call(&mut self.store, (id.0, i32::from(use_triangulation)))?;
+    pub fn get_bounding_box(&mut self, id: ShapeHandle, use_triangulation: bool) -> OcctResult<BoundingBox> {
+        let status = self.generated.fn_get_bounding_box.call(&mut self.store, (id.0, i32::from(use_triangulation)))?;
         if status < 0 {
             return Err(self.read_last_error("get_bounding_box"));
         }
@@ -2256,37 +1530,25 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_volume(&mut self, id: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_get_volume
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_get_volume.call(&mut self.store, (id.0,))?;
         self.check_error("get_volume")?;
         Ok(result)
     }
 
     pub fn get_surface_area(&mut self, id: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_get_surface_area
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_get_surface_area.call(&mut self.store, (id.0,))?;
         self.check_error("get_surface_area")?;
         Ok(result)
     }
 
     pub fn get_length(&mut self, id: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_get_length
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_get_length.call(&mut self.store, (id.0,))?;
         self.check_error("get_length")?;
         Ok(result)
     }
 
     pub fn get_center_of_mass(&mut self, id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_get_center_of_mass
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_get_center_of_mass.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_center_of_mass"));
         }
@@ -2294,28 +1556,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_inertia(&mut self, id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_get_inertia
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_get_inertia.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_inertia"));
         }
         self.read_vec_f64_result()
     }
 
-    pub fn contains_point(
-        &mut self,
-        id: ShapeHandle,
-        x: f64,
-        y: f64,
-        z: f64,
-        tolerance: f64,
-    ) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_contains_point
-            .call(&mut self.store, (id.0, x, y, z, tolerance))?;
+    pub fn contains_point(&mut self, id: ShapeHandle, x: f64, y: f64, z: f64, tolerance: f64) -> OcctResult<bool> {
+        let result = self.generated.fn_contains_point.call(&mut self.store, (id.0, x, y, z, tolerance))?;
         if result < 0 {
             return Err(self.read_last_error("contains_point"));
         }
@@ -2323,10 +1572,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_surface_center_of_mass(&mut self, face_id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_get_surface_center_of_mass
-            .call(&mut self.store, (face_id.0,))?;
+        let len = self.generated.fn_get_surface_center_of_mass.call(&mut self.store, (face_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_surface_center_of_mass"));
         }
@@ -2334,10 +1580,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn vertex_position(&mut self, vertex_id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_vertex_position
-            .call(&mut self.store, (vertex_id.0,))?;
+        let len = self.generated.fn_vertex_position.call(&mut self.store, (vertex_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("vertex_position"));
         }
@@ -2345,10 +1588,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn surface_type(&mut self, face_id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_surface_type
-            .call(&mut self.store, (face_id.0,))?;
+        let len = self.generated.fn_surface_type.call(&mut self.store, (face_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("surface_type"));
         }
@@ -2356,26 +1596,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn surface_normal(&mut self, face_id: ShapeHandle, u: f64, v: f64) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_surface_normal
-            .call(&mut self.store, (face_id.0, u, v))?;
+        let len = self.generated.fn_surface_normal.call(&mut self.store, (face_id.0, u, v))?;
         if len < 0 {
             return Err(self.read_last_error("surface_normal"));
         }
         self.read_vec_f64_result()
     }
 
-    pub fn point_on_surface(
-        &mut self,
-        face_id: ShapeHandle,
-        u: f64,
-        v: f64,
-    ) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_point_on_surface
-            .call(&mut self.store, (face_id.0, u, v))?;
+    pub fn point_on_surface(&mut self, face_id: ShapeHandle, u: f64, v: f64) -> OcctResult<Vec<f64>> {
+        let len = self.generated.fn_point_on_surface.call(&mut self.store, (face_id.0, u, v))?;
         if len < 0 {
             return Err(self.read_last_error("point_on_surface"));
         }
@@ -2383,10 +1612,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn outer_wire(&mut self, face_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_outer_wire
-            .call(&mut self.store, (face_id.0,))?;
+        let result = self.generated.fn_outer_wire.call(&mut self.store, (face_id.0,))?;
         self.check_error("outer_wire")?;
         if result == 0 {
             return Err(self.read_last_error("outer_wire"));
@@ -2395,26 +1621,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_linear_center_of_mass(&mut self, id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_get_linear_center_of_mass
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_get_linear_center_of_mass.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_linear_center_of_mass"));
         }
         self.read_vec_f64_result()
     }
 
-    pub fn surface_curvature(
-        &mut self,
-        face_id: ShapeHandle,
-        u: f64,
-        v: f64,
-    ) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_surface_curvature
-            .call(&mut self.store, (face_id.0, u, v))?;
+    pub fn surface_curvature(&mut self, face_id: ShapeHandle, u: f64, v: f64) -> OcctResult<Vec<f64>> {
+        let len = self.generated.fn_surface_curvature.call(&mut self.store, (face_id.0, u, v))?;
         if len < 0 {
             return Err(self.read_last_error("surface_curvature"));
         }
@@ -2422,10 +1637,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn uv_bounds(&mut self, face_id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_uv_bounds
-            .call(&mut self.store, (face_id.0,))?;
+        let len = self.generated.fn_uv_bounds.call(&mut self.store, (face_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("uv_bounds"));
         }
@@ -2433,10 +1645,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_face_cylinder_data(&mut self, face_id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_get_face_cylinder_data
-            .call(&mut self.store, (face_id.0,))?;
+        let len = self.generated.fn_get_face_cylinder_data.call(&mut self.store, (face_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_face_cylinder_data"));
         }
@@ -2444,10 +1653,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn reverse_surface_u(&mut self, face_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_reverse_surface_u
-            .call(&mut self.store, (face_id.0,))?;
+        let result = self.generated.fn_reverse_surface_u.call(&mut self.store, (face_id.0,))?;
         self.check_error("reverse_surface_u")?;
         if result == 0 {
             return Err(self.read_last_error("reverse_surface_u"));
@@ -2455,50 +1661,24 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn uv_from_point(
-        &mut self,
-        face_id: ShapeHandle,
-        x: f64,
-        y: f64,
-        z: f64,
-    ) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_uv_from_point
-            .call(&mut self.store, (face_id.0, x, y, z))?;
+    pub fn uv_from_point(&mut self, face_id: ShapeHandle, x: f64, y: f64, z: f64) -> OcctResult<Vec<f64>> {
+        let len = self.generated.fn_uv_from_point.call(&mut self.store, (face_id.0, x, y, z))?;
         if len < 0 {
             return Err(self.read_last_error("uv_from_point"));
         }
         self.read_vec_f64_result()
     }
 
-    pub fn project_point_on_face(
-        &mut self,
-        face_id: ShapeHandle,
-        x: f64,
-        y: f64,
-        z: f64,
-    ) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_project_point_on_face
-            .call(&mut self.store, (face_id.0, x, y, z))?;
+    pub fn project_point_on_face(&mut self, face_id: ShapeHandle, x: f64, y: f64, z: f64) -> OcctResult<Vec<f64>> {
+        let len = self.generated.fn_project_point_on_face.call(&mut self.store, (face_id.0, x, y, z))?;
         if len < 0 {
             return Err(self.read_last_error("project_point_on_face"));
         }
         self.read_vec_f64_result()
     }
 
-    pub fn classify_point_on_face(
-        &mut self,
-        face_id: ShapeHandle,
-        u: f64,
-        v: f64,
-    ) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_classify_point_on_face
-            .call(&mut self.store, (face_id.0, u, v))?;
+    pub fn classify_point_on_face(&mut self, face_id: ShapeHandle, u: f64, v: f64) -> OcctResult<String> {
+        let len = self.generated.fn_classify_point_on_face.call(&mut self.store, (face_id.0, u, v))?;
         if len < 0 {
             return Err(self.read_last_error("classify_point_on_face"));
         }
@@ -2506,10 +1686,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_type(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_curve_type
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_curve_type.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("curve_type"));
         }
@@ -2517,10 +1694,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_point_at_param(&mut self, id: ShapeHandle, param: f64) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_curve_point_at_param
-            .call(&mut self.store, (id.0, param))?;
+        let len = self.generated.fn_curve_point_at_param.call(&mut self.store, (id.0, param))?;
         if len < 0 {
             return Err(self.read_last_error("curve_point_at_param"));
         }
@@ -2528,10 +1702,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_tangent(&mut self, id: ShapeHandle, param: f64) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_curve_tangent
-            .call(&mut self.store, (id.0, param))?;
+        let len = self.generated.fn_curve_tangent.call(&mut self.store, (id.0, param))?;
         if len < 0 {
             return Err(self.read_last_error("curve_tangent"));
         }
@@ -2539,10 +1710,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_parameters(&mut self, id: ShapeHandle) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_curve_parameters
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_curve_parameters.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("curve_parameters"));
         }
@@ -2550,10 +1718,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_is_closed(&mut self, id: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_curve_is_closed
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_curve_is_closed.call(&mut self.store, (id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("curve_is_closed"));
         }
@@ -2561,30 +1726,16 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_length(&mut self, id: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_curve_length
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_curve_length.call(&mut self.store, (id.0,))?;
         self.check_error("curve_length")?;
         Ok(result)
     }
 
-    pub fn interpolate_points(
-        &mut self,
-        flat_points: &[f64],
-        periodic: bool,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn interpolate_points(&mut self, flat_points: &[f64], periodic: bool) -> OcctResult<ShapeHandle> {
         let flat_points_bytes: Vec<u8> = flat_points.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points_ptr = self.write_bytes(&flat_points_bytes)?;
         let flat_points_len = flat_points.len() as u32;
-        let result = self.generated.fn_interpolate_points.call(
-            &mut self.store,
-            (
-                flat_points_ptr as i32,
-                flat_points_len as i32,
-                i32::from(periodic),
-            ),
-        );
+        let result = self.generated.fn_interpolate_points.call(&mut self.store, (flat_points_ptr as i32, flat_points_len as i32, i32::from(periodic)));
         self.free_bytes(flat_points_ptr)?;
         let result = result?;
         self.check_error("interpolate_points")?;
@@ -2594,32 +1745,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn interpolate_points_with_tangents(
-        &mut self,
-        flat_points: &[f64],
-        start_tan_x: f64,
-        start_tan_y: f64,
-        start_tan_z: f64,
-        end_tan_x: f64,
-        end_tan_y: f64,
-        end_tan_z: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn interpolate_points_with_tangents(&mut self, flat_points: &[f64], start_tan_x: f64, start_tan_y: f64, start_tan_z: f64, end_tan_x: f64, end_tan_y: f64, end_tan_z: f64) -> OcctResult<ShapeHandle> {
         let flat_points_bytes: Vec<u8> = flat_points.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points_ptr = self.write_bytes(&flat_points_bytes)?;
         let flat_points_len = flat_points.len() as u32;
-        let result = self.generated.fn_interpolate_points_with_tangents.call(
-            &mut self.store,
-            (
-                flat_points_ptr as i32,
-                flat_points_len as i32,
-                start_tan_x,
-                start_tan_y,
-                start_tan_z,
-                end_tan_x,
-                end_tan_y,
-                end_tan_z,
-            ),
-        );
+        let result = self.generated.fn_interpolate_points_with_tangents.call(&mut self.store, (flat_points_ptr as i32, flat_points_len as i32, start_tan_x, start_tan_y, start_tan_z, end_tan_x, end_tan_y, end_tan_z));
         self.free_bytes(flat_points_ptr)?;
         let result = result?;
         self.check_error("interpolate_points_with_tangents")?;
@@ -2629,17 +1759,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn project_point_on_edge(
-        &mut self,
-        edge_id: ShapeHandle,
-        x: f64,
-        y: f64,
-        z: f64,
-    ) -> OcctResult<Vec<f64>> {
-        let len = self
-            .generated
-            .fn_project_point_on_edge
-            .call(&mut self.store, (edge_id.0, x, y, z))?;
+    pub fn project_point_on_edge(&mut self, edge_id: ShapeHandle, x: f64, y: f64, z: f64) -> OcctResult<Vec<f64>> {
+        let len = self.generated.fn_project_point_on_edge.call(&mut self.store, (edge_id.0, x, y, z))?;
         if len < 0 {
             return Err(self.read_last_error("project_point_on_edge"));
         }
@@ -2647,28 +1768,18 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_is_periodic(&mut self, id: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_curve_is_periodic
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_curve_is_periodic.call(&mut self.store, (id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("curve_is_periodic"));
         }
         Ok(result != 0)
     }
 
-    pub fn approximate_points(
-        &mut self,
-        flat_points: &[f64],
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn approximate_points(&mut self, flat_points: &[f64], tolerance: f64) -> OcctResult<ShapeHandle> {
         let flat_points_bytes: Vec<u8> = flat_points.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points_ptr = self.write_bytes(&flat_points_bytes)?;
         let flat_points_len = flat_points.len() as u32;
-        let result = self.generated.fn_approximate_points.call(
-            &mut self.store,
-            (flat_points_ptr as i32, flat_points_len as i32, tolerance),
-        );
+        let result = self.generated.fn_approximate_points.call(&mut self.store, (flat_points_ptr as i32, flat_points_len as i32, tolerance));
         self.free_bytes(flat_points_ptr)?;
         let result = result?;
         self.check_error("approximate_points")?;
@@ -2678,39 +1789,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn lift_curve2d_to_plane(
-        &mut self,
-        flat_points2d: &[f64],
-        plane_ox: f64,
-        plane_oy: f64,
-        plane_oz: f64,
-        plane_zx: f64,
-        plane_zy: f64,
-        plane_zz: f64,
-        plane_xx: f64,
-        plane_xy: f64,
-        plane_xz: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let flat_points2d_bytes: Vec<u8> =
-            flat_points2d.iter().flat_map(|v| v.to_le_bytes()).collect();
+    pub fn lift_curve2d_to_plane(&mut self, flat_points2d: &[f64], plane_ox: f64, plane_oy: f64, plane_oz: f64, plane_zx: f64, plane_zy: f64, plane_zz: f64, plane_xx: f64, plane_xy: f64, plane_xz: f64) -> OcctResult<ShapeHandle> {
+        let flat_points2d_bytes: Vec<u8> = flat_points2d.iter().flat_map(|v| v.to_le_bytes()).collect();
         let flat_points2d_ptr = self.write_bytes(&flat_points2d_bytes)?;
         let flat_points2d_len = flat_points2d.len() as u32;
-        let result = self.generated.fn_lift_curve2d_to_plane.call(
-            &mut self.store,
-            (
-                flat_points2d_ptr as i32,
-                flat_points2d_len as i32,
-                plane_ox,
-                plane_oy,
-                plane_oz,
-                plane_zx,
-                plane_zy,
-                plane_zz,
-                plane_xx,
-                plane_xy,
-                plane_xz,
-            ),
-        );
+        let result = self.generated.fn_lift_curve2d_to_plane.call(&mut self.store, (flat_points2d_ptr as i32, flat_points2d_len as i32, plane_ox, plane_oy, plane_oz, plane_zx, plane_zy, plane_zz, plane_xx, plane_xy, plane_xz));
         self.free_bytes(flat_points2d_ptr)?;
         let result = result?;
         self.check_error("lift_curve2d_to_plane")?;
@@ -2721,25 +1804,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_nurbs_curve_data(&mut self, edge_id: ShapeHandle) -> OcctResult<NurbsCurveData> {
-        let status = self
-            .generated
-            .fn_get_nurbs_curve_data
-            .call(&mut self.store, (edge_id.0,))?;
+        let status = self.generated.fn_get_nurbs_curve_data.call(&mut self.store, (edge_id.0,))?;
         if status < 0 {
             return Err(self.read_last_error("get_nurbs_curve_data"));
         }
         self.read_nurbs_result()
     }
 
-    pub fn curve_degree_elevate(
-        &mut self,
-        edge_id: ShapeHandle,
-        elevate_by: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_curve_degree_elevate
-            .call(&mut self.store, (edge_id.0, elevate_by))?;
+    pub fn curve_degree_elevate(&mut self, edge_id: ShapeHandle, elevate_by: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_curve_degree_elevate.call(&mut self.store, (edge_id.0, elevate_by))?;
         self.check_error("curve_degree_elevate")?;
         if result == 0 {
             return Err(self.read_last_error("curve_degree_elevate"));
@@ -2747,16 +1820,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn curve_knot_insert(
-        &mut self,
-        edge_id: ShapeHandle,
-        knot: f64,
-        times: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_curve_knot_insert
-            .call(&mut self.store, (edge_id.0, knot, times))?;
+    pub fn curve_knot_insert(&mut self, edge_id: ShapeHandle, knot: f64, times: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_curve_knot_insert.call(&mut self.store, (edge_id.0, knot, times))?;
         self.check_error("curve_knot_insert")?;
         if result == 0 {
             return Err(self.read_last_error("curve_knot_insert"));
@@ -2764,16 +1829,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn curve_knot_remove(
-        &mut self,
-        edge_id: ShapeHandle,
-        knot: f64,
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_curve_knot_remove
-            .call(&mut self.store, (edge_id.0, knot, tolerance))?;
+    pub fn curve_knot_remove(&mut self, edge_id: ShapeHandle, knot: f64, tolerance: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_curve_knot_remove.call(&mut self.store, (edge_id.0, knot, tolerance))?;
         self.check_error("curve_knot_remove")?;
         if result == 0 {
             return Err(self.read_last_error("curve_knot_remove"));
@@ -2782,10 +1839,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn curve_split(&mut self, edge_id: ShapeHandle, param: f64) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_curve_split
-            .call(&mut self.store, (edge_id.0, param))?;
+        let len = self.generated.fn_curve_split.call(&mut self.store, (edge_id.0, param))?;
         if len < 0 {
             return Err(self.read_last_error("curve_split"));
         }
@@ -2793,10 +1847,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn has_triangulation(&mut self, id: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_has_triangulation
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_has_triangulation.call(&mut self.store, (id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("has_triangulation"));
         }
@@ -2807,10 +1858,7 @@ impl crate::kernel::OcctKernel {
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
-        let len = self
-            .generated
-            .fn_query_batch
-            .call(&mut self.store, (ids_ptr as i32, ids_len as i32));
+        let len = self.generated.fn_query_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32));
         self.free_bytes(ids_ptr)?;
         let len = len?;
         if len < 0 {
@@ -2819,15 +1867,8 @@ impl crate::kernel::OcctKernel {
         self.read_vec_f64_result()
     }
 
-    pub fn pipe(
-        &mut self,
-        profile_id: ShapeHandle,
-        spine_id: ShapeHandle,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_pipe
-            .call(&mut self.store, (profile_id.0, spine_id.0))?;
+    pub fn pipe(&mut self, profile_id: ShapeHandle, spine_id: ShapeHandle) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_pipe.call(&mut self.store, (profile_id.0, spine_id.0))?;
         self.check_error("pipe")?;
         if result == 0 {
             return Err(self.read_last_error("pipe"));
@@ -2835,15 +1876,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn simple_pipe(
-        &mut self,
-        profile_id: ShapeHandle,
-        spine_id: ShapeHandle,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_simple_pipe
-            .call(&mut self.store, (profile_id.0, spine_id.0))?;
+    pub fn simple_pipe(&mut self, profile_id: ShapeHandle, spine_id: ShapeHandle) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_simple_pipe.call(&mut self.store, (profile_id.0, spine_id.0))?;
         self.check_error("simple_pipe")?;
         if result == 0 {
             return Err(self.read_last_error("simple_pipe"));
@@ -2851,21 +1885,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn revolve_vec(
-        &mut self,
-        shape_id: ShapeHandle,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        angle: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_revolve_vec
-            .call(&mut self.store, (shape_id.0, cx, cy, cz, dx, dy, dz, angle))?;
+    pub fn revolve_vec(&mut self, shape_id: ShapeHandle, cx: f64, cy: f64, cz: f64, dx: f64, dy: f64, dz: f64, angle: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_revolve_vec.call(&mut self.store, (shape_id.0, cx, cy, cz, dx, dy, dz, angle))?;
         self.check_error("revolve_vec")?;
         if result == 0 {
             return Err(self.read_last_error("revolve_vec"));
@@ -2873,24 +1894,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn loft(
-        &mut self,
-        wire_ids: &[ShapeHandle],
-        is_solid: bool,
-        ruled: bool,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn loft(&mut self, wire_ids: &[ShapeHandle], is_solid: bool, ruled: bool) -> OcctResult<ShapeHandle> {
         let wire_ids_bytes: Vec<u8> = wire_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let wire_ids_ptr = self.write_bytes(&wire_ids_bytes)?;
         let wire_ids_len = wire_ids.len() as u32;
-        let result = self.generated.fn_loft.call(
-            &mut self.store,
-            (
-                wire_ids_ptr as i32,
-                wire_ids_len as i32,
-                i32::from(is_solid),
-                i32::from(ruled),
-            ),
-        );
+        let result = self.generated.fn_loft.call(&mut self.store, (wire_ids_ptr as i32, wire_ids_len as i32, i32::from(is_solid), i32::from(ruled)));
         self.free_bytes(wire_ids_ptr)?;
         let result = result?;
         self.check_error("loft")?;
@@ -2900,28 +1908,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn loft_with_vertices(
-        &mut self,
-        wire_ids: &[ShapeHandle],
-        is_solid: bool,
-        ruled: bool,
-        start_vertex_id: ShapeHandle,
-        end_vertex_id: ShapeHandle,
-    ) -> OcctResult<ShapeHandle> {
+    pub fn loft_with_vertices(&mut self, wire_ids: &[ShapeHandle], is_solid: bool, ruled: bool, start_vertex_id: ShapeHandle, end_vertex_id: ShapeHandle) -> OcctResult<ShapeHandle> {
         let wire_ids_bytes: Vec<u8> = wire_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let wire_ids_ptr = self.write_bytes(&wire_ids_bytes)?;
         let wire_ids_len = wire_ids.len() as u32;
-        let result = self.generated.fn_loft_with_vertices.call(
-            &mut self.store,
-            (
-                wire_ids_ptr as i32,
-                wire_ids_len as i32,
-                i32::from(is_solid),
-                i32::from(ruled),
-                start_vertex_id.0,
-                end_vertex_id.0,
-            ),
-        );
+        let result = self.generated.fn_loft_with_vertices.call(&mut self.store, (wire_ids_ptr as i32, wire_ids_len as i32, i32::from(is_solid), i32::from(ruled), start_vertex_id.0, end_vertex_id.0));
         self.free_bytes(wire_ids_ptr)?;
         let result = result?;
         self.check_error("loft_with_vertices")?;
@@ -2931,16 +1922,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn sweep(
-        &mut self,
-        wire_id: ShapeHandle,
-        spine_id: ShapeHandle,
-        transition_mode: i32,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_sweep
-            .call(&mut self.store, (wire_id.0, spine_id.0, transition_mode))?;
+    pub fn sweep(&mut self, wire_id: ShapeHandle, spine_id: ShapeHandle, transition_mode: i32) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_sweep.call(&mut self.store, (wire_id.0, spine_id.0, transition_mode))?;
         self.check_error("sweep")?;
         if result == 0 {
             return Err(self.read_last_error("sweep"));
@@ -2948,22 +1931,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn sweep_pipe_shell(
-        &mut self,
-        profile_id: ShapeHandle,
-        spine_id: ShapeHandle,
-        freenet: bool,
-        smooth: bool,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_sweep_pipe_shell.call(
-            &mut self.store,
-            (
-                profile_id.0,
-                spine_id.0,
-                i32::from(freenet),
-                i32::from(smooth),
-            ),
-        )?;
+    pub fn sweep_pipe_shell(&mut self, profile_id: ShapeHandle, spine_id: ShapeHandle, freenet: bool, smooth: bool) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_sweep_pipe_shell.call(&mut self.store, (profile_id.0, spine_id.0, i32::from(freenet), i32::from(smooth)))?;
         self.check_error("sweep_pipe_shell")?;
         if result == 0 {
             return Err(self.read_last_error("sweep_pipe_shell"));
@@ -2971,28 +1940,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn sweep_oriented(
-        &mut self,
-        profile_id: ShapeHandle,
-        spine_id: ShapeHandle,
-        mode: i32,
-        up_x: f64,
-        up_y: f64,
-        up_z: f64,
-        aux_spine_id: ShapeHandle,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_sweep_oriented.call(
-            &mut self.store,
-            (
-                profile_id.0,
-                spine_id.0,
-                mode,
-                up_x,
-                up_y,
-                up_z,
-                aux_spine_id.0,
-            ),
-        )?;
+    pub fn sweep_oriented(&mut self, profile_id: ShapeHandle, spine_id: ShapeHandle, mode: i32, up_x: f64, up_y: f64, up_z: f64, aux_spine_id: ShapeHandle) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_sweep_oriented.call(&mut self.store, (profile_id.0, spine_id.0, mode, up_x, up_y, up_z, aux_spine_id.0))?;
         self.check_error("sweep_oriented")?;
         if result == 0 {
             return Err(self.read_last_error("sweep_oriented"));
@@ -3000,18 +1949,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn draft_prism(
-        &mut self,
-        shape_id: ShapeHandle,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        angle_deg: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_draft_prism
-            .call(&mut self.store, (shape_id.0, dx, dy, dz, angle_deg))?;
+    pub fn draft_prism(&mut self, shape_id: ShapeHandle, dx: f64, dy: f64, dz: f64, angle_deg: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_draft_prism.call(&mut self.store, (shape_id.0, dx, dy, dz, angle_deg))?;
         self.check_error("draft_prism")?;
         if result == 0 {
             return Err(self.read_last_error("draft_prism"));
@@ -3029,10 +1968,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn unify_same_domain(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_unify_same_domain
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_unify_same_domain.call(&mut self.store, (id.0,))?;
         self.check_error("unify_same_domain")?;
         if result == 0 {
             return Err(self.read_last_error("unify_same_domain"));
@@ -3049,10 +1985,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn heal_solid(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_solid
-            .call(&mut self.store, (id.0, tolerance))?;
+        let result = self.generated.fn_heal_solid.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_solid")?;
         if result == 0 {
             return Err(self.read_last_error("heal_solid"));
@@ -3061,10 +1994,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn heal_face(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_face
-            .call(&mut self.store, (id.0, tolerance))?;
+        let result = self.generated.fn_heal_face.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_face")?;
         if result == 0 {
             return Err(self.read_last_error("heal_face"));
@@ -3073,10 +2003,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn heal_wire(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_wire
-            .call(&mut self.store, (id.0, tolerance))?;
+        let result = self.generated.fn_heal_wire.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_wire")?;
         if result == 0 {
             return Err(self.read_last_error("heal_wire"));
@@ -3085,10 +2012,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn fix_face_orientations(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_fix_face_orientations
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_fix_face_orientations.call(&mut self.store, (id.0,))?;
         self.check_error("fix_face_orientations")?;
         if result == 0 {
             return Err(self.read_last_error("fix_face_orientations"));
@@ -3097,26 +2021,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn build_curves3d(&mut self, wire_id: ShapeHandle) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_build_curves3d
-            .call(&mut self.store, (wire_id.0,))?;
+        let result = self.generated.fn_build_curves3d.call(&mut self.store, (wire_id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("build_curves3d"));
         }
         Ok(())
     }
 
-    pub fn fix_wire_on_face(
-        &mut self,
-        wire_id: ShapeHandle,
-        face_id: ShapeHandle,
-        tolerance: f64,
-    ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_fix_wire_on_face
-            .call(&mut self.store, (wire_id.0, face_id.0, tolerance))?;
+    pub fn fix_wire_on_face(&mut self, wire_id: ShapeHandle, face_id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_fix_wire_on_face.call(&mut self.store, (wire_id.0, face_id.0, tolerance))?;
         self.check_error("fix_wire_on_face")?;
         if result == 0 {
             return Err(self.read_last_error("fix_wire_on_face"));
@@ -3125,10 +2038,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn remove_degenerate_edges(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_remove_degenerate_edges
-            .call(&mut self.store, (id.0,))?;
+        let result = self.generated.fn_remove_degenerate_edges.call(&mut self.store, (id.0,))?;
         self.check_error("remove_degenerate_edges")?;
         if result == 0 {
             return Err(self.read_last_error("remove_degenerate_edges"));
@@ -3139,10 +2049,7 @@ impl crate::kernel::OcctKernel {
     pub fn import_step(&mut self, data: &str) -> OcctResult<ShapeHandle> {
         let data_ptr = self.write_bytes(data.as_bytes())?;
         let data_len = data.len() as u32;
-        let result = self
-            .generated
-            .fn_import_step
-            .call(&mut self.store, (data_ptr as i32, data_len as i32));
+        let result = self.generated.fn_import_step.call(&mut self.store, (data_ptr as i32, data_len as i32));
         self.free_bytes(data_ptr)?;
         let result = result?;
         self.check_error("import_step")?;
@@ -3153,26 +2060,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn export_step(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_export_step
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_export_step.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("export_step"));
         }
         self.read_string_result()
     }
 
-    pub fn export_stl(
-        &mut self,
-        id: ShapeHandle,
-        linear_deflection: f64,
-        ascii: bool,
-    ) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_export_stl
-            .call(&mut self.store, (id.0, linear_deflection, i32::from(ascii)))?;
+    pub fn export_stl(&mut self, id: ShapeHandle, linear_deflection: f64, ascii: bool) -> OcctResult<String> {
+        let len = self.generated.fn_export_stl.call(&mut self.store, (id.0, linear_deflection, i32::from(ascii)))?;
         if len < 0 {
             return Err(self.read_last_error("export_stl"));
         }
@@ -3182,10 +2078,7 @@ impl crate::kernel::OcctKernel {
     pub fn import_stl(&mut self, data: &str) -> OcctResult<ShapeHandle> {
         let data_ptr = self.write_bytes(data.as_bytes())?;
         let data_len = data.len() as u32;
-        let result = self
-            .generated
-            .fn_import_stl
-            .call(&mut self.store, (data_ptr as i32, data_len as i32));
+        let result = self.generated.fn_import_stl.call(&mut self.store, (data_ptr as i32, data_len as i32));
         self.free_bytes(data_ptr)?;
         let result = result?;
         self.check_error("import_stl")?;
@@ -3206,10 +2099,7 @@ impl crate::kernel::OcctKernel {
     pub fn from_brep(&mut self, data: &str) -> OcctResult<ShapeHandle> {
         let data_ptr = self.write_bytes(data.as_bytes())?;
         let data_len = data.len() as u32;
-        let result = self
-            .generated
-            .fn_from_brep
-            .call(&mut self.store, (data_ptr as i32, data_len as i32));
+        let result = self.generated.fn_from_brep.call(&mut self.store, (data_ptr as i32, data_len as i32));
         self.free_bytes(data_ptr)?;
         let result = result?;
         self.check_error("from_brep")?;
@@ -3220,10 +2110,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn export_brep_binary(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_export_brep_binary
-            .call(&mut self.store, (id.0,))?;
+        let len = self.generated.fn_export_brep_binary.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("export_brep_binary"));
         }
@@ -3233,10 +2120,7 @@ impl crate::kernel::OcctKernel {
     pub fn import_brep_binary(&mut self, path: &str) -> OcctResult<ShapeHandle> {
         let path_ptr = self.write_bytes(path.as_bytes())?;
         let path_len = path.len() as u32;
-        let result = self
-            .generated
-            .fn_import_brep_binary
-            .call(&mut self.store, (path_ptr as i32, path_len as i32));
+        let result = self.generated.fn_import_brep_binary.call(&mut self.store, (path_ptr as i32, path_len as i32));
         self.free_bytes(path_ptr)?;
         let result = result?;
         self.check_error("import_brep_binary")?;
@@ -3246,33 +2130,11 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    pub fn translate_with_history(
-        &mut self,
-        id: ShapeHandle,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn translate_with_history(&mut self, id: ShapeHandle, dx: f64, dy: f64, dz: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_translate_with_history.call(
-            &mut self.store,
-            (
-                id.0,
-                dx,
-                dy,
-                dz,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_translate_with_history.call(&mut self.store, (id.0, dx, dy, dz, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3281,29 +2143,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn fuse_with_history(
-        &mut self,
-        a: ShapeHandle,
-        b: ShapeHandle,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn fuse_with_history(&mut self, a: ShapeHandle, b: ShapeHandle, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_fuse_with_history.call(
-            &mut self.store,
-            (
-                a.0,
-                b.0,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_fuse_with_history.call(&mut self.store, (a.0, b.0, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3312,29 +2156,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn cut_with_history(
-        &mut self,
-        a: ShapeHandle,
-        b: ShapeHandle,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn cut_with_history(&mut self, a: ShapeHandle, b: ShapeHandle, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_cut_with_history.call(
-            &mut self.store,
-            (
-                a.0,
-                b.0,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_cut_with_history.call(&mut self.store, (a.0, b.0, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3343,21 +2169,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn fillet_with_history(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_ids: &[ShapeHandle],
-        radius: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
+    pub fn fillet_with_history(&mut self, solid_id: ShapeHandle, edge_ids: &[ShapeHandle], radius: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = match self.write_bytes(&input_face_hashes_bytes) {
             Ok(ptr) => ptr,
             Err(e) => {
@@ -3366,18 +2182,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_fillet_with_history.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                edge_ids_ptr as i32,
-                edge_ids_len as i32,
-                radius,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_fillet_with_history.call(&mut self.store, (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, radius, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(edge_ids_ptr)?;
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
@@ -3387,41 +2192,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn rotate_with_history(
-        &mut self,
-        id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        angle: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn rotate_with_history(&mut self, id: ShapeHandle, px: f64, py: f64, pz: f64, dx: f64, dy: f64, dz: f64, angle: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_rotate_with_history.call(
-            &mut self.store,
-            (
-                id.0,
-                px,
-                py,
-                pz,
-                dx,
-                dy,
-                dz,
-                angle,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_rotate_with_history.call(&mut self.store, (id.0, px, py, pz, dx, dy, dz, angle, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3430,39 +2205,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn mirror_with_history(
-        &mut self,
-        id: ShapeHandle,
-        px: f64,
-        py: f64,
-        pz: f64,
-        nx: f64,
-        ny: f64,
-        nz: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn mirror_with_history(&mut self, id: ShapeHandle, px: f64, py: f64, pz: f64, nx: f64, ny: f64, nz: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_mirror_with_history.call(
-            &mut self.store,
-            (
-                id.0,
-                px,
-                py,
-                pz,
-                nx,
-                ny,
-                nz,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_mirror_with_history.call(&mut self.store, (id.0, px, py, pz, nx, ny, nz, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3471,35 +2218,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn scale_with_history(
-        &mut self,
-        id: ShapeHandle,
-        cx: f64,
-        cy: f64,
-        cz: f64,
-        factor: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn scale_with_history(&mut self, id: ShapeHandle, cx: f64, cy: f64, cz: f64, factor: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_scale_with_history.call(
-            &mut self.store,
-            (
-                id.0,
-                cx,
-                cy,
-                cz,
-                factor,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_scale_with_history.call(&mut self.store, (id.0, cx, cy, cz, factor, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3508,29 +2231,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn intersect_with_history(
-        &mut self,
-        a: ShapeHandle,
-        b: ShapeHandle,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn intersect_with_history(&mut self, a: ShapeHandle, b: ShapeHandle, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_intersect_with_history.call(
-            &mut self.store,
-            (
-                a.0,
-                b.0,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_intersect_with_history.call(&mut self.store, (a.0, b.0, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3539,21 +2244,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn chamfer_with_history(
-        &mut self,
-        solid_id: ShapeHandle,
-        edge_ids: &[ShapeHandle],
-        distance: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
+    pub fn chamfer_with_history(&mut self, solid_id: ShapeHandle, edge_ids: &[ShapeHandle], distance: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = match self.write_bytes(&input_face_hashes_bytes) {
             Ok(ptr) => ptr,
             Err(e) => {
@@ -3562,18 +2257,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_chamfer_with_history.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                edge_ids_ptr as i32,
-                edge_ids_len as i32,
-                distance,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_chamfer_with_history.call(&mut self.store, (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, distance, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(edge_ids_ptr)?;
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
@@ -3583,22 +2267,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn shell_with_history(
-        &mut self,
-        solid_id: ShapeHandle,
-        face_ids: &[ShapeHandle],
-        thickness: f64,
-        tolerance: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
+    pub fn shell_with_history(&mut self, solid_id: ShapeHandle, face_ids: &[ShapeHandle], thickness: f64, tolerance: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = match self.write_bytes(&input_face_hashes_bytes) {
             Ok(ptr) => ptr,
             Err(e) => {
@@ -3607,19 +2280,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_shell_with_history.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                face_ids_ptr as i32,
-                face_ids_len as i32,
-                thickness,
-                tolerance,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_shell_with_history.call(&mut self.store, (solid_id.0, face_ids_ptr as i32, face_ids_len as i32, thickness, tolerance, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(face_ids_ptr)?;
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
@@ -3629,31 +2290,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn offset_with_history(
-        &mut self,
-        solid_id: ShapeHandle,
-        distance: f64,
-        tolerance: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn offset_with_history(&mut self, solid_id: ShapeHandle, distance: f64, tolerance: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_offset_with_history.call(
-            &mut self.store,
-            (
-                solid_id.0,
-                distance,
-                tolerance,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_offset_with_history.call(&mut self.store, (solid_id.0, distance, tolerance, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3662,31 +2303,11 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn thicken_with_history(
-        &mut self,
-        shape_id: ShapeHandle,
-        thickness: f64,
-        tolerance: f64,
-        input_face_hashes: &[i32],
-        hash_upper_bound: i32,
-    ) -> OcctResult<EvolutionData> {
-        let input_face_hashes_bytes: Vec<u8> = input_face_hashes
-            .iter()
-            .flat_map(|v| v.to_le_bytes())
-            .collect();
+    pub fn thicken_with_history(&mut self, shape_id: ShapeHandle, thickness: f64, tolerance: f64, input_face_hashes: &[i32], hash_upper_bound: i32) -> OcctResult<EvolutionData> {
+        let input_face_hashes_bytes: Vec<u8> = input_face_hashes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = self.generated.fn_thicken_with_history.call(
-            &mut self.store,
-            (
-                shape_id.0,
-                thickness,
-                tolerance,
-                input_face_hashes_ptr as i32,
-                input_face_hashes_len as i32,
-                hash_upper_bound,
-            ),
-        );
+        let status = self.generated.fn_thicken_with_history.call(&mut self.store, (shape_id.0, thickness, tolerance, input_face_hashes_ptr as i32, input_face_hashes_len as i32, hash_upper_bound));
         self.free_bytes(input_face_hashes_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3695,72 +2316,35 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    pub fn tessellate(
-        &mut self,
-        id: ShapeHandle,
-        linear_deflection: f64,
-        angular_deflection: f64,
-    ) -> OcctResult<Mesh> {
-        let status = self.generated.fn_tessellate.call(
-            &mut self.store,
-            (id.0, linear_deflection, angular_deflection),
-        )?;
+    pub fn tessellate(&mut self, id: ShapeHandle, linear_deflection: f64, angular_deflection: f64) -> OcctResult<Mesh> {
+        let status = self.generated.fn_tessellate.call(&mut self.store, (id.0, linear_deflection, angular_deflection))?;
         if status < 0 {
             return Err(self.read_last_error("tessellate"));
         }
         self.read_mesh_result()
     }
 
-    pub fn tessellate_relative(
-        &mut self,
-        id: ShapeHandle,
-        linear_deflection: f64,
-        angular_deflection: f64,
-    ) -> OcctResult<Mesh> {
-        let status = self.generated.fn_tessellate_relative.call(
-            &mut self.store,
-            (id.0, linear_deflection, angular_deflection),
-        )?;
+    pub fn tessellate_relative(&mut self, id: ShapeHandle, linear_deflection: f64, angular_deflection: f64) -> OcctResult<Mesh> {
+        let status = self.generated.fn_tessellate_relative.call(&mut self.store, (id.0, linear_deflection, angular_deflection))?;
         if status < 0 {
             return Err(self.read_last_error("tessellate_relative"));
         }
         self.read_mesh_result()
     }
 
-    pub fn mesh_shape(
-        &mut self,
-        id: ShapeHandle,
-        linear_deflection: f64,
-        angular_deflection: f64,
-    ) -> OcctResult<Mesh> {
-        let status = self.generated.fn_mesh_shape.call(
-            &mut self.store,
-            (id.0, linear_deflection, angular_deflection),
-        )?;
+    pub fn mesh_shape(&mut self, id: ShapeHandle, linear_deflection: f64, angular_deflection: f64) -> OcctResult<Mesh> {
+        let status = self.generated.fn_mesh_shape.call(&mut self.store, (id.0, linear_deflection, angular_deflection))?;
         if status < 0 {
             return Err(self.read_last_error("mesh_shape"));
         }
         self.read_mesh_result()
     }
 
-    pub fn mesh_batch(
-        &mut self,
-        ids: &[ShapeHandle],
-        linear_deflection: f64,
-        angular_deflection: f64,
-    ) -> OcctResult<MeshBatch> {
+    pub fn mesh_batch(&mut self, ids: &[ShapeHandle], linear_deflection: f64, angular_deflection: f64) -> OcctResult<MeshBatch> {
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
-        let status = self.generated.fn_mesh_batch.call(
-            &mut self.store,
-            (
-                ids_ptr as i32,
-                ids_len as i32,
-                linear_deflection,
-                angular_deflection,
-            ),
-        );
+        let status = self.generated.fn_mesh_batch.call(&mut self.store, (ids_ptr as i32, ids_len as i32, linear_deflection, angular_deflection));
         self.free_bytes(ids_ptr)?;
         let status = status?;
         if status < 0 {
@@ -3770,46 +2354,15 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn wireframe(&mut self, id: ShapeHandle, deflection: f64) -> OcctResult<EdgeData> {
-        let status = self
-            .generated
-            .fn_wireframe
-            .call(&mut self.store, (id.0, deflection))?;
+        let status = self.generated.fn_wireframe.call(&mut self.store, (id.0, deflection))?;
         if status < 0 {
             return Err(self.read_last_error("wireframe"));
         }
         self.read_edge_result()
     }
 
-    pub fn project_edges(
-        &mut self,
-        shape_id: ShapeHandle,
-        ox: f64,
-        oy: f64,
-        oz: f64,
-        dx: f64,
-        dy: f64,
-        dz: f64,
-        xx: f64,
-        xy: f64,
-        xz: f64,
-        has_x_axis: bool,
-    ) -> OcctResult<ProjectionData> {
-        let status = self.generated.fn_project_edges.call(
-            &mut self.store,
-            (
-                shape_id.0,
-                ox,
-                oy,
-                oz,
-                dx,
-                dy,
-                dz,
-                xx,
-                xy,
-                xz,
-                i32::from(has_x_axis),
-            ),
-        )?;
+    pub fn project_edges(&mut self, shape_id: ShapeHandle, ox: f64, oy: f64, oz: f64, dx: f64, dy: f64, dz: f64, xx: f64, xy: f64, xz: f64, has_x_axis: bool) -> OcctResult<ProjectionData> {
+        let status = self.generated.fn_project_edges.call(&mut self.store, (shape_id.0, ox, oy, oz, dx, dy, dz, xx, xy, xz, i32::from(has_x_axis)))?;
         if status < 0 {
             return Err(self.read_last_error("project_edges"));
         }
@@ -3839,10 +2392,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn release_since(&mut self, mark: u32) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_release_since
-            .call(&mut self.store, (mark,))?;
+        let result = self.generated.fn_release_since.call(&mut self.store, (mark,))?;
         if result < 0 {
             return Err(self.read_last_error("release_since"));
         }
@@ -3850,19 +2400,13 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn get_shape_count(&mut self) -> OcctResult<u32> {
-        let result = self
-            .generated
-            .fn_get_shape_count
-            .call(&mut self.store, ())?;
+        let result = self.generated.fn_get_shape_count.call(&mut self.store, ())?;
         self.check_error("get_shape_count")?;
         Ok(result)
     }
 
     pub fn make_null_shape(&mut self) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_null_shape
-            .call(&mut self.store, ())?;
+        let result = self.generated.fn_make_null_shape.call(&mut self.store, ())?;
         self.check_error("make_null_shape")?;
         if result == 0 {
             return Err(self.read_last_error("make_null_shape"));
@@ -3871,98 +2415,43 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn xcaf_new_document(&mut self) -> OcctResult<u32> {
-        let result = self
-            .generated
-            .fn_xcaf_new_document
-            .call(&mut self.store, ())?;
+        let result = self.generated.fn_xcaf_new_document.call(&mut self.store, ())?;
         self.check_error("xcaf_new_document")?;
         Ok(result)
     }
 
     pub fn xcaf_close(&mut self, doc_id: ShapeHandle) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_xcaf_close
-            .call(&mut self.store, (doc_id.0,))?;
+        let result = self.generated.fn_xcaf_close.call(&mut self.store, (doc_id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("xcaf_close"));
         }
         Ok(())
     }
 
-    pub fn xcaf_add_shape(
-        &mut self,
-        doc_id: ShapeHandle,
-        shape_id: ShapeHandle,
-    ) -> OcctResult<i32> {
-        let result = self
-            .generated
-            .fn_xcaf_add_shape
-            .call(&mut self.store, (doc_id.0, shape_id.0))?;
+    pub fn xcaf_add_shape(&mut self, doc_id: ShapeHandle, shape_id: ShapeHandle) -> OcctResult<i32> {
+        let result = self.generated.fn_xcaf_add_shape.call(&mut self.store, (doc_id.0, shape_id.0))?;
         self.check_error("xcaf_add_shape")?;
         Ok(result)
     }
 
-    pub fn xcaf_add_component(
-        &mut self,
-        doc_id: ShapeHandle,
-        parent_label_id: i32,
-        shape_id: ShapeHandle,
-        tx: f64,
-        ty: f64,
-        tz: f64,
-        rx: f64,
-        ry: f64,
-        rz: f64,
-    ) -> OcctResult<i32> {
-        let result = self.generated.fn_xcaf_add_component.call(
-            &mut self.store,
-            (
-                doc_id.0,
-                parent_label_id,
-                shape_id.0,
-                tx,
-                ty,
-                tz,
-                rx,
-                ry,
-                rz,
-            ),
-        )?;
+    pub fn xcaf_add_component(&mut self, doc_id: ShapeHandle, parent_label_id: i32, shape_id: ShapeHandle, tx: f64, ty: f64, tz: f64, rx: f64, ry: f64, rz: f64) -> OcctResult<i32> {
+        let result = self.generated.fn_xcaf_add_component.call(&mut self.store, (doc_id.0, parent_label_id, shape_id.0, tx, ty, tz, rx, ry, rz))?;
         self.check_error("xcaf_add_component")?;
         Ok(result)
     }
 
-    pub fn xcaf_set_color(
-        &mut self,
-        doc_id: ShapeHandle,
-        label_id: i32,
-        r: f64,
-        g: f64,
-        b: f64,
-    ) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_xcaf_set_color
-            .call(&mut self.store, (doc_id.0, label_id, r, g, b))?;
+    pub fn xcaf_set_color(&mut self, doc_id: ShapeHandle, label_id: i32, r: f64, g: f64, b: f64) -> OcctResult<()> {
+        let result = self.generated.fn_xcaf_set_color.call(&mut self.store, (doc_id.0, label_id, r, g, b))?;
         if result < 0 {
             return Err(self.read_last_error("xcaf_set_color"));
         }
         Ok(())
     }
 
-    pub fn xcaf_set_name(
-        &mut self,
-        doc_id: ShapeHandle,
-        label_id: i32,
-        name: &str,
-    ) -> OcctResult<()> {
+    pub fn xcaf_set_name(&mut self, doc_id: ShapeHandle, label_id: i32, name: &str) -> OcctResult<()> {
         let name_ptr = self.write_bytes(name.as_bytes())?;
         let name_len = name.len() as u32;
-        let result = self.generated.fn_xcaf_set_name.call(
-            &mut self.store,
-            (doc_id.0, label_id, name_ptr as i32, name_len as i32),
-        );
+        let result = self.generated.fn_xcaf_set_name.call(&mut self.store, (doc_id.0, label_id, name_ptr as i32, name_len as i32));
         self.free_bytes(name_ptr)?;
         let result = result?;
         if result < 0 {
@@ -3971,30 +2460,16 @@ impl crate::kernel::OcctKernel {
         Ok(())
     }
 
-    pub fn xcaf_get_label_info(
-        &mut self,
-        doc_id: ShapeHandle,
-        label_id: i32,
-    ) -> OcctResult<LabelInfo> {
-        let status = self
-            .generated
-            .fn_xcaf_get_label_info
-            .call(&mut self.store, (doc_id.0, label_id))?;
+    pub fn xcaf_get_label_info(&mut self, doc_id: ShapeHandle, label_id: i32) -> OcctResult<LabelInfo> {
+        let status = self.generated.fn_xcaf_get_label_info.call(&mut self.store, (doc_id.0, label_id))?;
         if status < 0 {
             return Err(self.read_last_error("xcaf_get_label_info"));
         }
         self.read_label_info_result()
     }
 
-    pub fn xcaf_get_child_labels(
-        &mut self,
-        doc_id: ShapeHandle,
-        parent_label_id: i32,
-    ) -> OcctResult<Vec<i32>> {
-        let len = self
-            .generated
-            .fn_xcaf_get_child_labels
-            .call(&mut self.store, (doc_id.0, parent_label_id))?;
+    pub fn xcaf_get_child_labels(&mut self, doc_id: ShapeHandle, parent_label_id: i32) -> OcctResult<Vec<i32>> {
+        let len = self.generated.fn_xcaf_get_child_labels.call(&mut self.store, (doc_id.0, parent_label_id))?;
         if len < 0 {
             return Err(self.read_last_error("xcaf_get_child_labels"));
         }
@@ -4002,10 +2477,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn xcaf_get_root_labels(&mut self, doc_id: ShapeHandle) -> OcctResult<Vec<i32>> {
-        let len = self
-            .generated
-            .fn_xcaf_get_root_labels
-            .call(&mut self.store, (doc_id.0,))?;
+        let len = self.generated.fn_xcaf_get_root_labels.call(&mut self.store, (doc_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("xcaf_get_root_labels"));
         }
@@ -4013,10 +2485,7 @@ impl crate::kernel::OcctKernel {
     }
 
     pub fn xcaf_export_step(&mut self, doc_id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_xcaf_export_step
-            .call(&mut self.store, (doc_id.0,))?;
+        let len = self.generated.fn_xcaf_export_step.call(&mut self.store, (doc_id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("xcaf_export_step"));
         }
@@ -4026,26 +2495,15 @@ impl crate::kernel::OcctKernel {
     pub fn xcaf_import_step(&mut self, step_data: &str) -> OcctResult<u32> {
         let step_data_ptr = self.write_bytes(step_data.as_bytes())?;
         let step_data_len = step_data.len() as u32;
-        let result = self.generated.fn_xcaf_import_step.call(
-            &mut self.store,
-            (step_data_ptr as i32, step_data_len as i32),
-        );
+        let result = self.generated.fn_xcaf_import_step.call(&mut self.store, (step_data_ptr as i32, step_data_len as i32));
         self.free_bytes(step_data_ptr)?;
         let result = result?;
         self.check_error("xcaf_import_step")?;
         Ok(result)
     }
 
-    pub fn xcaf_export_gltf(
-        &mut self,
-        doc_id: ShapeHandle,
-        lin_deflection: f64,
-        ang_deflection: f64,
-    ) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_xcaf_export_gltf
-            .call(&mut self.store, (doc_id.0, lin_deflection, ang_deflection))?;
+    pub fn xcaf_export_gltf(&mut self, doc_id: ShapeHandle, lin_deflection: f64, ang_deflection: f64) -> OcctResult<String> {
+        let len = self.generated.fn_xcaf_export_gltf.call(&mut self.store, (doc_id.0, lin_deflection, ang_deflection))?;
         if len < 0 {
             return Err(self.read_last_error("xcaf_export_gltf"));
         }

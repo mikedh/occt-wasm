@@ -361,6 +361,52 @@ impl OcctKernel {
         })
     }
 
+    /// Fetch the rmesh `BrepModel` IR streams for a shape — the IR-native BREP
+    /// lift (see `facade/src/rmesh_brep.cpp` for the stream layout). Returns
+    /// the `(u32 topology, f64 geometry)` streams. Resolved lazily so blobs
+    /// built without the extension simply error here instead of failing to
+    /// instantiate.
+    pub fn to_brep_ir(&mut self, id: ShapeHandle) -> OcctResult<(Vec<u32>, Vec<f64>)> {
+        let run: TypedFunc<u32, i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_to_brep_ir")?;
+        let status = run.call(&mut self.store, id.0)?;
+        if status != 0 {
+            let error_ptr: TypedFunc<(), i32> = self
+                .instance
+                .get_typed_func(&mut self.store, "occt_rmesh_ir_error")?;
+            let error_len: TypedFunc<(), u32> = self
+                .instance
+                .get_typed_func(&mut self.store, "occt_rmesh_ir_error_len")?;
+            let ptr = error_ptr.call(&mut self.store, ())?;
+            let len = error_len.call(&mut self.store, ())?;
+            let bytes = self.read_bytes(ptr.cast_unsigned(), len)?;
+            return Err(OcctError::Operation {
+                operation: "to_brep_ir".to_owned(),
+                message: String::from_utf8_lossy(&bytes).into_owned(),
+            });
+        }
+        let u32_ptr: TypedFunc<(), i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_ir_u32")?;
+        let u32_len: TypedFunc<(), u32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_ir_u32_len")?;
+        let f64_ptr: TypedFunc<(), i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_ir_f64")?;
+        let f64_len: TypedFunc<(), u32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_ir_f64_len")?;
+        let topology_ptr = u32_ptr.call(&mut self.store, ())?;
+        let topology_len = u32_len.call(&mut self.store, ())?;
+        let geometry_ptr = f64_ptr.call(&mut self.store, ())?;
+        let geometry_len = f64_len.call(&mut self.store, ())?;
+        let topology = self.read_u32_slice(topology_ptr.cast_unsigned(), topology_len)?;
+        let geometry = self.read_f64_slice(geometry_ptr.cast_unsigned(), geometry_len)?;
+        Ok((topology, geometry))
+    }
+
     // === Memory helpers ===
 
     /// Write bytes into WASM linear memory via `occt_alloc`.

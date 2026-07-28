@@ -431,9 +431,12 @@ class OcctKernel {
     std::vector<uint32_t> vectorU32FromHeap(int ptr, int count);
     std::vector<int> vectorI32FromHeap(int ptr, int count);
 
-  private:
+    // Arena access for out-of-tree facade extensions (facade/src/*.cpp reached
+    // via `occt_wasi_kernel_for_extensions()`).
     uint32_t store(const TopoDS_Shape& shape);
     const TopoDS_Shape& get(uint32_t id) const;
+
+  private:
     TopoDS_Shape normalizeSolidOrientation(const TopoDS_Shape& shape);
     MeshData buildMeshData(const TopoDS_Shape& shape, double linearDeflection,
                            double angularDeflection, bool relative);
