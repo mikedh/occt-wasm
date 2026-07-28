@@ -205,13 +205,36 @@ impl OcctKernel {
         // The WASM binary uses wasm-opt --experimental-new-eh to convert
         // Emscripten's legacy exceptions to the new (exnref) encoding.
         config.wasm_exceptions(true);
+        // Epoch interruption is near-zero-cost when unused and lets a host
+        // kill a runaway kernel operation (a stuck boolean) by ticking the
+        // engine's epoch from another thread — see `set_epoch_deadline` /
+        // `engine_handle`. The store starts with an effectively-infinite
+        // deadline so hosts that never tick see no behavior change.
+        config.epoch_interruption(true);
         config
+    }
+
+    /// Arm the epoch kill switch: the current operation traps once the
+    /// engine's epoch advances `ticks_from_now` past its current value.
+    /// Pair with a thread calling [`wasmtime::Engine::increment_epoch`] on
+    /// the handle from [`OcctKernel::engine_handle`] at a fixed cadence.
+    pub fn set_epoch_deadline(&mut self, ticks_from_now: u64) {
+        self.store.set_epoch_deadline(ticks_from_now);
+    }
+
+    /// A cheap clone of the underlying wasmtime engine, for an epoch-ticker
+    /// thread. Cloning shares the engine; it does not copy compiled code.
+    pub fn engine_handle(&self) -> Engine {
+        self.store.engine().clone()
     }
 
     /// Instantiate a compiled module and initialize the OCCT runtime.
     #[allow(clippy::too_many_lines)]
     fn from_module(engine: &Engine, module: &Module) -> OcctResult<Self> {
         let mut store = Store::new(engine, ());
+        // Effectively-infinite default: epoch interruption only bites when a
+        // host arms `set_epoch_deadline` and ticks the engine.
+        store.set_epoch_deadline(u64::MAX);
         let mut linker = Linker::new(engine);
         define_host_imports(&mut linker, module)?;
         let instance = linker.instantiate(&mut store, module)?;
