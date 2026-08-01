@@ -547,6 +547,29 @@ uint32_t OcctKernel::booleanPipeline(uint32_t baseId, std::vector<int> opCodes, 
     }
 }
 
+uint32_t OcctKernel::booleanFuzzy(uint32_t a, uint32_t b, int opCode, double fuzz) {
+    try {
+        if (fuzz < 0.0) {
+            throw std::runtime_error("booleanFuzzy: fuzz must be non-negative");
+        }
+        NCollection_List<TopoDS_Shape> args, tools;
+        args.Append(get(a));
+        tools.Append(get(b));
+        TopoDS_Shape result;
+        switch (opCode) {
+        case 0: { BRepAlgoAPI_Fuse op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error("booleanFuzzy: fuse failed"); result = op.Shape(); break; }
+        case 1: { BRepAlgoAPI_Cut op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error("booleanFuzzy: cut failed"); result = op.Shape(); break; }
+        case 2: { BRepAlgoAPI_Common op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error("booleanFuzzy: intersect failed"); result = op.Shape(); break; }
+        default: throw std::runtime_error("booleanFuzzy: unknown opCode");
+        }
+        ShapeUpgrade_UnifySameDomain upgrader(result, Standard_True, Standard_True, Standard_False);
+        upgrader.Build();
+        return store(upgrader.Shape());
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("booleanFuzzy: ") + e.what());
+    }
+}
+
 uint32_t OcctKernel::split(uint32_t shapeId, std::vector<uint32_t> toolIds) {
     try {
         NCollection_List<TopoDS_Shape> args;
@@ -660,6 +683,90 @@ uint32_t OcctKernel::chamferDistAngle(uint32_t solidId, std::vector<uint32_t> ed
     }
 }
 
+uint32_t OcctKernel::reverseShape(uint32_t id) {
+    try {
+        return store(get(id).Reversed());
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("reverseShape: ") + e.what());
+    }
+}
+
+uint32_t OcctKernel::simplify(uint32_t id) {
+    try {
+        return unifySameDomain(id);
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("simplify: ") + e.what());
+    }
+}
+
+uint32_t OcctKernel::filletVariable(uint32_t solidId, uint32_t edgeId, double startRadius, double endRadius) {
+    try {
+        BRepFilletAPI_MakeFillet maker(TopoDS::Solid(get(solidId)));
+        maker.Add(startRadius, endRadius, TopoDS::Edge(get(edgeId)));
+        maker.Build();
+        if (!maker.IsDone()) {
+            throw std::runtime_error("filletVariable: operation failed");
+        }
+        return store(maker.Shape());
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("filletVariable: ") + e.what());
+    }
+}
+
+std::vector<uint32_t> OcctKernel::filletBatch(std::vector<uint32_t> solidIds, std::vector<int> edgeCounts, std::vector<uint32_t> flatEdgeIds, std::vector<double> radii) {
+    try {
+        if (solidIds.size() != edgeCounts.size() || solidIds.size() != radii.size()) {
+            throw std::runtime_error("filletBatch: solidIds, edgeCounts, and radii must have same length");
+        }
+        size_t edgeOffset = 0;
+        size_t totalEdges = 0;
+        for (size_t i = 0; i < edgeCounts.size(); i++) totalEdges += static_cast<size_t>(edgeCounts[i]);
+        if (flatEdgeIds.size() != totalEdges) {
+            throw std::runtime_error("filletBatch: flatEdgeIds length must equal sum of edgeCounts");
+        }
+        std::vector<uint32_t> results;
+        results.reserve(solidIds.size());
+        for (size_t i = 0; i < solidIds.size(); i++) {
+            BRepFilletAPI_MakeFillet maker(TopoDS::Solid(get(solidIds[i])));
+            for (int j = 0; j < edgeCounts[i]; j++) {
+                maker.Add(radii[i], TopoDS::Edge(get(flatEdgeIds[edgeOffset + j])));
+            }
+            maker.Build();
+            if (!maker.IsDone()) throw std::runtime_error("filletBatch: fillet failed on solid " + std::to_string(i));
+            results.push_back(store(maker.Shape()));
+            edgeOffset += static_cast<size_t>(edgeCounts[i]);
+        }
+        return results;
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("filletBatch: ") + e.what());
+    }
+}
+
+uint32_t OcctKernel::reverseSurfaceU(uint32_t faceId) {
+    try {
+        TopoDS_Face face = TopoDS::Face(get(faceId));
+        Handle(Geom_Surface) surf = BRep_Tool::Surface(face);
+        if (surf.IsNull()) {
+            throw std::runtime_error("reverseSurfaceU: face has no geometric surface");
+        }
+        Standard_Real u1, u2, v1, v2;
+        BRepTools::UVBounds(face, u1, u2, v1, v2);
+        Standard_Real ru1 = surf->UReversedParameter(u2);
+        Standard_Real ru2 = surf->UReversedParameter(u1);
+        Handle(Geom_Surface) reversed = Handle(Geom_Surface)::DownCast(surf->Copy());
+        reversed->UReverse();
+        BRepBuilderAPI_MakeFace mkFace(reversed, ru1, ru2, v1, v2, Precision::Confusion());
+        if (!mkFace.IsDone()) {
+            throw std::runtime_error("reverseSurfaceU: face construction failed");
+        }
+        return store(mkFace.Face());
+    } catch (const Standard_Failure& e) {
+        throw std::runtime_error(std::string("reverseSurfaceU: ") + e.what());
+    }
+}
+
+// === offsetting ===
+
 uint32_t OcctKernel::shell(uint32_t solidId, std::vector<uint32_t> faceIds, double thickness, double tolerance) {
     try {
         NCollection_List<TopoDS_Shape> facesToRemove;
@@ -750,65 +857,6 @@ uint32_t OcctKernel::defeature(uint32_t shapeId, std::vector<uint32_t> faceIds, 
     }
 }
 
-uint32_t OcctKernel::reverseShape(uint32_t id) {
-    try {
-        return store(get(id).Reversed());
-    } catch (const Standard_Failure& e) {
-        throw std::runtime_error(std::string("reverseShape: ") + e.what());
-    }
-}
-
-uint32_t OcctKernel::simplify(uint32_t id) {
-    try {
-        return unifySameDomain(id);
-    } catch (const Standard_Failure& e) {
-        throw std::runtime_error(std::string("simplify: ") + e.what());
-    }
-}
-
-uint32_t OcctKernel::filletVariable(uint32_t solidId, uint32_t edgeId, double startRadius, double endRadius) {
-    try {
-        BRepFilletAPI_MakeFillet maker(TopoDS::Solid(get(solidId)));
-        maker.Add(startRadius, endRadius, TopoDS::Edge(get(edgeId)));
-        maker.Build();
-        if (!maker.IsDone()) {
-            throw std::runtime_error("filletVariable: operation failed");
-        }
-        return store(maker.Shape());
-    } catch (const Standard_Failure& e) {
-        throw std::runtime_error(std::string("filletVariable: ") + e.what());
-    }
-}
-
-std::vector<uint32_t> OcctKernel::filletBatch(std::vector<uint32_t> solidIds, std::vector<int> edgeCounts, std::vector<uint32_t> flatEdgeIds, std::vector<double> radii) {
-    try {
-        if (solidIds.size() != edgeCounts.size() || solidIds.size() != radii.size()) {
-            throw std::runtime_error("filletBatch: solidIds, edgeCounts, and radii must have same length");
-        }
-        size_t edgeOffset = 0;
-        size_t totalEdges = 0;
-        for (size_t i = 0; i < edgeCounts.size(); i++) totalEdges += static_cast<size_t>(edgeCounts[i]);
-        if (flatEdgeIds.size() != totalEdges) {
-            throw std::runtime_error("filletBatch: flatEdgeIds length must equal sum of edgeCounts");
-        }
-        std::vector<uint32_t> results;
-        results.reserve(solidIds.size());
-        for (size_t i = 0; i < solidIds.size(); i++) {
-            BRepFilletAPI_MakeFillet maker(TopoDS::Solid(get(solidIds[i])));
-            for (int j = 0; j < edgeCounts[i]; j++) {
-                maker.Add(radii[i], TopoDS::Edge(get(flatEdgeIds[edgeOffset + j])));
-            }
-            maker.Build();
-            if (!maker.IsDone()) throw std::runtime_error("filletBatch: fillet failed on solid " + std::to_string(i));
-            results.push_back(store(maker.Shape()));
-            edgeOffset += static_cast<size_t>(edgeCounts[i]);
-        }
-        return results;
-    } catch (const Standard_Failure& e) {
-        throw std::runtime_error(std::string("filletBatch: ") + e.what());
-    }
-}
-
 uint32_t OcctKernel::offsetWire2D(uint32_t wireId, double offset, int joinType) {
     try {
         GeomAbs_JoinType jt;
@@ -825,29 +873,6 @@ uint32_t OcctKernel::offsetWire2D(uint32_t wireId, double offset, int joinType) 
         return store(maker.Shape());
     } catch (const Standard_Failure& e) {
         throw std::runtime_error(std::string("offsetWire2D: ") + e.what());
-    }
-}
-
-uint32_t OcctKernel::reverseSurfaceU(uint32_t faceId) {
-    try {
-        TopoDS_Face face = TopoDS::Face(get(faceId));
-        Handle(Geom_Surface) surf = BRep_Tool::Surface(face);
-        if (surf.IsNull()) {
-            throw std::runtime_error("reverseSurfaceU: face has no geometric surface");
-        }
-        Standard_Real u1, u2, v1, v2;
-        BRepTools::UVBounds(face, u1, u2, v1, v2);
-        Standard_Real ru1 = surf->UReversedParameter(u2);
-        Standard_Real ru2 = surf->UReversedParameter(u1);
-        Handle(Geom_Surface) reversed = Handle(Geom_Surface)::DownCast(surf->Copy());
-        reversed->UReverse();
-        BRepBuilderAPI_MakeFace mkFace(reversed, ru1, ru2, v1, v2, Precision::Confusion());
-        if (!mkFace.IsDone()) {
-            throw std::runtime_error("reverseSurfaceU: face construction failed");
-        }
-        return store(mkFace.Face());
-    } catch (const Standard_Failure& e) {
-        throw std::runtime_error(std::string("reverseSurfaceU: ") + e.what());
     }
 }
 
@@ -2961,7 +2986,7 @@ uint32_t OcctKernel::removeDegenerateEdges(uint32_t id) {
     }
 }
 
-// === io ===
+// === exchange ===
 
 uint32_t OcctKernel::importStep(const std::string& data) {
     try {
@@ -3099,6 +3124,8 @@ uint32_t OcctKernel::importStl(const std::string& data) {
         throw std::runtime_error(std::string("importStl: ") + e.what());
     }
 }
+
+// === io ===
 
 std::string OcctKernel::toBREP(uint32_t id) {
     try {

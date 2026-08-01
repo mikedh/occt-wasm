@@ -401,6 +401,46 @@ return store(current);",
         category: "booleans",
         return_type: ReturnType::ShapeId,
     },
+    // A boolean with an explicit fuzzy tolerance — OCCT's robustness lever
+    // for near-coincident/tangent arguments. The plain two-arg BRepAlgoAPI
+    // constructors build immediately, too early to set options, so this uses
+    // the default ctor + SetArguments/SetTools/SetFuzzyValue. The result gets
+    // the same UnifySameDomain refine as booleanPipeline's final step.
+    MethodSpec {
+        name: "booleanFuzzy",
+        kind: MethodKind::CustomBody,
+        params: &[
+            FacadeParam::ShapeId("a"),
+            FacadeParam::ShapeId("b"),
+            FacadeParam::Int("opCode"),
+            FacadeParam::Double("fuzz"),
+        ],
+        occt_class: "",
+        ctor_args: "",
+        setup_code: "\
+if (fuzz < 0.0) {
+    throw std::runtime_error(\"booleanFuzzy: fuzz must be non-negative\");
+}
+NCollection_List<TopoDS_Shape> args, tools;
+args.Append(get(a));
+tools.Append(get(b));
+TopoDS_Shape result;
+switch (opCode) {
+case 0: { BRepAlgoAPI_Fuse op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error(\"booleanFuzzy: fuse failed\"); result = op.Shape(); break; }
+case 1: { BRepAlgoAPI_Cut op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error(\"booleanFuzzy: cut failed\"); result = op.Shape(); break; }
+case 2: { BRepAlgoAPI_Common op; op.SetArguments(args); op.SetTools(tools); op.SetFuzzyValue(fuzz); op.Build(); if (!op.IsDone() || op.HasErrors()) throw std::runtime_error(\"booleanFuzzy: intersect failed\"); result = op.Shape(); break; }
+default: throw std::runtime_error(\"booleanFuzzy: unknown opCode\");
+}
+ShapeUpgrade_UnifySameDomain upgrader(result, Standard_True, Standard_True, Standard_False);
+upgrader.Build();
+return store(upgrader.Shape());",
+        includes: &[
+            "BRepAlgoAPI_Fuse.hxx", "BRepAlgoAPI_Cut.hxx", "BRepAlgoAPI_Common.hxx",
+            "NCollection_List.hxx", "ShapeUpgrade_UnifySameDomain.hxx",
+        ],
+        category: "booleans",
+        return_type: ReturnType::ShapeId,
+    },
     MethodSpec {
         name: "split",
         kind: MethodKind::CustomBody,
@@ -573,7 +613,7 @@ if (!maker.IsDone()) {
 }
 return store(maker.Shape());",
         includes: &["BRepOffsetAPI_MakeThickSolid.hxx", "NCollection_List.hxx"],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -595,7 +635,7 @@ if (!maker.IsDone()) {
 }
 return store(maker.Shape());",
         includes: &["BRepOffsetAPI_MakeOffsetShape.hxx"],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -618,7 +658,7 @@ if (!maker.IsDone()) {
 }
 return store(maker.Shape());",
         includes: &["BRepOffsetAPI_DraftAngle.hxx", "TopoDS.hxx", "gp_Dir.hxx", "gp_Pln.hxx"],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -654,7 +694,7 @@ return store(maker.Shape());",
             "BRepOffsetAPI_MakeThickSolid.hxx", "NCollection_List.hxx",
             "GeomAbs_JoinType.hxx",
         ],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -679,7 +719,7 @@ if (!maker.IsDone()) {
 }
 return store(maker.Shape());",
         includes: &["BRepOffsetAPI_MakeThickSolid.hxx", "NCollection_List.hxx"],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -786,7 +826,7 @@ if (!maker.IsDone()) {
 }
 return store(maker.Shape());",
         includes: &["BRepOffsetAPI_MakeOffset.hxx", "GeomAbs_JoinType.hxx", "TopoDS.hxx"],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     // ── Transforms ────────────────────────────────────────────────
@@ -3561,7 +3601,7 @@ return store(drafter.Shape());",
             "TopExp_Explorer.hxx", "TopoDS.hxx",
             "gp_Dir.hxx", "gp_Pln.hxx", "gp_Pnt.hxx", "gp_Vec.hxx",
         ],
-        category: "modeling",
+        category: "offsetting",
         return_type: ReturnType::ShapeId,
     },
     // ── Healing ──────────────────────────────────────────────────
@@ -3742,7 +3782,7 @@ if (reader.NbShapes() == 0) {
 
 return store(reader.OneShape());",
         includes: &["IFSelect_ReturnStatus.hxx", "STEPControl_Reader.hxx"],
-        category: "io",
+        category: "exchange",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -3794,7 +3834,7 @@ return result;",
             "IFSelect_ReturnStatus.hxx", "STEPControl_Writer.hxx",
             "STEPControl_StepModelType.hxx", "ShapeProcess.hxx",
         ],
-        category: "io",
+        category: "exchange",
         return_type: ReturnType::String,
     },
     MethodSpec {
@@ -3833,7 +3873,7 @@ fclose(f);
 
 return result;",
         includes: &["BRepMesh_IncrementalMesh.hxx", "StlAPI_Writer.hxx"],
-        category: "io",
+        category: "exchange",
         return_type: ReturnType::String,
     },
     MethodSpec {
@@ -3866,7 +3906,7 @@ if (shape.IsNull()) {
 
 return store(shape);",
         includes: &["StlAPI_Reader.hxx"],
-        category: "io",
+        category: "exchange",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -5206,19 +5246,115 @@ pub fn target_methods() -> &'static [MethodSpec] {
     TARGET_METHODS
 }
 
+/// The closed set of valid spec categories. `validate` rejects a spec whose
+/// category is not listed here, so a typo'd category is a codegen error rather
+/// than a silently new group.
+pub const CATEGORIES: &[&str] = &[
+    "booleans",
+    "construction",
+    "curve",
+    "evolution",
+    "exchange",
+    "healing",
+    "io",
+    "kernel",
+    "marshal",
+    "modeling",
+    "offsetting",
+    "primitives",
+    "projection",
+    "query",
+    "sweep",
+    "tessellate",
+    "topology",
+    "transforms",
+    "xcaf",
+];
+
+/// Categories excluded from the `--minimal` WASI profile (`cargo xtask
+/// build-wasi --minimal`). The minimal export root set is derived as "every
+/// export the WASI emitter produces for the specs NOT in these categories",
+/// so wasm-ld's dead-code elimination drops the OCCT subsystems behind them.
+/// The Rust host binds these specs' wrappers lazily and returns
+/// [`OcctError::MissingCapability`] when the export is absent — which is what
+/// keeps a minimal blob instantiable.
+///
+/// The minimal profile is the construction-op surface: sketch lowering
+/// (edges/wires/faces), extrude/revolve, fillet/chamfer, booleans + their
+/// reliability ladder (healing stays core for the validate→fix recovery
+/// rung), transforms, tessellation, and topology walks (fillet/chamfer are
+/// unusable without sub-shape enumeration, and face/edge picking needs them
+/// too). Everything else — exchange formats, XCAF, HLR, offset-family
+/// modeling, primitives, queries, curve authoring, history evolution,
+/// sweeps, BREP io — is optional.
+pub const OPTIONAL_CATEGORIES: &[&str] = &[
+    "curve",
+    "evolution",
+    "exchange",
+    "io",
+    "offsetting",
+    "primitives",
+    "projection",
+    "query",
+    "sweep",
+    "xcaf",
+];
+
+/// Individual specs excluded from the `--minimal` profile although their
+/// category stays core: heavyweight-toolkit rooters that basic construction
+/// never needs (`makeNonPlanarFace` → BRepOffsetAPI_MakeFilling/TKOffset,
+/// `bsplineSurface` → GeomAPI_PointsToBSplineSurface/TKGeomAlgo). Validated
+/// against the spec list, so a typo or a renamed spec is a codegen error.
+pub const OPTIONAL_SPECS: &[&str] = &["makeNonPlanarFace", "bsplineSurface"];
+
+/// Whether a spec is excluded from the `--minimal` profile — the ONE
+/// predicate shared by the Rust emitter (lazy `Option` bindings), the WASI
+/// export derivation, and validation, so "every eagerly-bound export exists
+/// in a minimal blob" holds by construction.
+pub fn spec_is_optional(spec: &MethodSpec) -> bool {
+    OPTIONAL_CATEGORIES.contains(&spec.category) || OPTIONAL_SPECS.contains(&spec.name)
+}
+
 /// Validate the method specs before emission, returning a descriptive error
 /// instead of panicking. Run as a fail-fast pass at the start of codegen so a
 /// malformed hand-edited spec is rejected up front rather than producing broken
 /// C++/Rust that only fails much later at the em++/cargo build.
 pub fn validate(methods: &[MethodSpec]) -> Result<()> {
+    for c in OPTIONAL_CATEGORIES {
+        if !CATEGORIES.contains(c) {
+            bail!("OPTIONAL_CATEGORIES entry '{c}' is not in CATEGORIES");
+        }
+        // The kernel lifecycle and the marshal helpers are load-bearing for
+        // every profile; they can never be optional.
+        if *c == "kernel" || *c == "marshal" {
+            bail!("category '{c}' cannot be optional");
+        }
+    }
+    for name in OPTIONAL_SPECS {
+        let Some(spec) = methods.iter().find(|m| m.name == *name) else {
+            bail!("OPTIONAL_SPECS entry '{name}' names no spec (typo or renamed?)");
+        };
+        if spec.category == "kernel" || spec.category == "marshal" {
+            bail!(
+                "OPTIONAL_SPECS entry '{name}' is in load-bearing category '{}'",
+                spec.category
+            );
+        }
+        if OPTIONAL_CATEGORIES.contains(&spec.category) {
+            bail!(
+                "OPTIONAL_SPECS entry '{name}' is already optional via category '{}'",
+                spec.category
+            );
+        }
+    }
     let mut seen = std::collections::HashSet::new();
     for m in methods {
         if !seen.insert(m.name) {
             bail!("duplicate method name: '{}'", m.name);
         }
-        if m.category != m.category.to_ascii_lowercase() {
+        if !CATEGORIES.contains(&m.category) {
             bail!(
-                "method '{}' has non-lowercase category '{}'",
+                "method '{}' has unknown category '{}' (add it to CATEGORIES?)",
                 m.name,
                 m.category
             );
@@ -5277,7 +5413,7 @@ mod tests {
             ctor_args: "",
             setup_code: "return 0;",
             includes: &[],
-            category: "test",
+            category: "kernel",
         }
     }
 
@@ -5296,9 +5432,11 @@ mod tests {
     }
 
     #[test]
-    fn validate_rejects_non_lowercase_category() {
+    fn validate_rejects_unknown_category() {
         let mut spec = sample("x");
-        spec.category = "Primitives";
+        spec.category = "Primitives"; // case matters: not in CATEGORIES
+        assert!(validate(&[spec]).is_err());
+        spec.category = "no-such-category";
         assert!(validate(&[spec]).is_err());
     }
 

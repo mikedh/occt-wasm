@@ -19,6 +19,12 @@ pub enum OcctError {
     /// A memory access or data conversion error.
     #[error("memory error: {0}")]
     Memory(String),
+
+    /// The operation needs an export this kernel build omits. The `--minimal`
+    /// profile strips the optional capability categories (STEP/STL exchange,
+    /// XCAF, HLR projection); load the full kernel module to enable them.
+    #[error("`{0}` is not available in this kernel build (missing capability)")]
+    MissingCapability(&'static str),
 }
 
 /// Convenience alias for `Result<T, OcctError>`.

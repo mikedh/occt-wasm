@@ -1,0 +1,91 @@
+name: rmesh minimal kernel
+
+# Fork-only workflow (mikedh/occt-wasm): builds the --minimal WASI kernel,
+# verifies the committed blob is fresh AND actually instantiates through the
+# crate, then publishes it to the rolling `rmesh-kernel-v1` release that
+# rmesh's `make fetch-kernel` downloads. The upstream workflows stay in-tree
+# but are disabled server-side (`gh workflow disable`) to keep the fork diff
+# additive-only.
+
+on:
+  push:
+    branches: [rmesh-minimal]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rmesh-minimal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: minimal build + stale-check + load-verify
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/andymai/occt-wasm-builder:latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Link pre-built OCCT libs from builder image
+        run: |
+          cp -r /workspace/occt/build occt/build
+          cp -r /workspace/3rdparty 3rdparty
+
+      - name: Snapshot committed minimal blob
+        run: cp dist/occt-wasm-minimal.wasm.br /tmp/committed-minimal.wasm.br
+
+      - name: Build minimal WASI WASM
+        run: cargo xtask build-wasi --release --minimal
+
+      - name: Stale-check vs. committed minimal blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          if cmp -s /tmp/committed-minimal.wasm.br dist/occt-wasm-minimal.wasm.br; then
+            echo "dist/occt-wasm-minimal.wasm.br is up to date."
+          else
+            echo "::error file=dist/occt-wasm-minimal.wasm.br::Committed bytes diverge from the rebuild. Regenerate locally with: cargo xtask build-wasi --release --minimal && git add dist/occt-wasm-minimal.wasm.br."
+            exit 1
+          fi
+
+      - name: Load-verify through the crate
+        # The real contract check: the blob instantiates (every eagerly-bound
+        # export exists), core ops + facade extensions work, and optional
+        # capabilities fail with MissingCapability. See crate/tests/minimal.rs.
+        run: cargo test --release -p occt-wasm --test minimal
+
+      - name: Upload minimal blob
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: occt-wasm-minimal.wasm.br
+          path: dist/occt-wasm-minimal.wasm.br
+          retention-days: 14
+
+  publish:
+    name: publish to rmesh-kernel-v1
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: occt-wasm-minimal.wasm.br
+
+      - name: Upload release asset (rolling)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view rmesh-kernel-v1 -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create rmesh-kernel-v1 -R "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" --latest=false \
+              --title "rmesh minimal kernel (rolling)" \
+              --notes "Rolling minimal WASI kernel consumed by rmesh's make fetch-kernel. Asset is overwritten by each green push to rmesh-minimal."
+          gh release upload rmesh-kernel-v1 occt-wasm-minimal.wasm.br \
+            -R "$GITHUB_REPOSITORY" --clobber

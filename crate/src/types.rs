@@ -16,6 +16,16 @@ impl ShapeHandle {
     pub const fn id(self) -> u32 {
         self.0
     }
+
+    /// Wraps a raw arena ID returned by a sub-shape query
+    /// (e.g. [`get_sub_shapes`](crate::OcctKernel::get_sub_shapes)) so it can
+    /// be passed back into operations like
+    /// [`fillet`](crate::OcctKernel::fillet). The ID is not validated here; a
+    /// stale or invented ID surfaces as an arena error from the kernel.
+    #[must_use]
+    pub const fn from_raw(id: u32) -> Self {
+        Self(id)
+    }
 }
 
 /// A 3D vector or point.
