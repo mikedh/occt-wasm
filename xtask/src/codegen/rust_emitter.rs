@@ -6,8 +6,19 @@
 
 use std::fmt::Write as _;
 
+use super::config;
 use super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
 use super::wasi_emitter::camel_to_snake;
+
+/// Whether a spec's wrapper binds lazily: optional exports are absent from
+/// `--minimal` kernel builds, so their `TypedFunc` handles are `Option`s
+/// resolved with `.ok()` and their methods return
+/// `OcctError::MissingCapability` instead of failing instantiation. Delegates
+/// to the one shared predicate so this emitter can never disagree with the
+/// export-set derivation.
+fn is_optional(spec: &MethodSpec) -> bool {
+    config::spec_is_optional(spec)
+}
 
 /// Convert a `FacadeParam` to a Rust function parameter declaration.
 fn param_to_rust(param: &FacadeParam) -> String {
@@ -298,10 +309,33 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         format!("&mut self, {rust_params}")
     };
 
+    if is_optional(spec) {
+        let _ = writeln!(
+            buf,
+            "    /// Requires the `{}` capability; minimal kernel builds return",
+            spec.category
+        );
+        let _ = writeln!(buf, "    /// [`OcctError::MissingCapability`].");
+    }
     let _ = writeln!(
         buf,
         "    pub fn {snake_name}({params_str}) -> {rust_ret} {{"
     );
+
+    // Optional-capability guard: resolve the handle (cloned — TypedFunc is
+    // Clone, and an owned handle keeps `self` unborrowed for the setup code)
+    // before any guest allocation so nothing leaks on the error path.
+    if is_optional(spec) {
+        let _ = writeln!(
+            buf,
+            "        let Some(func) = self.generated.fn_{snake_name}.clone() else {{"
+        );
+        let _ = writeln!(
+            buf,
+            "            return Err(OcctError::MissingCapability(\"{snake_name}\"));"
+        );
+        let _ = writeln!(buf, "        }};");
+    }
 
     // Setup: write complex params to WASM memory
     emit_wasm_call_setup(buf, spec.params);
@@ -316,7 +350,13 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         format!("({call_args})")
     };
 
-    let fn_field = format!("generated.fn_{snake_name}");
+    // Core specs call through the eagerly-bound field; optional specs call
+    // the local resolved by the capability guard above.
+    let receiver = if is_optional(spec) {
+        "func".to_owned()
+    } else {
+        format!("self.generated.fn_{snake_name}")
+    };
     let has_heap_params = !heap_param_names(spec.params).is_empty();
 
     // For methods with heap-allocated params, capture the call result without `?`
@@ -329,7 +369,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
     let emit_struct_result = |buf: &mut String, reader: &str| {
         let _ = writeln!(
             buf,
-            "        let status = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+            "        let status = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
         );
         if has_heap_params {
             emit_wasm_call_cleanup(buf, spec.params);
@@ -349,7 +389,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::ShapeId => {
             let _ = writeln!(
                 buf,
-                "        let result = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let result = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -367,7 +407,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::Uint32 | ReturnType::Double | ReturnType::Int => {
             let _ = writeln!(
                 buf,
-                "        let result = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let result = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -379,7 +419,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::Bool => {
             let _ = writeln!(
                 buf,
-                "        let result = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let result = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -396,7 +436,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::Void => {
             let _ = writeln!(
                 buf,
-                "        let result = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let result = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -413,7 +453,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::String => {
             let _ = writeln!(
                 buf,
-                "        let len = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let len = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -430,7 +470,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::VectorUint32 => {
             let _ = writeln!(
                 buf,
-                "        let len = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let len = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -447,7 +487,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::VectorDouble => {
             let _ = writeln!(
                 buf,
-                "        let len = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let len = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -464,7 +504,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         ReturnType::VectorInt => {
             let _ = writeln!(
                 buf,
-                "        let len = self.{fn_field}.call(&mut self.store, {call_tuple}){call_suffix};"
+                "        let len = {receiver}.call(&mut self.store, {call_tuple}){call_suffix};"
             );
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
@@ -499,20 +539,30 @@ fn emit_func_fields(buf: &mut String, methods: &[&MethodSpec]) {
         }
         let snake_name = camel_to_snake(spec.name);
         let func_type = wasm_typed_func_type(spec);
-        let _ = writeln!(buf, "    fn_{snake_name}: {func_type},");
+        if is_optional(spec) {
+            let _ = writeln!(buf, "    fn_{snake_name}: Option<{func_type}>,");
+        } else {
+            let _ = writeln!(buf, "    fn_{snake_name}: {func_type},");
+        }
     }
 }
 
 /// Generate the function lookup code for initialization.
+///
+/// Core specs bind with `?` — a missing export is an instantiation error.
+/// Optional specs bind with `.ok()` so a `--minimal` blob (which strips
+/// their categories) still instantiates; their wrappers surface
+/// `OcctError::MissingCapability` at call time instead.
 fn emit_func_lookups(buf: &mut String, methods: &[&MethodSpec]) {
     for spec in methods {
         if matches!(spec.kind, MethodKind::Skip) {
             continue;
         }
         let snake_name = camel_to_snake(spec.name);
+        let resolver = if is_optional(spec) { ".ok()" } else { "?" };
         let _ = writeln!(
             buf,
-            "            fn_{snake_name}: instance.get_typed_func(&mut store, \"occt_{snake_name}\")?,",
+            "            fn_{snake_name}: instance.get_typed_func(&mut store, \"occt_{snake_name}\"){resolver},",
         );
     }
 }
@@ -538,7 +588,7 @@ pub fn emit_rust_host(methods: &[&MethodSpec]) -> String {
     let _ = writeln!(buf);
     let _ = writeln!(buf, "use wasmtime::TypedFunc;");
     let _ = writeln!(buf);
-    let _ = writeln!(buf, "use crate::error::OcctResult;");
+    let _ = writeln!(buf, "use crate::error::{{OcctError, OcctResult}};");
     let _ = writeln!(buf, "use crate::types::{{");
     let _ = writeln!(
         buf,
@@ -630,7 +680,7 @@ mod tests {
         ctor_args: "dx, dy, dz",
         setup_code: "",
         includes: &[],
-        category: "primitives",
+        category: "construction",
     };
 
     static FUSE: MethodSpec = MethodSpec {
@@ -728,7 +778,7 @@ mod tests {
             ctor_args: "",
             setup_code: "return computeBBox(get(id), useTri);",
             includes: &[],
-            category: "query",
+            category: "healing",
         };
         let output = emit_rust_host(&[&GET_BBOX]);
         assert!(output.contains(
@@ -737,5 +787,48 @@ mod tests {
         assert!(output.contains("let status = self.generated.fn_get_bounding_box.call"));
         assert!(output.contains("if status < 0 {"));
         assert!(output.contains("self.read_bbox_result()"));
+    }
+
+    #[test]
+    fn optional_category_method_binds_lazily() {
+        static XCAF_NEW: MethodSpec = MethodSpec {
+            name: "xcafNewDocument",
+            kind: MethodKind::CustomBody,
+            params: &[],
+            return_type: ReturnType::Uint32,
+            occt_class: "",
+            ctor_args: "",
+            setup_code: "return 0;",
+            includes: &[],
+            category: "xcaf",
+        };
+        // A core spec keeps the eager shape — declared up front so both
+        // fixtures are items at the top of the scope.
+        static IS_VALID: MethodSpec = MethodSpec {
+            name: "isValid",
+            kind: MethodKind::CustomBody,
+            params: &[FacadeParam::ShapeId("id")],
+            return_type: ReturnType::Bool,
+            occt_class: "",
+            ctor_args: "",
+            setup_code: "return 1;",
+            includes: &[],
+            category: "healing",
+        };
+
+        let output = emit_rust_host(&[&XCAF_NEW]);
+        // Option field, `.ok()` lookup, and the capability guard.
+        assert!(output.contains("fn_xcaf_new_document: Option<TypedFunc<(), u32>>,"));
+        assert!(output.contains("get_typed_func(&mut store, \"occt_xcaf_new_document\").ok(),"));
+        assert!(
+            output.contains("let Some(func) = self.generated.fn_xcaf_new_document.clone() else {")
+        );
+        assert!(output.contains("OcctError::MissingCapability(\"xcaf_new_document\")"));
+        assert!(output.contains("let result = func.call(&mut self.store, ())"));
+
+        let output = emit_rust_host(&[&IS_VALID]);
+        assert!(output.contains("fn_is_valid: TypedFunc<(u32,), i32>,"));
+        assert!(output.contains("get_typed_func(&mut store, \"occt_is_valid\")?,"));
+        assert!(!output.contains("MissingCapability"));
     }
 }

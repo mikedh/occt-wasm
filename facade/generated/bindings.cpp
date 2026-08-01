@@ -124,6 +124,7 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("intersectionCells", &OcctKernel::intersectionCells)
         .function("cutAll", &OcctKernel::cutAll)
         .function("booleanPipeline", &OcctKernel::booleanPipeline)
+        .function("booleanFuzzy", &OcctKernel::booleanFuzzy)
         .function("split", &OcctKernel::split)
 
         // modeling
@@ -132,17 +133,19 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("fillet", &OcctKernel::fillet)
         .function("chamfer", &OcctKernel::chamfer)
         .function("chamferDistAngle", &OcctKernel::chamferDistAngle)
+        .function("reverseShape", &OcctKernel::reverseShape)
+        .function("simplify", &OcctKernel::simplify)
+        .function("filletVariable", &OcctKernel::filletVariable)
+        .function("filletBatch", &OcctKernel::filletBatch)
+        .function("reverseSurfaceU", &OcctKernel::reverseSurfaceU)
+
+        // offsetting
         .function("shell", &OcctKernel::shell)
         .function("offset", &OcctKernel::offset)
         .function("draft", &OcctKernel::draft)
         .function("thicken", &OcctKernel::thicken)
         .function("defeature", &OcctKernel::defeature)
-        .function("reverseShape", &OcctKernel::reverseShape)
-        .function("simplify", &OcctKernel::simplify)
-        .function("filletVariable", &OcctKernel::filletVariable)
-        .function("filletBatch", &OcctKernel::filletBatch)
         .function("offsetWire2D", &OcctKernel::offsetWire2D)
-        .function("reverseSurfaceU", &OcctKernel::reverseSurfaceU)
         .function("draftPrism", &OcctKernel::draftPrism)
 
         // transforms
@@ -194,6 +197,7 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         // topology
         .function("getShapeType", &OcctKernel::getShapeType)
         .function("getSubShapes", &OcctKernel::getSubShapes)
+        .function("nonDegenerateEdges", &OcctKernel::nonDegenerateEdges)
         .function("subShapeCount", &OcctKernel::subShapeCount)
         .function("subShapeHashes", &OcctKernel::subShapeHashes)
         .function("distanceBetween", &OcctKernel::distanceBetween)
@@ -265,6 +269,7 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("fixShape", &OcctKernel::fixShape)
         .function("unifySameDomain", &OcctKernel::unifySameDomain)
         .function("isValid", &OcctKernel::isValid)
+        .function("checkShape", &OcctKernel::checkShape)
         .function("healSolid", &OcctKernel::healSolid)
         .function("healFace", &OcctKernel::healFace)
         .function("healWire", &OcctKernel::healWire)
@@ -273,11 +278,13 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("fixWireOnFace", &OcctKernel::fixWireOnFace)
         .function("removeDegenerateEdges", &OcctKernel::removeDegenerateEdges)
 
-        // io
+        // exchange
         .function("importStep", &OcctKernel::importStep)
         .function("exportStep", &OcctKernel::exportStep)
         .function("exportStl", &OcctKernel::exportStl)
         .function("importStl", &OcctKernel::importStl)
+
+        // io
         .function("toBREP", &OcctKernel::toBREP)
         .function("fromBREP", &OcctKernel::fromBREP)
         .function("exportBrepBinary", &OcctKernel::exportBrepBinary)
