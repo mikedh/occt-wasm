@@ -61,3 +61,6 @@ pub mod types;
 pub use error::{OcctError, OcctResult};
 pub use kernel::OcctKernel;
 pub use types::*;
+/// Re-exported for embedding hosts that wire epoch tickers or precompilation
+/// against [`OcctKernel::engine_handle`] — one wasmtime version, sourced here.
+pub use wasmtime;

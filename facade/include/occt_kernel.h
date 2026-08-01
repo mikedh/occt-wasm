@@ -239,6 +239,7 @@ class OcctKernel {
     std::vector<uint32_t> translateBatch(std::vector<uint32_t> ids, std::vector<double> offsets);
     uint32_t booleanPipeline(uint32_t baseId, std::vector<int> opCodes,
                              std::vector<uint32_t> toolIds);
+    uint32_t booleanFuzzy(uint32_t a, uint32_t b, int opCode, double fuzz);
     std::vector<double> queryBatch(std::vector<uint32_t> ids);
     std::vector<uint32_t> filletBatch(std::vector<uint32_t> solidIds, std::vector<int> edgeCounts,
                                       std::vector<uint32_t> flatEdgeIds, std::vector<double> radii);
@@ -416,6 +417,7 @@ class OcctKernel {
     uint32_t fixShape(uint32_t id);
     uint32_t unifySameDomain(uint32_t id);
     bool isValid(uint32_t id);
+    bool checkShape(uint32_t id);
     uint32_t healSolid(uint32_t id, double tolerance);
     uint32_t healFace(uint32_t id, double tolerance);
     uint32_t healWire(uint32_t id, double tolerance);
@@ -431,9 +433,12 @@ class OcctKernel {
     std::vector<uint32_t> vectorU32FromHeap(int ptr, int count);
     std::vector<int> vectorI32FromHeap(int ptr, int count);
 
-  private:
+    // Arena access for out-of-tree facade extensions (facade/src/*.cpp reached
+    // via `occt_wasi_kernel_for_extensions()`).
     uint32_t store(const TopoDS_Shape& shape);
     const TopoDS_Shape& get(uint32_t id) const;
+
+  private:
     TopoDS_Shape normalizeSolidOrientation(const TopoDS_Shape& shape);
     MeshData buildMeshData(const TopoDS_Shape& shape, double linearDeflection,
                            double angularDeflection, bool relative);
