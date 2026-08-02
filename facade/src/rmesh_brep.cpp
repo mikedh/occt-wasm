@@ -13,7 +13,9 @@
 //
 // Stream layout (sequential cursors; six-count header first):
 //   u32: [n_vertices, n_edges, n_loops, n_faces, n_shells, n_solids]
-//        edges:  per edge:  [start_vertex, end_vertex, curve_kind]
+//        edges:  per edge:  [start_vertex, end_vertex, curve_kind, extra*]
+//                           extra is EMPTY except for curve_kind 3 (bspline),
+//                           which appends [degree, n_poles, n_knots, rational]
 //        loops:  per loop:  [kind(0=edges,1=vertex),
 //                            n_edges|vertex_idx, (edge_idx, same_sense)*]
 //        faces:  per face:  [surface_kind, same_sense, outer_loop,
@@ -25,17 +27,27 @@
 //          line   (kind 0): origin(3) unit_direction(3)
 //          circle (kind 1): center(3) axis(3) x_axis(3) radius
 //          ellipse(kind 2): center(3) axis(3) x_axis(3) major minor
+//          bspline(kind 3): poles(3*n_poles) knots(n_knots, FLAT/expanded)
+//                           weights(n_poles, only when rational)
 //        per face: surface payload
 //          plane   (kind 0): origin(3) normal(3)
 //          cylinder(kind 1): origin(3) axis(3) radius
 //          cone    (kind 2): apex(3) axis(3) half_angle
 //          sphere  (kind 3): center(3) radius
 //          torus   (kind 4): center(3) axis(3) major minor
+//
+// A face's `same_sense` is the face orientation folded together with the
+// SURFACE FRAME'S HANDEDNESS — see admit_face. Both sides of the seam agree
+// that the surface payload describes a right-handed frame.
 
 #include "occt_kernel.h"
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <Geom_BSplineCurve.hxx>
+#include <Geom_BezierCurve.hxx>
+#include <GeomConvert.hxx>
+#include <NCollection_Array1.hxx>
 #include <BRepClass3d.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
@@ -156,6 +168,10 @@ struct IrBuilder {
         std::vector<double> payload;
         payload.push_back(curve.FirstParameter());
         payload.push_back(curve.LastParameter());
+        // Extra u32 words appended after `kind`. Empty for every analytic
+        // curve; a spline needs its counts up front because its f64 payload is
+        // variable-length and the streams carry no length prefix.
+        std::vector<uint32_t> extra;
         switch (curve.GetType()) {
             case GeomAbs_Line: {
                 kind = 0;
@@ -183,14 +199,64 @@ struct IrBuilder {
                 payload.push_back(ellipse.MinorRadius());
                 break;
             }
+            case GeomAbs_BezierCurve:
+            case GeomAbs_BSplineCurve: {
+                kind = 3;
+                // The common case the moment anyone fillets a CURVED edge: a
+                // blend surface's boundary is a spline, so without this the
+                // whole result was unliftable. A Bezier is lifted as the
+                // B-spline it already is, so downstream carries one
+                // representation instead of two.
+                Handle(Geom_BSplineCurve) spline =
+                    curve.GetType() == GeomAbs_BezierCurve
+                        ? GeomConvert::CurveToBSplineCurve(curve.Bezier())
+                        : curve.BSpline();
+                if (spline.IsNull()) {
+                    throw std::runtime_error(
+                        "edge reports a spline curve but carries none");
+                }
+                // rmesh's `BrepBSplineCurve` has no periodic flag and its
+                // evaluator assumes a clamped knot vector, so unwrap
+                // periodicity here rather than inventing an IR field. On a
+                // COPY — the handle is shared with the shape we were handed,
+                // and mutating that would corrupt the caller's solid.
+                if (spline->IsPeriodic()) {
+                    spline = Handle(Geom_BSplineCurve)::DownCast(spline->Copy());
+                    spline->SetNotPeriodic();
+                }
+                const int n_poles = spline->NbPoles();
+                // The FLAT knot sequence, not the (value, multiplicity) pair:
+                // rmesh stores knots expanded, with
+                // len == n_poles + degree + 1.
+                const NCollection_Array1<double>& knots = spline->KnotSequence();
+                const bool rational = spline->IsRational();
+                extra.push_back(static_cast<uint32_t>(spline->Degree()));
+                extra.push_back(static_cast<uint32_t>(n_poles));
+                extra.push_back(static_cast<uint32_t>(knots.Length()));
+                extra.push_back(rational ? 1u : 0u);
+                for (int i = 1; i <= n_poles; ++i) {
+                    push_pnt(payload, spline->Pole(i));
+                }
+                for (int i = knots.Lower(); i <= knots.Upper(); ++i) {
+                    payload.push_back(knots.Value(i));
+                }
+                if (rational) {
+                    for (int i = 1; i <= n_poles; ++i) {
+                        payload.push_back(spline->Weight(i));
+                    }
+                }
+                break;
+            }
             default:
                 throw std::runtime_error(
-                    "curve kind not liftable yet (line/circle/ellipse only)");
+                    "curve kind not liftable yet "
+                    "(line/circle/ellipse/bspline only)");
         }
         slot = static_cast<int32_t>(edge_count++);
         edge_u32.push_back(start_vertex);
         edge_u32.push_back(end_vertex);
         edge_u32.push_back(kind);
+        edge_u32.insert(edge_u32.end(), extra.begin(), extra.end());
         edge_f64.insert(edge_f64.end(), payload.begin(), payload.end());
         return static_cast<uint32_t>(slot);
     }
@@ -242,10 +308,30 @@ struct IrBuilder {
         BRepAdaptor_Surface surface(face);
         uint32_t surface_kind = 0;
         std::vector<double> payload;
+        // Whether the surface's own frame is RIGHT-handed.
+        //
+        // Every payload below carries a location and (at most) a main axis —
+        // never the gp_Ax3's XDirection — so rmesh rebuilds a right-handed
+        // frame from it (`SurfaceCylinder::new` and friends derive their own
+        // basis). For a surface on an INDIRECT gp_Ax3 that is the MIRROR of
+        // the kernel's frame: dP/du x dP/dv points the other way, so the
+        // surface normal rmesh computes is backwards, and the face's
+        // `same_sense` then reads inverted. Cavity walls — a pocket, a bore —
+        // are where OCCT hands back indirect frames, so every one of them had
+        // its shading normals inside out.
+        //
+        // Folding the handedness into `same_sense` fixes it without widening
+        // the wire: `same_sense` already means "does the face agree with the
+        // surface's normal", and the surface rmesh will build is the
+        // right-handed one, so that is the sense we must report against.
+        // Sphere needs no axis for this — its normal is radial from the
+        // centre, which no frame can flip.
+        bool direct_frame = true;
         switch (surface.GetType()) {
             case GeomAbs_Plane: {
                 surface_kind = 0;
                 const gp_Pln plane = surface.Plane();
+                direct_frame = plane.Position().Direct();
                 push_pnt(payload, plane.Location());
                 push_dir(payload, plane.Axis().Direction());
                 break;
@@ -253,6 +339,7 @@ struct IrBuilder {
             case GeomAbs_Cylinder: {
                 surface_kind = 1;
                 const gp_Cylinder cylinder = surface.Cylinder();
+                direct_frame = cylinder.Position().Direct();
                 push_pnt(payload, cylinder.Location());
                 push_dir(payload, cylinder.Axis().Direction());
                 payload.push_back(cylinder.Radius());
@@ -261,6 +348,7 @@ struct IrBuilder {
             case GeomAbs_Cone: {
                 surface_kind = 2;
                 const gp_Cone cone = surface.Cone();
+                direct_frame = cone.Position().Direct();
                 push_pnt(payload, cone.Apex());
                 push_dir(payload, cone.Axis().Direction());
                 payload.push_back(cone.SemiAngle());
@@ -269,6 +357,7 @@ struct IrBuilder {
             case GeomAbs_Sphere: {
                 surface_kind = 3;
                 const gp_Sphere sphere = surface.Sphere();
+                direct_frame = sphere.Position().Direct();
                 push_pnt(payload, sphere.Location());
                 payload.push_back(sphere.Radius());
                 break;
@@ -276,6 +365,7 @@ struct IrBuilder {
             case GeomAbs_Torus: {
                 surface_kind = 4;
                 const gp_Torus torus = surface.Torus();
+                direct_frame = torus.Position().Direct();
                 push_pnt(payload, torus.Location());
                 push_dir(payload, torus.Axis().Direction());
                 payload.push_back(torus.MajorRadius());
@@ -303,7 +393,9 @@ struct IrBuilder {
         }
         slot = static_cast<int32_t>(face_count++);
         face_u32.push_back(surface_kind);
-        face_u32.push_back(face.Orientation() == TopAbs_FORWARD ? 1 : 0);
+        // Orientation XOR mirrored-frame — see `direct_frame` above.
+        const bool forward = face.Orientation() == TopAbs_FORWARD;
+        face_u32.push_back(forward == direct_frame ? 1 : 0);
         face_u32.push_back(outer_loop);
         face_u32.push_back(static_cast<uint32_t>(inner_loops.size()));
         face_u32.insert(face_u32.end(), inner_loops.begin(), inner_loops.end());

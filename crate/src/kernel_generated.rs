@@ -188,20 +188,18 @@ pub(crate) struct GeneratedFuncs {
     fn_from_brep: Option<TypedFunc<(i32, i32), u32>>,
     fn_export_brep_binary: Option<TypedFunc<(u32,), i32>>,
     fn_import_brep_binary: Option<TypedFunc<(i32, i32), u32>>,
-    fn_translate_with_history: Option<TypedFunc<(u32, f64, f64, f64, i32, i32, i32), i32>>,
-    fn_fuse_with_history: Option<TypedFunc<(u32, u32, i32, i32, i32), i32>>,
-    fn_cut_with_history: Option<TypedFunc<(u32, u32, i32, i32, i32), i32>>,
-    fn_fillet_with_history: Option<TypedFunc<(u32, i32, i32, f64, i32, i32, i32), i32>>,
-    fn_rotate_with_history:
-        Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64, i32, i32, i32), i32>>,
-    fn_mirror_with_history:
-        Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64, i32, i32, i32), i32>>,
-    fn_scale_with_history: Option<TypedFunc<(u32, f64, f64, f64, f64, i32, i32, i32), i32>>,
-    fn_intersect_with_history: Option<TypedFunc<(u32, u32, i32, i32, i32), i32>>,
-    fn_chamfer_with_history: Option<TypedFunc<(u32, i32, i32, f64, i32, i32, i32), i32>>,
-    fn_shell_with_history: Option<TypedFunc<(u32, i32, i32, f64, f64, i32, i32, i32), i32>>,
-    fn_offset_with_history: Option<TypedFunc<(u32, f64, f64, i32, i32, i32), i32>>,
-    fn_thicken_with_history: Option<TypedFunc<(u32, f64, f64, i32, i32, i32), i32>>,
+    fn_translate_with_history: TypedFunc<(u32, f64, f64, f64, i32, i32, i32), i32>,
+    fn_fuse_with_history: TypedFunc<(u32, u32, i32, i32, i32), i32>,
+    fn_cut_with_history: TypedFunc<(u32, u32, i32, i32, i32), i32>,
+    fn_fillet_with_history: TypedFunc<(u32, i32, i32, f64, i32, i32, i32), i32>,
+    fn_rotate_with_history: TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64, i32, i32, i32), i32>,
+    fn_mirror_with_history: TypedFunc<(u32, f64, f64, f64, f64, f64, f64, i32, i32, i32), i32>,
+    fn_scale_with_history: TypedFunc<(u32, f64, f64, f64, f64, i32, i32, i32), i32>,
+    fn_intersect_with_history: TypedFunc<(u32, u32, i32, i32, i32), i32>,
+    fn_chamfer_with_history: TypedFunc<(u32, i32, i32, f64, i32, i32, i32), i32>,
+    fn_shell_with_history: TypedFunc<(u32, i32, i32, f64, f64, i32, i32, i32), i32>,
+    fn_offset_with_history: TypedFunc<(u32, f64, f64, i32, i32, i32), i32>,
+    fn_thicken_with_history: TypedFunc<(u32, f64, f64, i32, i32, i32), i32>,
     fn_tessellate: TypedFunc<(u32, f64, f64), i32>,
     fn_tessellate_relative: TypedFunc<(u32, f64, f64), i32>,
     fn_mesh_shape: TypedFunc<(u32, f64, f64), i32>,
@@ -493,41 +491,27 @@ impl GeneratedFuncs {
                 .get_typed_func(&mut store, "occt_import_brep_binary")
                 .ok(),
             fn_translate_with_history: instance
-                .get_typed_func(&mut store, "occt_translate_with_history")
-                .ok(),
-            fn_fuse_with_history: instance
-                .get_typed_func(&mut store, "occt_fuse_with_history")
-                .ok(),
-            fn_cut_with_history: instance
-                .get_typed_func(&mut store, "occt_cut_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_translate_with_history")?,
+            fn_fuse_with_history: instance.get_typed_func(&mut store, "occt_fuse_with_history")?,
+            fn_cut_with_history: instance.get_typed_func(&mut store, "occt_cut_with_history")?,
             fn_fillet_with_history: instance
-                .get_typed_func(&mut store, "occt_fillet_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_fillet_with_history")?,
             fn_rotate_with_history: instance
-                .get_typed_func(&mut store, "occt_rotate_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_rotate_with_history")?,
             fn_mirror_with_history: instance
-                .get_typed_func(&mut store, "occt_mirror_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_mirror_with_history")?,
             fn_scale_with_history: instance
-                .get_typed_func(&mut store, "occt_scale_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_scale_with_history")?,
             fn_intersect_with_history: instance
-                .get_typed_func(&mut store, "occt_intersect_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_intersect_with_history")?,
             fn_chamfer_with_history: instance
-                .get_typed_func(&mut store, "occt_chamfer_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_chamfer_with_history")?,
             fn_shell_with_history: instance
-                .get_typed_func(&mut store, "occt_shell_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_shell_with_history")?,
             fn_offset_with_history: instance
-                .get_typed_func(&mut store, "occt_offset_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_offset_with_history")?,
             fn_thicken_with_history: instance
-                .get_typed_func(&mut store, "occt_thicken_with_history")
-                .ok(),
+                .get_typed_func(&mut store, "occt_thicken_with_history")?,
             fn_tessellate: instance.get_typed_func(&mut store, "occt_tessellate")?,
             fn_tessellate_relative: instance
                 .get_typed_func(&mut store, "occt_tessellate_relative")?,
@@ -3585,8 +3569,6 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn translate_with_history(
         &mut self,
         id: ShapeHandle,
@@ -3596,16 +3578,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_translate_with_history.clone() else {
-            return Err(OcctError::MissingCapability("translate_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_translate_with_history.call(
             &mut self.store,
             (
                 id.0,
@@ -3625,8 +3604,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn fuse_with_history(
         &mut self,
         a: ShapeHandle,
@@ -3634,16 +3611,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_fuse_with_history.clone() else {
-            return Err(OcctError::MissingCapability("fuse_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_fuse_with_history.call(
             &mut self.store,
             (
                 a.0,
@@ -3661,8 +3635,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn cut_with_history(
         &mut self,
         a: ShapeHandle,
@@ -3670,16 +3642,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_cut_with_history.clone() else {
-            return Err(OcctError::MissingCapability("cut_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_cut_with_history.call(
             &mut self.store,
             (
                 a.0,
@@ -3697,8 +3666,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn fillet_with_history(
         &mut self,
         solid_id: ShapeHandle,
@@ -3707,9 +3674,6 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_fillet_with_history.clone() else {
-            return Err(OcctError::MissingCapability("fillet_with_history"));
-        };
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
@@ -3725,7 +3689,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_fillet_with_history.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -3746,8 +3710,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn rotate_with_history(
         &mut self,
         id: ShapeHandle,
@@ -3761,16 +3723,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_rotate_with_history.clone() else {
-            return Err(OcctError::MissingCapability("rotate_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_rotate_with_history.call(
             &mut self.store,
             (
                 id.0,
@@ -3794,8 +3753,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn mirror_with_history(
         &mut self,
         id: ShapeHandle,
@@ -3808,16 +3765,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_mirror_with_history.clone() else {
-            return Err(OcctError::MissingCapability("mirror_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_mirror_with_history.call(
             &mut self.store,
             (
                 id.0,
@@ -3840,8 +3794,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn scale_with_history(
         &mut self,
         id: ShapeHandle,
@@ -3852,16 +3804,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_scale_with_history.clone() else {
-            return Err(OcctError::MissingCapability("scale_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_scale_with_history.call(
             &mut self.store,
             (
                 id.0,
@@ -3882,8 +3831,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn intersect_with_history(
         &mut self,
         a: ShapeHandle,
@@ -3891,16 +3838,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_intersect_with_history.clone() else {
-            return Err(OcctError::MissingCapability("intersect_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_intersect_with_history.call(
             &mut self.store,
             (
                 a.0,
@@ -3918,8 +3862,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn chamfer_with_history(
         &mut self,
         solid_id: ShapeHandle,
@@ -3928,9 +3870,6 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_chamfer_with_history.clone() else {
-            return Err(OcctError::MissingCapability("chamfer_with_history"));
-        };
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
@@ -3946,7 +3885,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_chamfer_with_history.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -3967,8 +3906,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn shell_with_history(
         &mut self,
         solid_id: ShapeHandle,
@@ -3978,9 +3915,6 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_shell_with_history.clone() else {
-            return Err(OcctError::MissingCapability("shell_with_history"));
-        };
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
@@ -3996,7 +3930,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_shell_with_history.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -4018,8 +3952,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn offset_with_history(
         &mut self,
         solid_id: ShapeHandle,
@@ -4028,16 +3960,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_offset_with_history.clone() else {
-            return Err(OcctError::MissingCapability("offset_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_offset_with_history.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -4056,8 +3985,6 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
-    /// Requires the `evolution` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn thicken_with_history(
         &mut self,
         shape_id: ShapeHandle,
@@ -4066,16 +3993,13 @@ impl crate::kernel::OcctKernel {
         input_face_hashes: &[i32],
         hash_upper_bound: i32,
     ) -> OcctResult<EvolutionData> {
-        let Some(func) = self.generated.fn_thicken_with_history.clone() else {
-            return Err(OcctError::MissingCapability("thicken_with_history"));
-        };
         let input_face_hashes_bytes: Vec<u8> = input_face_hashes
             .iter()
             .flat_map(|v| v.to_le_bytes())
             .collect();
         let input_face_hashes_ptr = self.write_bytes(&input_face_hashes_bytes)?;
         let input_face_hashes_len = input_face_hashes.len() as u32;
-        let status = func.call(
+        let status = self.generated.fn_thicken_with_history.call(
             &mut self.store,
             (
                 shape_id.0,

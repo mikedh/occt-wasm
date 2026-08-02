@@ -5344,11 +5344,18 @@ pub const CATEGORIES: &[&str] = &[
 /// rung), transforms, tessellation, and topology walks (fillet/chamfer are
 /// unusable without sub-shape enumeration, and face/edge picking needs them
 /// too). Everything else — exchange formats, XCAF, HLR, offset-family
-/// modeling, primitives, queries, curve authoring, history evolution,
-/// sweeps, BREP io — is optional.
+/// modeling, primitives, queries, curve authoring, sweeps, BREP io — is
+/// optional.
+///
+/// `evolution` is deliberately CORE. The `*WithHistory` builders are what
+/// answer "which input face produced this output face", and a stable name for
+/// a face — a fillet that survives its part being resized — cannot be derived
+/// from geometry alone. That is a construction-op concern, not an
+/// exchange-format one, so it belongs in the profile the app ships. It is also
+/// nearly free: fillet, chamfer, transform and the booleans are already core,
+/// so the incremental link is the offset family the history variants share.
 pub const OPTIONAL_CATEGORIES: &[&str] = &[
     "curve",
-    "evolution",
     "exchange",
     "io",
     "offsetting",

@@ -161,10 +161,6 @@ fn minimal_blob_reports_missing_capabilities() {
     missing(kernel.get_volume(solid).map(drop), "query");
     missing(kernel.offset(solid, 1.0, 1e-4).map(drop), "offsetting");
     missing(kernel.curve_length(solid).map(drop), "curve");
-    missing(
-        kernel.fuse_with_history(solid, solid, &[], 0).map(drop),
-        "evolution",
-    );
     missing(kernel.to_brep(solid).map(drop), "io");
     missing(kernel.import_step("not step data").map(drop), "exchange");
     missing(
@@ -174,4 +170,33 @@ fn minimal_blob_reports_missing_capabilities() {
         "projection",
     );
     missing(kernel.xcaf_new_document().map(drop), "xcaf");
+
+    // `evolution` is deliberately NOT on this list — see the assertion below.
+}
+
+/// The history builders ARE present on the minimal blob.
+///
+/// `evolution` used to be optional and this test asserted `fuse_with_history`
+/// came back `MissingCapability`. It moved into the core profile because a
+/// stable NAME for a face — the fillet that survives its part being resized —
+/// cannot be derived from geometry alone, and naming is a construction-op
+/// concern rather than an exchange-format one. So the probe inverts: the
+/// capability must be reachable, and the assertion below is what would catch
+/// `evolution` silently sliding back onto the optional list.
+#[test]
+fn minimal_blob_carries_the_history_builders() {
+    let Some(bytes) = try_minimal_bytes() else {
+        return;
+    };
+    let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
+    let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
+    let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);
+
+    // Whether THIS fuse reports any evolution is the kernel's business; the
+    // claim here is only that the export exists to be called.
+    let outcome = kernel.fuse_with_history(a, b, &[], 0);
+    assert!(
+        !matches!(outcome, Err(OcctError::MissingCapability(_))),
+        "fuse_with_history must be present in the minimal profile, got {outcome:?}"
+    );
 }
