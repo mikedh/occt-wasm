@@ -5347,15 +5347,28 @@ pub const CATEGORIES: &[&str] = &[
 /// modeling, primitives, queries, curve authoring, sweeps, BREP io — is
 /// optional.
 ///
-/// `evolution` is deliberately CORE. The `*WithHistory` builders are what
-/// answer "which input face produced this output face", and a stable name for
-/// a face — a fillet that survives its part being resized — cannot be derived
-/// from geometry alone. That is a construction-op concern, not an
-/// exchange-format one, so it belongs in the profile the app ships. It is also
-/// nearly free: fillet, chamfer, transform and the booleans are already core,
-/// so the incremental link is the offset family the history variants share.
+/// `evolution` is OPTIONAL, and that reverses an earlier decision on its own
+/// reasoning rather than against it.
+///
+/// It was made core because the `*WithHistory` builders answer "which input
+/// face produced this output face", and a stable name for a face cannot be
+/// derived from geometry alone — a construction-op concern, so it belonged in
+/// the profile the app ships. That argument still holds. It just no longer
+/// points here: `facade/src/rmesh_history.cpp` answers the same question, for
+/// edges as well as faces, keyed by index instead of by a `TShape` hash taken
+/// modulo an i32. Hand-written facade files are exported in every profile, so
+/// the capability the rationale was defending is core unconditionally.
+///
+/// What remains behind `evolution` is twelve builders no rmesh code calls, each
+/// taking `inputFaceHashes`. Keeping them core would link them — and, because
+/// `shellWithHistory` / `offsetWithHistory` / `thickenWithHistory` root
+/// `BRepOffsetAPI_*`, would drag the whole offset family back into a profile
+/// that lists `offsetting` as optional two lines below. They stay in the spec
+/// list for the npm package, which is upstream's to own; they simply stop being
+/// linked into the minimal blob.
 pub const OPTIONAL_CATEGORIES: &[&str] = &[
     "curve",
+    "evolution",
     "exchange",
     "io",
     "offsetting",

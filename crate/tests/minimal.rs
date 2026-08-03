@@ -274,17 +274,23 @@ fn minimal_blob_reports_index_keyed_history() {
     );
 }
 
-/// The history builders ARE present on the minimal blob.
+/// The HASH-KEYED history builders are absent from the minimal blob, while the
+/// capability they were kept for is present.
 ///
-/// `evolution` used to be optional and this test asserted `fuse_with_history`
-/// came back `MissingCapability`. It moved into the core profile because a
-/// stable NAME for a face — the fillet that survives its part being resized —
-/// cannot be derived from geometry alone, and naming is a construction-op
-/// concern rather than an exchange-format one. So the probe inverts: the
-/// capability must be reachable, and the assertion below is what would catch
-/// `evolution` silently sliding back onto the optional list.
+/// This assertion has now been written in both directions, and the reason is
+/// worth keeping. `evolution` was optional; it was made core because a stable
+/// NAME for a face cannot be derived from geometry alone, and naming is a
+/// construction-op concern. That argument was right and is unchanged — it just
+/// stopped pointing at these builders once `rmesh_history.cpp` answered the same
+/// question by index, for edges too, and in every profile.
+///
+/// So what is asserted is the pair: the twelve hash-keyed builders are gone from
+/// the blob the app ships, and provenance is still reachable. Asserting only the
+/// first would let the capability regress silently; asserting only the second
+/// would let twelve dead exports (and the offset family they root) creep back
+/// in.
 #[test]
-fn minimal_blob_carries_the_history_builders() {
+fn the_minimal_blob_drops_the_hash_keyed_builders_but_keeps_provenance() {
     let Some(bytes) = try_minimal_bytes() else {
         return;
     };
@@ -292,11 +298,16 @@ fn minimal_blob_carries_the_history_builders() {
     let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);
 
-    // Whether THIS fuse reports any evolution is the kernel's business; the
-    // claim here is only that the export exists to be called.
     let outcome = kernel.fuse_with_history(a, b, &[], 0);
     assert!(
-        !matches!(outcome, Err(OcctError::MissingCapability(_))),
-        "fuse_with_history must be present in the minimal profile, got {outcome:?}"
+        matches!(outcome, Err(OcctError::MissingCapability(_))),
+        "the hash-keyed builders must be optional, got {outcome:?}"
     );
+
+    // ...and the thing they were kept core for still works.
+    let reported = kernel
+        .history_boolean(a, b, 0, -1.0, true)
+        .expect("index-keyed provenance is core in every profile");
+    assert_ne!(reported.result_id, 0);
+    assert!(reported.stream.len() >= 5);
 }
