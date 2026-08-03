@@ -115,6 +115,24 @@ pub struct EvolutionData {
     pub deleted: Vec<i32>,
 }
 
+/// Per-operation provenance, index-keyed to rmesh's own sub-shape enumeration.
+///
+/// The raw stream is handed over undecoded on purpose. Its layout is documented
+/// in `facade/src/rmesh_history.cpp`, and the embedding that defines the
+/// enumeration is also the one that gives the relations meaning — so decoding
+/// belongs there, in one tested place, rather than being split across the seam.
+/// This crate's job here is the memory read and nothing else.
+///
+/// Unlike [`EvolutionData`], no value in this stream is a hash: every index is a
+/// position in `TopExp::MapShapes` order (minus degenerate edges, for edges).
+#[derive(Debug, Clone)]
+pub struct ShapeHistoryData {
+    /// The result shape handle ID.
+    pub result_id: u32,
+    /// The relation stream, header included.
+    pub stream: Vec<u32>,
+}
+
 /// Hidden line removal projection result.
 #[derive(Debug, Clone)]
 pub struct ProjectionData {

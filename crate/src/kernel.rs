@@ -9,7 +9,7 @@ use crate::error::{OcctError, OcctResult};
 use crate::kernel_generated::GeneratedFuncs;
 use crate::types::{
     BoundingBox, EdgeData, EvolutionData, LabelInfo, Mesh, MeshBatch, NurbsCurveData,
-    ProjectionData, ShapeHandle, Vec3,
+    ProjectionData, ShapeHandle, ShapeHistoryData, Vec3,
 };
 
 /// Brotli-compressed WASM binary, embedded at compile time.
@@ -567,6 +567,89 @@ impl OcctKernel {
         let topology = self.read_u32_slice(topology_ptr.cast_unsigned(), topology_len)?;
         let geometry = self.read_f64_slice(geometry_ptr.cast_unsigned(), geometry_len)?;
         Ok((topology, geometry))
+    }
+
+    /// Boolean with provenance — `op_code` 0=fuse, 1=cut, 2=common, matching
+    /// `boolean_pipeline`/`boolean_fuzzy`. A negative `fuzz` means "no fuzzy
+    /// value". `simplify` runs OCCT's own `SimplifyResult`, which unifies
+    /// same-domain faces AND merges the unifier's history into the operation's
+    /// — the reason a refined boolean can report provenance at all.
+    pub fn history_boolean(
+        &mut self,
+        a: ShapeHandle,
+        b: ShapeHandle,
+        op_code: u32,
+        fuzz: f64,
+        simplify: bool,
+    ) -> OcctResult<ShapeHistoryData> {
+        let run: TypedFunc<(u32, u32, u32, f64, u32), i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_history_boolean")?;
+        let status = run.call(
+            &mut self.store,
+            (a.0, b.0, op_code, fuzz, u32::from(simplify)),
+        )?;
+        self.read_history_result(status, "history_boolean")
+    }
+
+    /// Fillet (`kind` 0) or chamfer (`kind` 1) with provenance.
+    pub fn history_blend(
+        &mut self,
+        solid: ShapeHandle,
+        edges: &[ShapeHandle],
+        param: f64,
+        kind: u32,
+    ) -> OcctResult<ShapeHistoryData> {
+        let raw: Vec<u32> = edges.iter().map(|edge| edge.0).collect();
+        let bytes: Vec<u8> = raw.iter().flat_map(|value| value.to_le_bytes()).collect();
+        let ptr = self.write_bytes(&bytes)?;
+        let run: TypedFunc<(u32, u32, u32, f64, u32), i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_history_blend")?;
+        let status = run.call(
+            &mut self.store,
+            (solid.0, ptr, raw.len() as u32, param, kind),
+        );
+        self.free_bytes(ptr)?;
+        self.read_history_result(status?, "history_blend")
+    }
+
+    /// Shared tail of the two history entry points: turn a status code into
+    /// either the published stream or the published error message.
+    fn read_history_result(
+        &mut self,
+        status: i32,
+        operation: &str,
+    ) -> OcctResult<ShapeHistoryData> {
+        if status != 0 {
+            let error_ptr: TypedFunc<(), i32> = self
+                .instance
+                .get_typed_func(&mut self.store, "occt_rmesh_history_error")?;
+            let error_len: TypedFunc<(), u32> = self
+                .instance
+                .get_typed_func(&mut self.store, "occt_rmesh_history_error_len")?;
+            let ptr = error_ptr.call(&mut self.store, ())?;
+            let len = error_len.call(&mut self.store, ())?;
+            let bytes = self.read_bytes(ptr.cast_unsigned(), len)?;
+            return Err(OcctError::Operation {
+                operation: operation.to_owned(),
+                message: String::from_utf8_lossy(&bytes).into_owned(),
+            });
+        }
+        let result: TypedFunc<(), u32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_history_result")?;
+        let stream_ptr: TypedFunc<(), i32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_history_u32")?;
+        let stream_len: TypedFunc<(), u32> = self
+            .instance
+            .get_typed_func(&mut self.store, "occt_rmesh_history_u32_len")?;
+        let result_id = result.call(&mut self.store, ())?;
+        let ptr = stream_ptr.call(&mut self.store, ())?;
+        let len = stream_len.call(&mut self.store, ())?;
+        let stream = self.read_u32_slice(ptr.cast_unsigned(), len)?;
+        Ok(ShapeHistoryData { result_id, stream })
     }
 
     // === Memory helpers ===
