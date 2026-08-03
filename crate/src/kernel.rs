@@ -690,6 +690,17 @@ impl OcctKernel {
         Ok((ptr.cast_unsigned(), len))
     }
 
+    /// Whether the loaded module exports `name`.
+    ///
+    /// The module is supplied at runtime, so an embedding that hard-depends on a
+    /// facade extension has no other way to find out except by calling it and
+    /// failing. Checking up front lets that embedding say which symbol is
+    /// missing instead of surfacing as an unrelated operation error.
+    #[must_use]
+    pub fn exports(&mut self, name: &str) -> bool {
+        self.instance.get_export(&mut self.store, name).is_some()
+    }
+
     // === Memory helpers ===
     // === Memory helpers ===
 
