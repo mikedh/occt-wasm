@@ -201,8 +201,14 @@ impl NurbsFns {
     }
 }
 
-/// Evolution (history-tracking) accessors — exported only by blobs built
-/// with the `evolution` capability.
+/// Evolution (history-tracking) accessors.
+///
+/// Still an `Option` on the kernel, though `evolution` moved into the CORE
+/// profile — so every blob this crate can instantiate exports these, and the
+/// `MissingCapability("with_history")` arm below is unreachable in practice.
+/// Kept rather than unwrapped because the readers are resolved as a group and
+/// an older blob would simply lack them; making it infallible would trade a
+/// clear error for a panic on exactly that input.
 #[derive(Clone)]
 pub(crate) struct EvoFns {
     result_id: TypedFunc<(), u32>,
