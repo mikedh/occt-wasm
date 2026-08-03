@@ -615,22 +615,20 @@ impl OcctKernel {
     }
 
     /// Shared tail of the two history entry points: turn a status code into
-    /// either the published stream or the published error message.
+    /// either the published channels or the published error message.
+    ///
+    /// Seven `read_u32_channel` calls and nothing else. There is no parsing here
+    /// because there is no format — each export returns one flat array whose
+    /// meaning is its name, so a channel that went missing is a
+    /// `get_typed_func` failure naming the symbol, not a misread of a shared
+    /// layout.
     fn read_history_result(
         &mut self,
         status: i32,
         operation: &str,
     ) -> OcctResult<ShapeHistoryData> {
         if status != 0 {
-            let error_ptr: TypedFunc<(), i32> = self
-                .instance
-                .get_typed_func(&mut self.store, "occt_rmesh_history_error")?;
-            let error_len: TypedFunc<(), u32> = self
-                .instance
-                .get_typed_func(&mut self.store, "occt_rmesh_history_error_len")?;
-            let ptr = error_ptr.call(&mut self.store, ())?;
-            let len = error_len.call(&mut self.store, ())?;
-            let bytes = self.read_bytes(ptr.cast_unsigned(), len)?;
+            let bytes = self.read_u8_channel("occt_rmesh_history_error")?;
             return Err(OcctError::Operation {
                 operation: operation.to_owned(),
                 message: String::from_utf8_lossy(&bytes).into_owned(),
@@ -639,19 +637,60 @@ impl OcctKernel {
         let result: TypedFunc<(), u32> = self
             .instance
             .get_typed_func(&mut self.store, "occt_rmesh_history_result")?;
-        let stream_ptr: TypedFunc<(), i32> = self
-            .instance
-            .get_typed_func(&mut self.store, "occt_rmesh_history_u32")?;
-        let stream_len: TypedFunc<(), u32> = self
-            .instance
-            .get_typed_func(&mut self.store, "occt_rmesh_history_u32_len")?;
         let result_id = result.call(&mut self.store, ())?;
-        let ptr = stream_ptr.call(&mut self.store, ())?;
-        let len = stream_len.call(&mut self.store, ())?;
-        let stream = self.read_u32_slice(ptr.cast_unsigned(), len)?;
-        Ok(ShapeHistoryData { result_id, stream })
+
+        let counts = self.read_u32_channel("occt_rmesh_history_counts")?;
+        // The kernel writes exactly four counts. Anything else means this build
+        // and the module disagree about the shape of the seam, which is a
+        // deployment fault rather than a geometry one.
+        let [input_faces, result_faces, input_edges, result_edges] =
+            <[u32; 4]>::try_from(counts.as_slice()).map_err(|_| OcctError::Operation {
+                operation: operation.to_owned(),
+                message: format!(
+                    "the kernel reported {} history counts, expected 4 — the module \
+                     and this build disagree about the seam",
+                    counts.len()
+                ),
+            })?;
+
+        Ok(ShapeHistoryData {
+            result_id,
+            input_faces,
+            result_faces,
+            input_edges,
+            result_edges,
+            modified_faces: self.read_u32_channel("occt_rmesh_history_modified_faces")?,
+            generated_faces: self.read_u32_channel("occt_rmesh_history_generated_faces")?,
+            modified_edges: self.read_u32_channel("occt_rmesh_history_modified_edges")?,
+            generated_edges: self.read_u32_channel("occt_rmesh_history_generated_edges")?,
+            faces_from_edges: self.read_u32_channel("occt_rmesh_history_faces_from_edges")?,
+            edges_from_faces: self.read_u32_channel("occt_rmesh_history_edges_from_faces")?,
+        })
     }
 
+    /// Read one `(ptr, len)` accessor pair by name.
+    fn read_u32_channel(&mut self, name: &str) -> OcctResult<Vec<u32>> {
+        let (ptr, len) = self.channel_bounds(name)?;
+        self.read_u32_slice(ptr, len)
+    }
+
+    /// The same, for a `std::string` payload.
+    fn read_u8_channel(&mut self, name: &str) -> OcctResult<Vec<u8>> {
+        let (ptr, len) = self.channel_bounds(name)?;
+        self.read_bytes(ptr, len)
+    }
+
+    fn channel_bounds(&mut self, name: &str) -> OcctResult<(u32, u32)> {
+        let data: TypedFunc<(), i32> = self.instance.get_typed_func(&mut self.store, name)?;
+        let length: TypedFunc<(), u32> = self
+            .instance
+            .get_typed_func(&mut self.store, &format!("{name}_len"))?;
+        let ptr = data.call(&mut self.store, ())?;
+        let len = length.call(&mut self.store, ())?;
+        Ok((ptr.cast_unsigned(), len))
+    }
+
+    // === Memory helpers ===
     // === Memory helpers ===
 
     /// Write bytes into WASM linear memory via `occt_alloc`.

@@ -178,45 +178,75 @@ fn minimal_blob_reports_missing_capabilities() {
 /// ships.
 ///
 /// This is the smoke test for `facade/src/rmesh_history.cpp`. It asserts the
-/// stream's SHAPE, not its content — the embedding that defines the enumeration
-/// is the one that gives the relations meaning, so the semantics are pinned in
-/// rmesh. What is pinned here is that the export exists in a minimal blob, that
-/// the header describes the two shapes it claims to, and that every record fits
-/// inside the stream — i.e. that the counts and the payload agree, which a
-/// truncation or an off-by-one in the emitter breaks.
-fn check_stream(stream: &[u32], label: &str) -> u32 {
-    assert!(
-        stream.len() >= 5,
-        "{label}: stream must carry its five-word header, got {}",
-        stream.len()
-    );
-    let records = stream[4];
-    let mut at = 5;
-    let mut seen = 0;
-    while at < stream.len() {
-        assert!(
-            at + 5 <= stream.len(),
-            "{label}: record {seen} header runs off the end at {at}"
-        );
-        let source_kind = stream[at];
-        let relation = stream[at + 2];
-        let result_kind = stream[at + 3];
-        let count = stream[at + 4] as usize;
-        assert!(source_kind <= 1 && result_kind <= 1, "{label}: bad kind");
-        assert!(relation <= 2, "{label}: bad relation {relation}");
-        assert!(
-            (relation == 2) == (count == 0),
-            "{label}: removal is exactly the empty record"
-        );
-        at += 5 + count;
-        assert!(at <= stream.len(), "{label}: record {seen} results overrun");
-        seen += 1;
-    }
+/// SHAPE of the six claim channels, not their content — the embedding that
+/// defines the enumeration is the one that gives the relations meaning, so the
+/// semantics are pinned in rmesh.
+///
+/// There is no framing to validate any more. The predecessor of this test walked
+/// a record stream checking headers, per-record lengths and a declared record
+/// count; all of that went away with the format. What is left is the only thing
+/// a flat pair-array can get wrong: an odd length, or an index outside the
+/// counts.
+fn check_channel(pairs: &[u32], sources: u32, results: u32, label: &str) {
     assert_eq!(
-        seen, records as usize,
-        "{label}: header claims {records} records, stream holds {seen}"
+        pairs.len() % 2,
+        0,
+        "{label}: {} entries is not a whole number of (source, result) pairs",
+        pairs.len()
     );
-    records
+    for pair in pairs.chunks_exact(2) {
+        assert!(
+            pair[0] < sources,
+            "{label}: source {} but the input has {sources}",
+            pair[0]
+        );
+        assert!(
+            pair[1] < results,
+            "{label}: result {} but the result has {results}",
+            pair[1]
+        );
+    }
+}
+
+fn check_history(history: &occt_wasm::ShapeHistoryData, label: &str) {
+    let (in_f, out_f) = (history.input_faces, history.result_faces);
+    let (in_e, out_e) = (history.input_edges, history.result_edges);
+    check_channel(
+        &history.modified_faces,
+        in_f,
+        out_f,
+        &format!("{label}/mod-faces"),
+    );
+    check_channel(
+        &history.generated_faces,
+        in_f,
+        out_f,
+        &format!("{label}/gen-faces"),
+    );
+    check_channel(
+        &history.modified_edges,
+        in_e,
+        out_e,
+        &format!("{label}/mod-edges"),
+    );
+    check_channel(
+        &history.generated_edges,
+        in_e,
+        out_e,
+        &format!("{label}/gen-edges"),
+    );
+    check_channel(
+        &history.faces_from_edges,
+        in_e,
+        out_f,
+        &format!("{label}/face-from-edge"),
+    );
+    check_channel(
+        &history.edges_from_faces,
+        in_f,
+        out_e,
+        &format!("{label}/edge-from-face"),
+    );
 }
 
 #[test]
@@ -226,25 +256,31 @@ fn minimal_blob_reports_index_keyed_history() {
     };
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
 
-    // A fuse of two overlapping cubes: both operands are inputs, so the header
+    // A fuse of two overlapping cubes: both operands are inputs, so the counts
     // must describe the pair, not just the first.
     let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);
     let fused = kernel.history_boolean(a, b, 0, -1.0, true).unwrap();
     assert_ne!(fused.result_id, 0, "the fuse must produce a shape");
-    check_stream(&fused.stream, "fuse");
+    check_history(&fused, "fuse");
     assert_eq!(
-        fused.stream[0], 12,
+        fused.input_faces, 12,
         "two cubes are twelve input faces: the history domain is BOTH operands, \
-         and a header of 6 would mean only the first was enumerated"
+         and a count of 6 would mean only the first was enumerated"
     );
     assert!(
-        fused.stream[1] > 0 && fused.stream[3] > 0,
+        fused.result_faces > 0 && fused.result_edges > 0,
         "the fused result has faces and edges"
     );
+    assert!(
+        !fused.modified_faces.is_empty(),
+        "a fuse leaves most of both operands' faces in place, so something must \
+         be claimed as still-that-face"
+    );
 
-    // A fillet: the interesting relation is a FACE generated by an EDGE, which
-    // is the blend surface. Nothing else in the kernel reports that.
+    // A fillet: the interesting relation is a FACE grown from an EDGE, which is
+    // the blend surface. Nothing else in the kernel reports that, and it is the
+    // one channel that cannot be expressed by any same-kind relation.
     let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let edges: Vec<ShapeHandle> = kernel
         .get_sub_shapes(solid, "edge")
@@ -254,23 +290,82 @@ fn minimal_blob_reports_index_keyed_history() {
         .collect();
     let blended = kernel.history_blend(solid, &edges[..1], 1.0, 0).unwrap();
     assert_ne!(blended.result_id, 0, "the fillet must produce a shape");
-    let records = check_stream(&blended.stream, "fillet");
-    assert!(records > 0, "a fillet changes something");
-
-    let mut face_from_edge = 0;
-    let mut at = 5;
-    while at < blended.stream.len() {
-        let count = blended.stream[at + 4] as usize;
-        // source_kind == edge(1), relation == generated(1), result_kind == face(0)
-        if blended.stream[at] == 1 && blended.stream[at + 2] == 1 && blended.stream[at + 3] == 0 {
-            face_from_edge += count;
-        }
-        at += 5 + count;
-    }
+    check_history(&blended, "fillet");
     assert!(
-        face_from_edge > 0,
+        !blended.faces_from_edges.is_empty(),
         "a fillet grows its blend surface along an edge, and that cross-kind \
          relation is the whole reason edges are enumerated here"
+    );
+    assert!(
+        !blended.modified_edges.is_empty(),
+        "a one-edge fillet leaves the body's other edges alone, so they must be \
+         claimed as still-themselves"
+    );
+}
+
+/// A bad op code reaches the error half of the ABI, which nothing else does.
+///
+/// Five things are unexecuted without this test: the `default:` arm, the
+/// `catch (const std::exception&)` block, `occt_rmesh_history_error`,
+/// `occt_rmesh_history_error_len`, and the `OcctError::Operation` the reader
+/// builds from them. rmesh cannot reach any of them — its op codes come from a
+/// three-variant enum — so the coverage has to come from here.
+#[test]
+fn an_unknown_op_code_reports_through_the_error_channel() {
+    let Some(bytes) = try_minimal_bytes() else {
+        return;
+    };
+    let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
+    let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
+    let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);
+
+    let outcome = kernel.history_boolean(a, b, 7, -1.0, true);
+    let Err(OcctError::Operation { operation, message }) = outcome else {
+        panic!("an unknown op code must be an Operation error, got {outcome:?}");
+    };
+    assert_eq!(operation, "history_boolean");
+    assert!(
+        message.contains("unknown boolean op code"),
+        "the message must name the fault, got {message:?}"
+    );
+
+    // The kernel is still usable: an error path that left the arena or the
+    // globals inconsistent would show up as the next call failing.
+    let fused = kernel
+        .history_boolean(a, b, 0, -1.0, true)
+        .expect("the kernel survives a rejected op code");
+    assert_ne!(fused.result_id, 0);
+}
+
+/// The same for a blend kind rmesh's two-variant enum cannot produce.
+#[test]
+fn an_unknown_blend_kind_is_refused() {
+    let Some(bytes) = try_minimal_bytes() else {
+        return;
+    };
+    let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
+    let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
+    let edges: Vec<ShapeHandle> = kernel
+        .get_sub_shapes(solid, "edge")
+        .unwrap()
+        .into_iter()
+        .map(ShapeHandle::from_raw)
+        .collect();
+
+    let outcome = kernel.history_blend(solid, &edges[..1], 1.0, 9);
+    assert!(
+        matches!(&outcome, Err(OcctError::Operation { message, .. })
+                 if message.contains("unknown blend kind")),
+        "got {outcome:?}"
+    );
+
+    // An empty edge list is the other argument fault, and it must be refused
+    // before any kernel work rather than producing an unblended copy.
+    let empty = kernel.history_blend(solid, &[], 1.0, 0);
+    assert!(
+        matches!(&empty, Err(OcctError::Operation { message, .. })
+                 if message.contains("no edges")),
+        "got {empty:?}"
     );
 }
 
@@ -309,5 +404,5 @@ fn the_minimal_blob_drops_the_hash_keyed_builders_but_keeps_provenance() {
         .history_boolean(a, b, 0, -1.0, true)
         .expect("index-keyed provenance is core in every profile");
     assert_ne!(reported.result_id, 0);
-    assert!(reported.stream.len() >= 5);
+    assert!(reported.input_faces > 0 && reported.result_faces > 0);
 }

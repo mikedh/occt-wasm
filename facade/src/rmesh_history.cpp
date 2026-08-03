@@ -30,19 +30,42 @@
 // blended body. `enumerate()` below is that rule, and it is the only place it
 // is spelled in this file.
 //
-// Stream layout (one u32 stream; counts up front, so a truncated stream is
-// detectable and no record needs a sentinel):
-//   header: [n_input_faces, n_result_faces, n_input_edges, n_result_edges,
-//            n_records]
-//   record: [source_kind, source_index, relation, result_kind, n_results,
-//            result_index * n_results]
-//     kind:     0 = face, 1 = edge
-//     relation: 0 = modified, 1 = generated, 2 = removed (n_results == 0)
+// THE PAYLOAD IS SIX PAIR-ARRAYS AND FOUR COUNTS. There is no wire format:
+// no header, no framing, no record lengths, nothing to parse. Each export
+// returns a flat `[source, result, source, result, ...]` and its NAME is the
+// contract:
 //
-// A record may cross kinds, and that is the point: a fillet's new face is
-// `Generated` BY THE EDGE it was built on, which is the single most useful
-// naming relation the kernel knows. A same-kind `modified` record is the
-// "still the same entity, possibly reshaped" claim.
+//   occt_rmesh_history_modified_faces     face -> face, "still that face"
+//   occt_rmesh_history_generated_faces    face -> face, "grown from it"
+//   occt_rmesh_history_modified_edges     edge -> edge
+//   occt_rmesh_history_generated_edges    edge -> edge
+//   occt_rmesh_history_faces_from_edges   edge -> face, a blend surface
+//   occt_rmesh_history_edges_from_faces   face -> edge, section curves
+//   occt_rmesh_history_counts             [in_faces, out_faces, in_edges, out_edges]
+//
+// This replaced a self-describing stream of variable-length records. That
+// format was the sole reason four whole classes of failure existed — a header
+// count disagreeing with the payload, a record tail running off the end, a
+// removal that also named survivors, a kind word outside its enum — and none of
+// them were about geometry. They were the running cost of having invented a
+// format. Pairs cannot be truncated mid-record because there are no records,
+// and a mismatch between the two sides of the seam is now a LINK error against
+// a missing symbol rather than a silent misparse.
+//
+// The cross-kind channels are the point of separating them: a fillet's new face
+// is `Generated` BY THE EDGE it was built on, which is the most nameable thing
+// the kernel knows, and no same-kind relation can express it.
+//
+// The kernel emits raw CLAIMS and does not resolve them. Two claims about one
+// result entity, or several sources coalescing into one, are handed over as-is;
+// `boundary::history` decides what they mean. That keeps the collapse rule and
+// the merge derivation in Rust where they are proptested, instead of in C++
+// where nothing can reach them.
+//
+// REMOVALS ARE NOT REPORTED, and that is not an omission. `EntityMap` is total
+// over the result with deletion expressed as absence, so a removal record
+// carried no information downstream — it was read and discarded. An input that
+// nothing claims is deleted, by construction.
 //
 // UNCHANGED entities: OCCT reports them by saying nothing at all — `Modified`
 // is empty and `IsDeleted` is false for an entity the operation left alone
@@ -87,16 +110,33 @@ extern "C" OcctKernel* occt_wasi_kernel_for_extensions();
 
 namespace {
 
-std::vector<uint32_t> g_hist_u32;
+/// The six claim channels plus the four counts. One `(source, result)` pair per
+/// two entries; a channel's meaning is its name.
+struct Claims {
+    std::vector<uint32_t> modified_faces;
+    std::vector<uint32_t> generated_faces;
+    std::vector<uint32_t> modified_edges;
+    std::vector<uint32_t> generated_edges;
+    std::vector<uint32_t> faces_from_edges;
+    std::vector<uint32_t> edges_from_faces;
+
+    void clear() {
+        modified_faces.clear();
+        generated_faces.clear();
+        modified_edges.clear();
+        generated_edges.clear();
+        faces_from_edges.clear();
+        edges_from_faces.clear();
+    }
+};
+
+Claims g_claims;
+std::vector<uint32_t> g_counts;
 std::string g_hist_error;
 uint32_t g_hist_result = 0;
 
 constexpr uint32_t KIND_FACE = 0;
 constexpr uint32_t KIND_EDGE = 1;
-
-constexpr uint32_t RELATION_MODIFIED = 0;
-constexpr uint32_t RELATION_GENERATED = 1;
-constexpr uint32_t RELATION_REMOVED = 2;
 
 using ShapeMap = NCollection_IndexedMap<TopoDS_Shape, TopTools_ShapeMapHasher>;
 using ShapeList = NCollection_List<TopoDS_Shape>;
@@ -138,22 +178,6 @@ int32_t lookup(const Enumeration& enumeration, const TopoDS_Shape& shape) {
     return enumeration.rmesh_index[static_cast<size_t>(index) - 1];
 }
 
-struct Streams {
-    std::vector<uint32_t> records;
-    uint32_t record_count = 0;
-
-    void push(uint32_t source_kind, uint32_t source_index, uint32_t relation, uint32_t result_kind,
-              const std::vector<uint32_t>& results) {
-        records.push_back(source_kind);
-        records.push_back(source_index);
-        records.push_back(relation);
-        records.push_back(result_kind);
-        records.push_back(static_cast<uint32_t>(results.size()));
-        records.insert(records.end(), results.begin(), results.end());
-        ++record_count;
-    }
-};
-
 /// Partition a result list by entity kind and translate to rmesh indices.
 ///
 /// Results of a kind rmesh does not track (a vertex, a wire) are dropped, as is
@@ -178,20 +202,31 @@ void partition(const ShapeList& shapes, const Enumeration& result_faces,
     }
 }
 
+/// Append `(source, result)` for every result in `results` to `channel`.
+void pair_up(std::vector<uint32_t>& channel, uint32_t source,
+             const std::vector<uint32_t>& results) {
+    for (const uint32_t result : results) {
+        channel.push_back(source);
+        channel.push_back(result);
+    }
+}
+
 /// Emit every relation the algorithm knows about one source entity kind.
 ///
 /// Templated rather than virtual because the two op families share nothing but
 /// these three method names — `BRepAlgoAPI_BuilderAlgo` and
 /// `BRepFilletAPI_MakeFillet` both inherit them from `BRepBuilderAPI_MakeShape`,
-/// and for the boolean API they already account for the simplification history
+/// and for the boolean API those already account for the simplification history
 /// that `SimplifyResult` merged in.
 template <class Algo>
 void emit_kind(Algo& algo, const Enumeration& source, uint32_t source_kind,
                const Enumeration& result_faces, const Enumeration& result_edges,
-               Streams& streams) {
+               Claims& claims) {
     for (int i = 1; i <= source.map.Extent(); ++i) {
         const int32_t source_index = source.rmesh_index[static_cast<size_t>(i) - 1];
         if (source_index < 0) {
+            // A degenerate edge: not part of rmesh's enumeration, so it holds no
+            // index to report against.
             continue;
         }
         const TopoDS_Shape& shape = source.map.FindKey(i);
@@ -206,13 +241,11 @@ void emit_kind(Algo& algo, const Enumeration& source, uint32_t source_kind,
         partition(algo.Generated(shape), result_faces, result_edges, generated_faces,
                   generated_edges);
 
-        const bool deleted = algo.IsDeleted(shape);
-        const bool silent = modified_faces.empty() && modified_edges.empty();
-
         // The untouched case: OCCT says nothing, so say it here (see the header
         // comment). Only for a source the operation neither modified nor
         // deleted, and only when it is genuinely still in the result.
-        if (silent && !deleted) {
+        const bool silent = modified_faces.empty() && modified_edges.empty();
+        if (silent && !algo.IsDeleted(shape)) {
             const Enumeration& same_kind = source_kind == KIND_FACE ? result_faces : result_edges;
             const int32_t survivor = lookup(same_kind, shape);
             if (survivor >= 0) {
@@ -221,26 +254,21 @@ void emit_kind(Algo& algo, const Enumeration& source, uint32_t source_kind,
             }
         }
 
-        if (!modified_faces.empty()) {
-            streams.push(source_kind, index, RELATION_MODIFIED, KIND_FACE, modified_faces);
+        if (source_kind == KIND_FACE) {
+            pair_up(claims.modified_faces, index, modified_faces);
+            pair_up(claims.generated_faces, index, generated_faces);
+            pair_up(claims.edges_from_faces, index, generated_edges);
+            // A face MODIFIED to an edge is not a thing OCCT reports —
+            // `Modified` returns same-dimension replacements — so there is no
+            // channel for it and `modified_edges` is empty here by construction.
+        } else {
+            pair_up(claims.modified_edges, index, modified_edges);
+            pair_up(claims.generated_edges, index, generated_edges);
+            pair_up(claims.faces_from_edges, index, generated_faces);
         }
-        if (!modified_edges.empty()) {
-            streams.push(source_kind, index, RELATION_MODIFIED, KIND_EDGE, modified_edges);
-        }
-        if (!generated_faces.empty()) {
-            streams.push(source_kind, index, RELATION_GENERATED, KIND_FACE, generated_faces);
-        }
-        if (!generated_edges.empty()) {
-            streams.push(source_kind, index, RELATION_GENERATED, KIND_EDGE, generated_edges);
-        }
-        // Removal is reported only when nothing else was: a filleted edge is
-        // both `IsDeleted` and the generator of the blend face, and the
-        // generated relation is the informative half. Emitting both would let
-        // the two disagree on the rmesh side about whether the entity survived.
-        if (deleted && modified_faces.empty() && modified_edges.empty() &&
-            generated_faces.empty() && generated_edges.empty()) {
-            streams.push(source_kind, index, RELATION_REMOVED, source_kind, {});
-        }
+        // Deletion is not reported: it is absence. An input that no channel
+        // claims did not survive, which is exactly what `EntityMap` means by a
+        // deleted entity, and carrying it separately would let the two disagree.
     }
 }
 
@@ -252,17 +280,11 @@ void report(Algo& algo, const TopoDS_Shape& input, const TopoDS_Shape& result) {
     const Enumeration result_faces = enumerate(result, TopAbs_FACE);
     const Enumeration result_edges = enumerate(result, TopAbs_EDGE);
 
-    Streams streams;
-    emit_kind(algo, input_faces, KIND_FACE, result_faces, result_edges, streams);
-    emit_kind(algo, input_edges, KIND_EDGE, result_faces, result_edges, streams);
+    g_claims.clear();
+    emit_kind(algo, input_faces, KIND_FACE, result_faces, result_edges, g_claims);
+    emit_kind(algo, input_edges, KIND_EDGE, result_faces, result_edges, g_claims);
 
-    g_hist_u32.clear();
-    g_hist_u32.push_back(input_faces.count);
-    g_hist_u32.push_back(result_faces.count);
-    g_hist_u32.push_back(input_edges.count);
-    g_hist_u32.push_back(result_edges.count);
-    g_hist_u32.push_back(streams.record_count);
-    g_hist_u32.insert(g_hist_u32.end(), streams.records.begin(), streams.records.end());
+    g_counts.assign({input_faces.count, result_faces.count, input_edges.count, result_edges.count});
 }
 
 /// A boolean's two arguments are one history domain: the relations name
@@ -279,7 +301,8 @@ TopoDS_Shape both(const TopoDS_Shape& a, const TopoDS_Shape& b) {
 }
 
 void reset() {
-    g_hist_u32.clear();
+    g_claims.clear();
+    g_counts.clear();
     g_hist_error.clear();
     g_hist_result = 0;
 }
@@ -413,12 +436,67 @@ int32_t occt_rmesh_history_blend(uint32_t solid_id, const uint32_t* edge_ptr, ui
 uint32_t occt_rmesh_history_result() {
     return g_hist_result;
 }
-int32_t occt_rmesh_history_u32() {
-    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_hist_u32.data()));
+
+// One accessor pair per channel, spelled out rather than generated by a macro.
+//
+// Two reasons, and the second is not stylistic. First, a channel's NAME is the
+// contract — a disagreement between this file and its reader is a link error
+// against a missing symbol, not a misread of a shared layout, which is the whole
+// reason there is no header here to get out of step. Second, `build_wasi.rs`
+// derives the export list by SCANNING THIS SOURCE for `occt_*` definitions, so a
+// macro-generated name is invisible to it and the symbol silently never ships.
+// That is not hypothetical: the first version of this block was a macro, and
+// every accessor vanished from both blobs while the build reported success.
+
+int32_t occt_rmesh_history_counts() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_counts.data()));
 }
-uint32_t occt_rmesh_history_u32_len() {
-    return static_cast<uint32_t>(g_hist_u32.size());
+uint32_t occt_rmesh_history_counts_len() {
+    return static_cast<uint32_t>(g_counts.size());
 }
+
+int32_t occt_rmesh_history_modified_faces() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.modified_faces.data()));
+}
+uint32_t occt_rmesh_history_modified_faces_len() {
+    return static_cast<uint32_t>(g_claims.modified_faces.size());
+}
+
+int32_t occt_rmesh_history_generated_faces() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.generated_faces.data()));
+}
+uint32_t occt_rmesh_history_generated_faces_len() {
+    return static_cast<uint32_t>(g_claims.generated_faces.size());
+}
+
+int32_t occt_rmesh_history_modified_edges() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.modified_edges.data()));
+}
+uint32_t occt_rmesh_history_modified_edges_len() {
+    return static_cast<uint32_t>(g_claims.modified_edges.size());
+}
+
+int32_t occt_rmesh_history_generated_edges() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.generated_edges.data()));
+}
+uint32_t occt_rmesh_history_generated_edges_len() {
+    return static_cast<uint32_t>(g_claims.generated_edges.size());
+}
+
+int32_t occt_rmesh_history_faces_from_edges() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.faces_from_edges.data()));
+}
+uint32_t occt_rmesh_history_faces_from_edges_len() {
+    return static_cast<uint32_t>(g_claims.faces_from_edges.size());
+}
+
+int32_t occt_rmesh_history_edges_from_faces() {
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_claims.edges_from_faces.data()));
+}
+uint32_t occt_rmesh_history_edges_from_faces_len() {
+    return static_cast<uint32_t>(g_claims.edges_from_faces.size());
+}
+
 int32_t occt_rmesh_history_error() {
     return static_cast<int32_t>(reinterpret_cast<intptr_t>(g_hist_error.data()));
 }

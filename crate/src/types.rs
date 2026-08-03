@@ -117,20 +117,43 @@ pub struct EvolutionData {
 
 /// Per-operation provenance, index-keyed to rmesh's own sub-shape enumeration.
 ///
-/// The raw stream is handed over undecoded on purpose. Its layout is documented
-/// in `facade/src/rmesh_history.cpp`, and the embedding that defines the
-/// enumeration is also the one that gives the relations meaning — so decoding
-/// belongs there, in one tested place, rather than being split across the seam.
-/// This crate's job here is the memory read and nothing else.
+/// Six claim channels, each a flat `[source, result, source, result, …]`. There
+/// is no wire format: no header, no framing, nothing to parse. A channel's
+/// meaning is its field name, and the field names match the export names one for
+/// one, so a disagreement between this struct and `rmesh_history.cpp` is a link
+/// error rather than a misread.
 ///
-/// Unlike [`EvolutionData`], no value in this stream is a hash: every index is a
-/// position in `TopExp::MapShapes` order (minus degenerate edges, for edges).
-#[derive(Debug, Clone)]
+/// The channels carry raw CLAIMS, unresolved. Two claims about one result, or
+/// several sources coalescing into one, arrive as-is — the embedding decides
+/// what they mean, which keeps that rule where it is proptested.
+///
+/// Unlike [`EvolutionData`], no value here is a hash: every index is a position
+/// in `TopExp::MapShapes` order (minus degenerate edges, for edges). Deletion is
+/// not a channel — an input no channel claims did not survive.
+#[derive(Debug, Clone, Default)]
 pub struct ShapeHistoryData {
     /// The result shape handle ID.
     pub result_id: u32,
-    /// The relation stream, header included.
-    pub stream: Vec<u32>,
+    /// How many faces the input had.
+    pub input_faces: u32,
+    /// How many faces the result has.
+    pub result_faces: u32,
+    /// How many edges the input had.
+    pub input_edges: u32,
+    /// How many edges the result has.
+    pub result_edges: u32,
+    /// `(input face, result face)` — the face is still that face.
+    pub modified_faces: Vec<u32>,
+    /// `(input face, result face)` — the face was grown from it.
+    pub generated_faces: Vec<u32>,
+    /// `(input edge, result edge)`.
+    pub modified_edges: Vec<u32>,
+    /// `(input edge, result edge)`.
+    pub generated_edges: Vec<u32>,
+    /// `(input edge, result face)` — a blend surface and the edge it runs along.
+    pub faces_from_edges: Vec<u32>,
+    /// `(input face, result edge)` — a boolean's section curves.
+    pub edges_from_faces: Vec<u32>,
 }
 
 /// Hidden line removal projection result.
