@@ -24,15 +24,23 @@
 
 use occt_wasm::{OcctError, OcctKernel, ShapeHandle};
 
-/// The minimal blob's compressed bytes, or None to skip (absent blob, or
-/// debug mode where WASM compilation is ~100x slower).
-fn try_minimal_bytes() -> Option<Vec<u8>> {
-    if cfg!(debug_assertions) {
-        eprintln!(
-            "Skipping test: WASM compilation too slow in debug mode. Use `cargo test --release`."
-        );
-        return None;
-    }
+/// The minimal blob's compressed bytes. **Absence is a failure, never a skip.**
+///
+/// This used to return `Option` and every test opened with
+/// `let Some(..) else { return; }`, so `cargo test -p occt-wasm` passed without
+/// executing a single line of `rmesh_history.cpp` — in debug mode always, and in
+/// release whenever the blob was missing. A suite that reports green without the
+/// thing it exists to test is worse than no suite.
+///
+/// Debug is still refused rather than run: wasm compilation there is ~100x
+/// slower, so running it would be a different kind of lie (a suite nobody waits
+/// for). But it refuses LOUDLY and says what to do, instead of passing.
+fn minimal_bytes() -> Vec<u8> {
+    assert!(
+        !cfg!(debug_assertions),
+        "the kernel tests need `--release`: wasm compilation is ~100x slower in \
+         debug. Run `cargo test --release -p occt-wasm`."
+    );
     let path = std::env::var_os("OCCT_WASM_MINIMAL").map_or_else(
         || {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -40,12 +48,12 @@ fn try_minimal_bytes() -> Option<Vec<u8>> {
         },
         std::path::PathBuf::from,
     );
-    std::fs::read(&path).ok().or_else(|| {
-        eprintln!(
-            "Skipping test: no minimal blob at {}. Run `cargo xtask build-wasi --release --minimal`.",
+    std::fs::read(&path).unwrap_or_else(|error| {
+        panic!(
+            "no minimal blob at {} ({error}). Run \
+             `cargo xtask build-wasi --release --minimal`.",
             path.display()
-        );
-        None
+        )
     })
 }
 
@@ -71,9 +79,7 @@ fn constructed_cube(kernel: &mut OcctKernel, x: f64, y: f64, size: f64) -> Shape
 /// derived export set and the crate's binding surface have diverged.
 #[test]
 fn minimal_blob_instantiates() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let kernel = OcctKernel::from_compressed_module_bytes(&bytes);
     assert!(
         kernel.is_ok(),
@@ -84,9 +90,7 @@ fn minimal_blob_instantiates() {
 
 #[test]
 fn minimal_blob_construction_path_works() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
 
     // rmesh's real lowering path.
@@ -115,9 +119,7 @@ fn minimal_blob_construction_path_works() {
 
 #[test]
 fn minimal_blob_boolean_reliability_primitives_work() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
 
     // Overlapping cubes: 10-cube at origin, 10-cube shifted by (5, 5).
@@ -143,9 +145,7 @@ fn minimal_blob_boolean_reliability_primitives_work() {
 
 #[test]
 fn minimal_blob_reports_missing_capabilities() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
     let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
 
@@ -251,9 +251,7 @@ fn check_history(history: &occt_wasm::ShapeHistoryData, label: &str) {
 
 #[test]
 fn minimal_blob_reports_index_keyed_history() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
 
     // A fuse of two overlapping cubes: both operands are inputs, so the counts
@@ -312,9 +310,7 @@ fn minimal_blob_reports_index_keyed_history() {
 /// three-variant enum — so the coverage has to come from here.
 #[test]
 fn an_unknown_op_code_reports_through_the_error_channel() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
     let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);
@@ -340,9 +336,7 @@ fn an_unknown_op_code_reports_through_the_error_channel() {
 /// The same for a blend kind rmesh's two-variant enum cannot produce.
 #[test]
 fn an_unknown_blend_kind_is_refused() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
     let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let edges: Vec<ShapeHandle> = kernel
@@ -386,9 +380,7 @@ fn an_unknown_blend_kind_is_refused() {
 /// in.
 #[test]
 fn the_minimal_blob_drops_the_hash_keyed_builders_but_keeps_provenance() {
-    let Some(bytes) = try_minimal_bytes() else {
-        return;
-    };
+    let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
     let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let b = constructed_cube(&mut kernel, 5.0, 0.0, 10.0);

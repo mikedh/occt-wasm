@@ -10,55 +10,43 @@
 use occt_wasm::OcctKernel;
 
 /// Try to create a kernel. Returns None if the embedded WASM is a placeholder
-/// or if running in debug mode (WASM compilation is ~100x slower in debug).
-fn try_kernel() -> Option<OcctKernel> {
-    if cfg!(debug_assertions) {
-        eprintln!(
-            "Skipping test: WASM compilation too slow in debug mode. Use `cargo test --release`."
-        );
-        return None;
-    }
-    match OcctKernel::new() {
-        Ok(k) => Some(k),
-        Err(e) => {
-            let msg = e.to_string();
-            // Placeholder WASM is too small to be a real module
-            if msg.contains("not enough bytes")
-                || msg.contains("unknown import")
-                || msg.contains("occt_init")
-                || msg.contains("no memory export")
-            {
-                eprintln!(
-                    "Skipping test: WASM binary is a placeholder. Run `cargo xtask build-wasi` first."
-                );
-                None
-            } else {
-                panic!("Unexpected kernel init error: {e:?}");
-            }
-        }
-    }
+/// The kernel, or a loud failure. **Absence is never a skip.**
+///
+/// This returned `Option` and every test opened with
+/// `let Some(..) else { return; }`, so the suite reported green without ever
+/// instantiating a kernel — in debug always, and in release whenever the
+/// embedded module was a placeholder. Refusing loudly says what to do; passing
+/// says nothing at all.
+fn kernel() -> OcctKernel {
+    assert!(
+        !cfg!(debug_assertions),
+        "the kernel tests need `--release`: wasm compilation is ~100x slower in \
+         debug. Run `cargo test --release -p occt-wasm`."
+    );
+    OcctKernel::new().unwrap_or_else(|error| {
+        panic!(
+            "the embedded kernel module must instantiate ({error}). Run \
+             `cargo xtask build-wasi --release`."
+        )
+    })
 }
 
 #[test]
 fn kernel_init_and_drop() {
-    let Some(_kernel) = try_kernel() else { return };
+    let _kernel = kernel();
     // Kernel initializes and drops cleanly
 }
 
 #[test]
 fn make_box() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 20.0, 30.0).unwrap();
     assert!(shape.id() > 0);
 }
 
 #[test]
 fn box_volume() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 20.0, 30.0).unwrap();
     let vol = kernel.get_volume(shape).unwrap();
     assert!((vol - 6000.0).abs() < 1.0, "expected ~6000, got {vol}");
@@ -66,9 +54,7 @@ fn box_volume() {
 
 #[test]
 fn fuse_two_boxes() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let a = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     let b = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     let result = kernel.fuse(a, b).unwrap();
@@ -79,9 +65,7 @@ fn fuse_two_boxes() {
 
 #[test]
 fn cut_operation() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let box_shape = kernel.make_box(20.0, 20.0, 20.0).unwrap();
     let sphere = kernel.make_sphere(5.0).unwrap();
     let result = kernel.cut(box_shape, sphere).unwrap();
@@ -92,9 +76,7 @@ fn cut_operation() {
 
 #[test]
 fn bounding_box() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 20.0, 30.0).unwrap();
     let bbox = kernel.get_bounding_box(shape, true).unwrap();
     assert!((bbox.min.x).abs() < 0.01);
@@ -107,9 +89,7 @@ fn bounding_box() {
 
 #[test]
 fn tessellate_box() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     let mesh = kernel.tessellate(shape, 0.1, 0.5).unwrap();
     // A box has at least 8 vertices and 12 triangles
@@ -128,9 +108,7 @@ fn tessellate_box() {
 
 #[test]
 fn step_roundtrip() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 20.0, 30.0).unwrap();
     let step_data = kernel.export_step(shape).unwrap();
     assert!(step_data.contains("STEP"), "expected STEP format data");
@@ -145,9 +123,7 @@ fn step_roundtrip() {
 
 #[test]
 fn make_cylinder_and_query() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let cyl = kernel.make_cylinder(5.0, 10.0).unwrap();
     let vol = kernel.get_volume(cyl).unwrap();
     let expected = std::f64::consts::PI * 25.0 * 10.0;
@@ -159,9 +135,7 @@ fn make_cylinder_and_query() {
 
 #[test]
 fn make_sphere_surface_area() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let sphere = kernel.make_sphere(5.0).unwrap();
     let area = kernel.get_surface_area(sphere).unwrap();
     let expected = 4.0 * std::f64::consts::PI * 25.0;
@@ -173,9 +147,7 @@ fn make_sphere_surface_area() {
 
 #[test]
 fn release_shape() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(1.0, 1.0, 1.0).unwrap();
     kernel.release(shape).unwrap();
     // After release, the handle is invalid
@@ -183,9 +155,7 @@ fn release_shape() {
 
 #[test]
 fn get_shape_type() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     let shape_type = kernel.get_shape_type(shape).unwrap();
     assert_eq!(shape_type, "Solid", "box should be a Solid");
@@ -193,9 +163,7 @@ fn get_shape_type() {
 
 #[test]
 fn get_sub_shapes() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     let faces = kernel.get_sub_shapes(shape, "Face").unwrap();
     assert_eq!(faces.len(), 6, "box should have 6 faces");
@@ -203,9 +171,7 @@ fn get_sub_shapes() {
 
 #[test]
 fn sub_shape_count_and_hashes() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let shape = kernel.make_box(10.0, 10.0, 10.0).unwrap();
     assert_eq!(kernel.sub_shape_count(shape, "face").unwrap(), 6);
     let hashes = kernel.sub_shape_hashes(shape, "face", 1_000_000).unwrap();
@@ -214,9 +180,7 @@ fn sub_shape_count_and_hashes() {
 
 #[test]
 fn checkpoint_release_since() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let _keep = kernel.make_box(1.0, 1.0, 1.0).unwrap();
     let mark = kernel.checkpoint().unwrap();
     let _a = kernel.make_box(2.0, 2.0, 2.0).unwrap();
@@ -229,9 +193,7 @@ fn checkpoint_release_since() {
 
 #[test]
 fn extrude_rectangle() {
-    let Some(mut kernel) = try_kernel() else {
-        return;
-    };
+    let mut kernel = kernel();
     let rect = kernel.make_rectangle(10.0, 20.0).unwrap();
     let solid = kernel.extrude(rect, 0.0, 0.0, 5.0).unwrap();
     let vol = kernel.get_volume(solid).unwrap();
