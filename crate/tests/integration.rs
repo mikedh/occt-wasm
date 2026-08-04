@@ -18,11 +18,18 @@ use occt_wasm::OcctKernel;
 /// embedded module was a placeholder. Refusing loudly says what to do; passing
 /// says nothing at all.
 fn kernel() -> OcctKernel {
-    assert!(
-        !cfg!(debug_assertions),
-        "the kernel tests need `--release`: wasm compilation is ~100x slower in \
-         debug. Run `cargo test --release -p occt-wasm`."
-    );
+    // The condition IS constant, and that is the point: this build either can
+    // run the kernel or it cannot, and the answer is known at compile time.
+    // Clippy's `assertions_on_constants` assumes a constant assertion is a
+    // mistake; here it is the mechanism.
+    #[allow(clippy::assertions_on_constants)]
+    {
+        assert!(
+            !cfg!(debug_assertions),
+            "the kernel tests need `--release`: wasm compilation is ~100x slower \
+             in debug. Run `cargo test --release -p occt-wasm`."
+        );
+    }
     OcctKernel::new().unwrap_or_else(|error| {
         panic!(
             "the embedded kernel module must instantiate ({error}). Run \

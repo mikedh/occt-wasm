@@ -36,11 +36,18 @@ use occt_wasm::{OcctError, OcctKernel, ShapeHandle};
 /// slower, so running it would be a different kind of lie (a suite nobody waits
 /// for). But it refuses LOUDLY and says what to do, instead of passing.
 fn minimal_bytes() -> Vec<u8> {
-    assert!(
-        !cfg!(debug_assertions),
-        "the kernel tests need `--release`: wasm compilation is ~100x slower in \
-         debug. Run `cargo test --release -p occt-wasm`."
-    );
+    // The condition IS constant, and that is the point: this build either can
+    // run the kernel or it cannot, and the answer is known at compile time.
+    // Clippy's `assertions_on_constants` assumes a constant assertion is a
+    // mistake; here it is the mechanism.
+    #[allow(clippy::assertions_on_constants)]
+    {
+        assert!(
+            !cfg!(debug_assertions),
+            "the kernel tests need `--release`: wasm compilation is ~100x slower \
+             in debug. Run `cargo test --release -p occt-wasm`."
+        );
+    }
     let path = std::env::var_os("OCCT_WASM_MINIMAL").map_or_else(
         || {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
