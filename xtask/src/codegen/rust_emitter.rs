@@ -216,17 +216,57 @@ fn emit_wasm_call_args(params: &[FacadeParam]) -> String {
     args.join(", ")
 }
 
-/// Generate the cleanup code for allocated memory.
+/// Free the heap parameters, WITHOUT propagating a failure yet.
+///
+/// The `?` that used to be here defeated the very thing the caller sets up: the
+/// wasm call is deliberately captured without `?` "so we can always run cleanup
+/// before propagating errors", and then the cleanup propagated its own error
+/// first. When the call TRAPS — the one failure that most needs a legible
+/// diagnosis — the instance is in a state where freeing also fails, so the trap
+/// and its wasm backtrace were discarded and the caller received a complaint
+/// about deallocating a scratch buffer instead.
+///
+/// The result of each free is bound and propagated by
+/// [`emit_wasm_call_cleanup_propagate`], which the caller emits AFTER unwrapping
+/// the call. Both still run: a trap the instance survives must not also leak.
 fn emit_wasm_call_cleanup(buf: &mut String, params: &[FacadeParam]) {
+    for_each_heap_param(
+        params,
+        |buf, rname| {
+            let _ = writeln!(
+                buf,
+                "        let freed_{rname} = self.free_bytes({rname}_ptr);"
+            );
+        },
+        buf,
+    );
+}
+
+/// Surface any failure from [`emit_wasm_call_cleanup`], after the call's own
+/// error has had its chance. Emitted once the caller has unwrapped the result.
+fn emit_wasm_call_cleanup_propagate(buf: &mut String, params: &[FacadeParam]) {
+    for_each_heap_param(
+        params,
+        |buf, rname| {
+            let _ = writeln!(buf, "        freed_{rname}?;");
+        },
+        buf,
+    );
+}
+
+/// The heap-allocated parameters, by their Rust names — the ones that get a
+/// `_ptr` and therefore need freeing.
+fn for_each_heap_param(
+    params: &[FacadeParam],
+    mut each: impl FnMut(&mut String, &str),
+    buf: &mut String,
+) {
     for param in params {
         match param {
             FacadeParam::String(name)
             | FacadeParam::VectorShapeIds(name)
             | FacadeParam::VectorDouble(name)
-            | FacadeParam::VectorInt(name) => {
-                let rname = rust_param_name(name);
-                let _ = writeln!(buf, "        self.free_bytes({rname}_ptr)?;");
-            }
+            | FacadeParam::VectorInt(name) => each(buf, &rust_param_name(name)),
             _ => {}
         }
     }
@@ -374,6 +414,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
         if has_heap_params {
             emit_wasm_call_cleanup(buf, spec.params);
             let _ = writeln!(buf, "        let status = status?;");
+            emit_wasm_call_cleanup_propagate(buf, spec.params);
         }
         let _ = writeln!(buf, "        if status < 0 {{");
         let _ = writeln!(
@@ -394,6 +435,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let result = result?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        self.check_error(\"{snake_name}\")?;");
             let _ = writeln!(buf, "        if result == 0 {{");
@@ -412,6 +454,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let result = result?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        self.check_error(\"{snake_name}\")?;");
             let _ = writeln!(buf, "        Ok(result)");
@@ -424,6 +467,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let result = result?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if result < 0 {{");
             let _ = writeln!(
@@ -441,6 +485,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let result = result?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if result < 0 {{");
             let _ = writeln!(
@@ -458,6 +503,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let len = len?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if len < 0 {{");
             let _ = writeln!(
@@ -475,6 +521,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let len = len?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if len < 0 {{");
             let _ = writeln!(
@@ -492,6 +539,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let len = len?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if len < 0 {{");
             let _ = writeln!(
@@ -509,6 +557,7 @@ fn emit_rust_method(buf: &mut String, spec: &MethodSpec) {
             if has_heap_params {
                 emit_wasm_call_cleanup(buf, spec.params);
                 let _ = writeln!(buf, "        let len = len?;");
+                emit_wasm_call_cleanup_propagate(buf, spec.params);
             }
             let _ = writeln!(buf, "        if len < 0 {{");
             let _ = writeln!(

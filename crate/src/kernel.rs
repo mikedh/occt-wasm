@@ -610,8 +610,21 @@ impl OcctKernel {
             &mut self.store,
             (solid.0, ptr, raw.len() as u32, param, kind),
         );
-        self.free_bytes(ptr)?;
-        self.read_history_result(status?, "history_blend")
+        // Free FIRST, but let the original error win.
+        //
+        // This was `self.free_bytes(ptr)?; ... status?`, which returns the
+        // FREE's error when the blend trapped — and a trapped instance is
+        // exactly when freeing also fails. So the one failure mode that most
+        // needs a legible diagnosis, a fillet that took down the kernel, arrived
+        // as a complaint about deallocating a scratch buffer, with the trap and
+        // its wasm backtrace discarded.
+        //
+        // Both are still attempted: the buffer is freed whether or not the call
+        // succeeded, because a trap the instance survives must not also leak.
+        let freed = self.free_bytes(ptr);
+        let status = status?;
+        freed?;
+        self.read_history_result(status, "history_blend")
     }
 
     /// Shared tail of the two history entry points: turn a status code into
