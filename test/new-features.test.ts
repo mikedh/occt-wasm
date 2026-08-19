@@ -62,6 +62,19 @@ describe("OcctErrorCode classification", () => {
         expect(err.code).toBe(OcctErrorCode.ConstructionFailed);
     });
 
+    it("auto-classifies MakePipeShell guide statuses as ConstructionFailed", () => {
+        const notIntersect = new OcctError(
+            "sweepOriented",
+            "sweepOriented: a section plane does not intersect the guide wire. The guide must span the whole spine and stay close enough to meet every section.",
+        );
+        expect(notIntersect.code).toBe(OcctErrorCode.ConstructionFailed);
+        const noContact = new OcctError(
+            "sweepOriented",
+            "sweepOriented: cannot keep the section in contact with the guide wire. The guide must be close enough to the spine to intersect every section.",
+        );
+        expect(noContact.code).toBe(OcctErrorCode.ConstructionFailed);
+    });
+
     it("auto-classifies 'boolean operation failed' as BooleanFailed", () => {
         const err = new OcctError("fuse", "fuse: boolean operation failed");
         expect(err.code).toBe(OcctErrorCode.BooleanFailed);
@@ -632,17 +645,16 @@ describe("OcctErrorCode enum values", () => {
 });
 
 // ============================================================================
-// Known OCCT V8.0.0 gaps (tracked, not yet usable)
+// Known OCCT V8.0.1 gaps (tracked, not yet usable)
 // ============================================================================
 
-describe("OCCT V8.0.0 known gaps", () => {
-    // V8.0.0 final fixed STL import and multi-section loft (now covered as
-    // positive tests). filletVariable still corrupts WASM memory: the op
-    // returns a plausible shape, but a later indirect call (e.g. toBREP)
-    // dies with "null function or function signature mismatch". Localized
-    // heap/function-pointer corruption — makeBox/getVolume survive, BREP
-    // serialization does not. Re-test on the next OCCT bump.
-    it.skip("filletVariable rounds an edge with start/end radii (corrupts WASM on V8.0.0)", () => {
+describe("OCCT V8.0.1 known gaps", () => {
+    // filletVariable corrupts WASM memory: the op returns a plausible shape,
+    // but a later indirect call (e.g. toBREP) dies with "null function or
+    // function signature mismatch". Localized heap/function-pointer
+    // corruption — makeBox/getVolume survive, BREP serialization does not.
+    // Re-test on the next OCCT bump.
+    it.skip("filletVariable rounds an edge with start/end radii (corrupts WASM on V8.0.1)", () => {
         const box = kernel.makeBox(20, 20, 20);
         const edges = kernel.getSubShapes(box, "edge");
         const result = kernel.filletVariable(box, edges.get(0), 1.0, 3.0);

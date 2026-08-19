@@ -855,6 +855,16 @@ uint32_t occt_make_helix_wire(double px, double py, double pz, double dx, double
     }
 }
 
+uint32_t occt_make_helix_wire_handed(double px, double py, double pz, double dx, double dy, double dz, double pitch, double height, double radius, int32_t leftHanded) {
+    CLEAR_ERROR();
+    try {
+        return g_kernel->makeHelixWireHanded(px, py, pz, dx, dy, dz, pitch, height, radius, (leftHanded != 0));
+    } catch (const std::exception& e) {
+        SET_ERROR(e.what());
+        return 0;
+    }
+}
+
 uint32_t occt_make_non_planar_face(uint32_t wireId) {
     CLEAR_ERROR();
     try {
@@ -1607,10 +1617,20 @@ uint32_t occt_sweep_pipe_shell(uint32_t profileId, uint32_t spineId, int32_t fre
     }
 }
 
-uint32_t occt_sweep_oriented(uint32_t profileId, uint32_t spineId, int32_t mode, double upX, double upY, double upZ, uint32_t auxSpineId) {
+uint32_t occt_sweep_oriented(uint32_t profileId, uint32_t spineId, int32_t mode, double upX, double upY, double upZ, uint32_t auxSpineId, int32_t curvilinearEquivalence, int32_t contactMode, double tol3d, double boundTol, double tolAngular) {
     CLEAR_ERROR();
     try {
-        return g_kernel->sweepOriented(profileId, spineId, mode, upX, upY, upZ, auxSpineId);
+        return g_kernel->sweepOriented(profileId, spineId, mode, upX, upY, upZ, auxSpineId, (curvilinearEquivalence != 0), contactMode, tol3d, boundTol, tolAngular);
+    } catch (const std::exception& e) {
+        SET_ERROR(e.what());
+        return 0;
+    }
+}
+
+uint32_t occt_sweep_advanced(uint32_t profileId, uint32_t spineId, int32_t mode, double upX, double upY, double upZ, uint32_t auxSpineId, int32_t curvilinearEquivalence, int32_t guideContact, int32_t transitionMode, int32_t withContact, int32_t withCorrection, double tol3d, double boundTol, double tolAngular) {
+    CLEAR_ERROR();
+    try {
+        return g_kernel->sweepAdvanced(profileId, spineId, mode, upX, upY, upZ, auxSpineId, (curvilinearEquivalence != 0), guideContact, transitionMode, (withContact != 0), (withCorrection != 0), tol3d, boundTol, tolAngular);
     } catch (const std::exception& e) {
         SET_ERROR(e.what());
         return 0;

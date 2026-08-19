@@ -279,8 +279,8 @@ describe("sweeps", () => {
     it("loft through three monotonic sections produces a non-degenerate solid", () => {
         // Sections must taper monotonically (10 -> 8 -> 6); a non-monotonic
         // profile builds a self-intersecting loft that corrupts WASM memory on
-        // OCCT V8.0.0 — same failure mode as the filletVariable gap tracked in
-        // new-features.test.ts ("OCCT V8.0.0 known gaps").
+        // OCCT V8.0.1 — same failure mode as the filletVariable gap tracked in
+        // new-features.test.ts ("OCCT V8.0.1 known gaps").
         const wireVec = new Module.VectorUint32();
         wireVec.push_back(makeSquareWireAt(10, 0));
         wireVec.push_back(makeSquareWireAt(8, 10));
@@ -366,6 +366,14 @@ describe("shape construction (extended)", () => {
         const wire = kernel.makeHelixWire(0, 0, 0, 0, 0, 1, 5, 20, 3);
         expect(wire).toBeGreaterThan(0);
         expect(kernel.getShapeType(wire)).toBe("wire");
+    });
+
+    it("makeHelixWireHanded creates a helical wire of either handedness", () => {
+        for (const leftHanded of [false, true]) {
+            const wire = kernel.makeHelixWireHanded(0, 0, 0, 0, 0, 1, 5, 20, 3, leftHanded);
+            expect(wire).toBeGreaterThan(0);
+            expect(kernel.getShapeType(wire)).toBe("wire");
+        }
     });
 
     it("makeNonPlanarFace attempts to fill a non-planar wire", () => {
@@ -1331,22 +1339,25 @@ describe("modifiers", () => {
         expect(kernel.getVolume(result)).toBeGreaterThan(0);
     });
 
-    it("defeature removes selected faces from a solid", () => {
+    it("defeature removes a through-hole and heals the solid", () => {
         const box = kernel.makeBox(10, 10, 10);
-        // Add a small boss on top via fuse
-        const boss = kernel.translate(kernel.makeCylinder(2, 3), 5, 5, 10);
-        const withBoss = kernel.fuse(box, boss);
-        // Get the faces of the boss (the cylinder top face)
-        const allFaces = kernel.getSubShapes(withBoss, "face");
+        const tool = kernel.translate(kernel.makeCylinder(2, 12), 5, 5, -1);
+        const withHole = kernel.cut(box, tool);
+        const allFaces = kernel.getSubShapes(withHole, "face");
         const faceVec = new Module.VectorUint32();
-        // Just try to defeature one face
-        faceVec.push_back(allFaces.get(0));
-        try {
-            const result = kernel.defeature(withBoss, faceVec, 1e-6);
-            expect(result).toBeGreaterThanOrEqual(0);
-        } catch {
-            // defeature is fragile on OCCT V8 RC4 — just verify no WASM abort
+
+        for (let i = 0; i < allFaces.size(); i++) {
+            const face = allFaces.get(i);
+            if (kernel.surfaceType(face) === "cylinder") {
+                faceVec.push_back(face);
+            }
         }
+
+        expect(faceVec.size()).toBe(1);
+        const result = kernel.defeature(withHole, faceVec, 1e-6);
+        expect(result).toBeGreaterThan(0);
+        expect(kernel.getVolume(result)).toBeCloseTo(1000, 3);
+
         faceVec.delete();
         allFaces.delete();
     });

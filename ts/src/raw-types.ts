@@ -182,7 +182,9 @@ export interface OcctRawKernel {
     loftWithVertices(wireIds: EmbindVectorU32, isSolid: boolean, ruled: boolean, startVertexId: number, endVertexId: number): number;
     sweep(wireId: number, spineId: number, transitionMode: number): number;
     sweepPipeShell(profileId: number, spineId: number, freenet: boolean, smooth: boolean): number;
-    sweepOriented(profileId: number, spineId: number, mode: number, upX: number, upY: number, upZ: number, auxSpineId: number): number;
+    sweepOriented(profileId: number, spineId: number, mode: number, upX: number, upY: number, upZ: number, auxSpineId: number, curvilinearEquivalence: boolean, contactMode: number, tol3d: number, boundTol: number, tolAngular: number): number;
+    sweepAdvanced(profileId: number, spineId: number, mode: number, upX: number, upY: number, upZ: number, auxSpineId: number, curvilinearEquivalence: boolean, guideContact: number, transitionMode: number, withContact: boolean, withCorrection: boolean, tol3d: number, boundTol: number, tolAngular: number): number;
+    sweepFull(profileId: number, spineId: number, mode: number, upX: number, upY: number, upZ: number, auxSpineId: number, curvilinearEquivalence: boolean, guideContact: number, transitionMode: number, withContact: boolean, withCorrection: boolean, tol3d: number, boundTol: number, tolAngular: number, supportId: number, maxDegree: number, maxSegments: number, lawKind: number, lawLength: number, lawEndFactor: number): number;
     draftPrism(shapeId: number, dx: number, dy: number, dz: number, angleDeg: number): number;
     revolveVec(shapeId: number, cx: number, cy: number, cz: number, dx: number, dy: number, dz: number, angle: number): number;
 
@@ -199,6 +201,7 @@ export interface OcctRawKernel {
     makeBSplineEdge(poles: EmbindVectorF64, weights: EmbindVectorF64, knots: EmbindVectorF64, multiplicities: EmbindVectorI32, degree: number, periodic: boolean): number;
     makeTangentArc(x1: number, y1: number, z1: number, tx: number, ty: number, tz: number, x2: number, y2: number, z2: number): number;
     makeHelixWire(px: number, py: number, pz: number, dx: number, dy: number, dz: number, pitch: number, height: number, radius: number): number;
+    makeHelixWireHanded(px: number, py: number, pz: number, dx: number, dy: number, dz: number, pitch: number, height: number, radius: number, leftHanded: boolean): number;
     makeWire(edgeIds: EmbindVectorU32): number;
     makeFace(wireId: number): number;
     makeNonPlanarFace(wireId: number): number;

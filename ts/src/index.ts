@@ -18,6 +18,8 @@ export {
     JoinType,
     OcctError,
     OcctErrorCode,
+    SweepContact,
+    SweepLaw,
     SweepMode,
     TransitionMode,
     type AddChildOptions,
@@ -44,6 +46,10 @@ export {
     type ShapeOrientation,
     type ShapeType,
     type SurfaceKind,
+    type SweepAdvancedOptions,
+    type SweepFullOptions,
+    type SweepOrientedOptions,
+    type SweepToleranceOptions,
     type TessellateOptions,
     type UVBounds,
     type Vec3,
@@ -85,12 +91,15 @@ import type {
     ShapeOrientation,
     ShapeType,
     SurfaceKind,
+    SweepAdvancedOptions,
+    SweepFullOptions,
+    SweepOrientedOptions,
     TessellateOptions,
     BooleanOp,
     UVBounds,
     Vec3,
 } from "./types.js";
-import { JoinType, SweepMode, TransitionMode, addExceptionDecoder, wrap } from "./types.js";
+import { JoinType, SweepContact, SweepLaw, SweepMode, TransitionMode, addExceptionDecoder, wrap } from "./types.js";
 import { SHAPE_TYPES, SHAPE_ORIENTATIONS, POINT_CLASSIFICATIONS } from "./types.js";
 import type {
     OcctWasmModule,
@@ -194,7 +203,7 @@ export class OcctKernel {
      */
     static async init(options?: InitOptions): Promise<OcctKernel> {
         // @ts-expect-error -- occt-wasm.js is generated at build time, no .d.ts
-        const imported = await import(/* webpackIgnore: true */ "./occt-wasm.js");
+        const imported = await import("./occt-wasm.js");
         const createModule = imported.default as (
             opts: Record<string, unknown>,
         ) => Promise<OcctWasmModule>;
@@ -499,6 +508,11 @@ export class OcctKernel {
      * control. `up` is required for {@link SweepMode.FixedUp} (the constant
      * binormal direction); `auxSpine` is required for {@link SweepMode.Auxiliary}
      * (the guide wire). Both are ignored for the other modes.
+     *
+     * In `options`, `curvilinearEquivalence` and `contact` apply to
+     * {@link SweepMode.Auxiliary} only; the tolerances apply to every mode and
+     * are absolute, not relative to model size. See
+     * {@link SweepOrientedOptions}.
      */
     sweepOriented(
         profile: ShapeHandle,
@@ -506,9 +520,106 @@ export class OcctKernel {
         mode: SweepMode = SweepMode.Fixed,
         up: Vec3 = { x: 0, y: 0, z: 1 },
         auxSpine?: ShapeHandle,
+        options: SweepOrientedOptions = {},
     ): ShapeHandle {
         return wrap("sweepOriented", () =>
-            handle(this.#raw.sweepOriented(profile, spine, mode, up.x, up.y, up.z, auxSpine ?? 0)),
+            handle(
+                this.#raw.sweepOriented(
+                    profile,
+                    spine,
+                    mode,
+                    up.x,
+                    up.y,
+                    up.z,
+                    auxSpine ?? 0,
+                    options.curvilinearEquivalence ?? false,
+                    options.contact ?? SweepContact.None,
+                    options.tol3d ?? 0,
+                    options.boundTol ?? 0,
+                    options.tolAngular ?? 0,
+                ),
+            ),
+        );
+    }
+
+    /**
+     * Sweep a profile along a spine with the full control surface: the
+     * orientation modes of {@link OcctKernel.sweepOriented}, the corner
+     * transitions of {@link OcctKernel.sweepPipeShell}, and the profile
+     * placement neither of them exposes.
+     *
+     * Prefer this for new code. The other two remain for callers bound to
+     * their existing raw arity.
+     */
+    sweepAdvanced(
+        profile: ShapeHandle,
+        spine: ShapeHandle,
+        options: SweepAdvancedOptions = {},
+    ): ShapeHandle {
+        const up = options.up ?? { x: 0, y: 0, z: 1 };
+        return wrap("sweepAdvanced", () =>
+            handle(
+                this.#raw.sweepAdvanced(
+                    profile,
+                    spine,
+                    options.mode ?? SweepMode.Fixed,
+                    up.x,
+                    up.y,
+                    up.z,
+                    options.auxSpine ?? 0,
+                    options.curvilinearEquivalence ?? false,
+                    options.guideContact ?? SweepContact.None,
+                    options.transitionMode ?? TransitionMode.Transformed,
+                    options.withContact ?? false,
+                    options.withCorrection ?? false,
+                    options.tol3d ?? 0,
+                    options.boundTol ?? 0,
+                    options.tolAngular ?? 0,
+                ),
+            ),
+        );
+    }
+
+    /**
+     * Sweep with the complete control surface: everything
+     * {@link OcctKernel.sweepAdvanced} accepts, plus a spine support surface,
+     * the approximation budget, and a homothetic scaling law.
+     *
+     * Prefer this for new code. The narrower sweep entry points remain for
+     * callers bound to their existing raw arity.
+     */
+    sweepFull(profile: ShapeHandle, spine: ShapeHandle, options: SweepFullOptions = {}): ShapeHandle {
+        const up = options.up ?? { x: 0, y: 0, z: 1 };
+        const law = options.law ?? SweepLaw.None;
+        if (law !== SweepLaw.None && options.lawLength === undefined) {
+            throw new Error("sweepFull: lawLength is required when a law is set");
+        }
+        return wrap("sweepFull", () =>
+            handle(
+                this.#raw.sweepFull(
+                    profile,
+                    spine,
+                    options.mode ?? SweepMode.Fixed,
+                    up.x,
+                    up.y,
+                    up.z,
+                    options.auxSpine ?? 0,
+                    options.curvilinearEquivalence ?? false,
+                    options.guideContact ?? SweepContact.None,
+                    options.transitionMode ?? TransitionMode.Transformed,
+                    options.withContact ?? false,
+                    options.withCorrection ?? false,
+                    options.tol3d ?? 0,
+                    options.boundTol ?? 0,
+                    options.tolAngular ?? 0,
+                    options.support ?? 0,
+                    options.maxDegree ?? 0,
+                    options.maxSegments ?? 0,
+                    law,
+                    options.lawLength ?? 0,
+                    options.lawEndFactor ?? 1,
+                ),
+            ),
         );
     }
 
@@ -630,6 +741,31 @@ export class OcctKernel {
                 origin.x, origin.y, origin.z,
                 axis.x, axis.y, axis.z,
                 pitch, height, radius,
+            )),
+        );
+    }
+
+    /**
+     * A helix with an explicit handedness: right-handed (the default) winds
+     * counter-clockwise about `axis` as it climbs, left-handed clockwise. The
+     * two are mirror images over the same pitch, height and radius.
+     *
+     * Prefer this for new code. {@link OcctKernel.makeHelixWire} remains for
+     * callers bound to its existing raw arity, and is always right-handed.
+     */
+    makeHelixWireHanded(
+        origin: Vec3,
+        axis: Vec3,
+        pitch: number,
+        height: number,
+        radius: number,
+        leftHanded = false,
+    ): ShapeHandle {
+        return wrap("makeHelixWireHanded", () =>
+            handle(this.#raw.makeHelixWireHanded(
+                origin.x, origin.y, origin.z,
+                axis.x, axis.y, axis.z,
+                pitch, height, radius, leftHanded,
             )),
         );
     }
@@ -1640,11 +1776,12 @@ export class OcctKernel {
     }
 
     /**
-     * Remove faces from a solid by closing them off (zero-thickness shell).
+     * Remove complete features such as holes, bosses, chamfers, or fillets and
+     * heal the surrounding faces. Arbitrary isolated faces are not guaranteed
+     * to be removable.
      *
-     * @param tolerance - OCCT precision for the reconstruction. Use `1e-6`
-     *     for precise feature removal (matches brepjs default); `1e-3` is a
-     *     coarser legacy value.
+     * @param tolerance - Additional fuzzy tolerance used while reconstructing
+     *     the surrounding geometry. Pass `0` to use OCCT's defaults.
      */
     defeature(shape: ShapeHandle, faces: ShapeHandle[], tolerance: number): ShapeHandle {
         return wrap("defeature", () => {

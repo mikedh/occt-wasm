@@ -717,15 +717,19 @@ NCollection_List<TopoDS_Shape> facesToRemove;
 for (uint32_t fid : faceIds) {
     facesToRemove.Append(get(fid));
 }
-BRepOffsetAPI_MakeThickSolid maker;
-maker.MakeThickSolidByJoin(get(shapeId), facesToRemove, 0.0, tolerance);
+BRepAlgoAPI_Defeaturing maker;
+maker.SetShape(get(shapeId));
+maker.AddFacesToRemove(facesToRemove);
+if (tolerance > 0.0) {
+    maker.SetFuzzyValue(tolerance);
+}
 maker.Build();
-if (!maker.IsDone()) {
+if (!maker.IsDone() || maker.HasErrors()) {
     throw std::runtime_error(\"defeature: operation failed\");
 }
 return store(maker.Shape());",
-        includes: &["BRepOffsetAPI_MakeThickSolid.hxx", "NCollection_List.hxx"],
-        category: "offsetting",
+        includes: &["BRepAlgoAPI_Defeaturing.hxx", "NCollection_List.hxx"],
+        category: "modeling",
         return_type: ReturnType::ShapeId,
     },
     MethodSpec {
@@ -1636,12 +1640,79 @@ BRepBuilderAPI_MakeWire wireMaker(edgeMaker.Edge());
 if (!wireMaker.IsDone()) {
     throw std::runtime_error(\"makeHelixWire: wire construction failed\");
 }
-return store(wireMaker.Shape());",
+// The edge carries only the pcurve on the cylinder. Algorithms that read the
+// 3D curve — sweeps above all — fail outright without this, and MaxSegment
+// has to clear 30 for the approximation of a multi-turn helix to converge.
+TopoDS_Shape wire = wireMaker.Shape();
+if (!BRepLib::BuildCurves3d(wire, 1.0e-6, GeomAbs_C1, 14, 2000)) {
+    throw std::runtime_error(\"makeHelixWire: 3D curve approximation failed\");
+}
+return store(wire);",
         includes: &[
             "gp_Ax3.hxx", "gp_Pnt.hxx", "gp_Dir.hxx",
             "Geom_CylindricalSurface.hxx", "Geom2d_Line.hxx",
             "gp_Pnt2d.hxx", "gp_Dir2d.hxx",
             "BRepBuilderAPI_MakeEdge.hxx", "BRepBuilderAPI_MakeWire.hxx",
+            "BRepLib.hxx", "GeomAbs_Shape.hxx", "TopoDS_Shape.hxx",
+        ],
+        category: "construction",
+        return_type: ReturnType::ShapeId,
+    },
+    MethodSpec {
+        name: "makeHelixWireHanded",
+        kind: MethodKind::CustomBody,
+        params: &[
+            FacadeParam::Double("px"), FacadeParam::Double("py"), FacadeParam::Double("pz"),
+            FacadeParam::Double("dx"), FacadeParam::Double("dy"), FacadeParam::Double("dz"),
+            FacadeParam::Double("pitch"), FacadeParam::Double("height"), FacadeParam::Double("radius"),
+            FacadeParam::Bool("leftHanded"),
+        ],
+        occt_class: "",
+        ctor_args: "",
+        // makeHelixWire with the handedness its callers could not express. It
+        // stays as it is: its Embind arity is load-bearing for callers that
+        // bind the raw kernel rather than the TS wrapper.
+        //
+        // leftHanded reverses the sense of u only, so the curve winds the other
+        // way about the axis over the same pitch, height and radius. Reversing
+        // the axis direction instead would flip the climb as well and land the
+        // helix on the other side of the origin.
+        setup_code: "\
+gp_Ax3 ax3(gp_Pnt(px, py, pz), gp_Dir(dx, dy, dz));
+Handle(Geom_CylindricalSurface) cylinder = new Geom_CylindricalSurface(ax3, radius);
+
+// A helix on a cylindrical surface is a 2D line: u = t, v = pitch/(2*pi) * t
+double slope = pitch / (2.0 * M_PI);
+double nTurns = height / pitch;
+// gp_Dir2d normalizes (+/-1, slope) to unit length, so advancing the edge
+// parameter by t moves only t / sqrt(1 + slope^2) along u (the angle). Scale
+// the parameter range by that length so the edge actually sweeps nTurns full
+// turns and the full height instead of falling short.
+double dirLen = std::sqrt(1.0 + slope * slope);
+double uMax = nTurns * 2.0 * M_PI * dirLen;
+
+Handle(Geom2d_Line) line2d =
+    new Geom2d_Line(gp_Pnt2d(0, 0), gp_Dir2d(leftHanded ? -1.0 : 1.0, slope));
+
+BRepBuilderAPI_MakeEdge edgeMaker(line2d, cylinder, 0.0, uMax);
+if (!edgeMaker.IsDone()) {
+    throw std::runtime_error(\"makeHelixWireHanded: edge construction failed\");
+}
+BRepBuilderAPI_MakeWire wireMaker(edgeMaker.Edge());
+if (!wireMaker.IsDone()) {
+    throw std::runtime_error(\"makeHelixWireHanded: wire construction failed\");
+}
+TopoDS_Shape wire = wireMaker.Shape();
+if (!BRepLib::BuildCurves3d(wire, 1.0e-6, GeomAbs_C1, 14, 2000)) {
+    throw std::runtime_error(\"makeHelixWireHanded: 3D curve approximation failed\");
+}
+return store(wire);",
+        includes: &[
+            "gp_Ax3.hxx", "gp_Pnt.hxx", "gp_Dir.hxx",
+            "Geom_CylindricalSurface.hxx", "Geom2d_Line.hxx",
+            "gp_Pnt2d.hxx", "gp_Dir2d.hxx",
+            "BRepBuilderAPI_MakeEdge.hxx", "BRepBuilderAPI_MakeWire.hxx",
+            "BRepLib.hxx", "GeomAbs_Shape.hxx", "TopoDS_Shape.hxx",
         ],
         category: "construction",
         return_type: ReturnType::ShapeId,
@@ -3539,12 +3610,21 @@ return store(maker.Shape());",
             FacadeParam::Double("upY"),
             FacadeParam::Double("upZ"),
             FacadeParam::ShapeId("auxSpineId"),
+            FacadeParam::Bool("curvilinearEquivalence"),
+            FacadeParam::Int("contactMode"),
+            FacadeParam::Double("tol3d"),
+            FacadeParam::Double("boundTol"),
+            FacadeParam::Double("tolAngular"),
         ],
         occt_class: "",
         ctor_args: "",
         // mode 0 = Fixed (corrected Frenet, minimal torsion), 1 = Frenet
         // (follows the principal normal), 2 = FixedUp (constant binormal),
         // 3 = Auxiliary (orientation driven by the auxSpineId guide wire).
+        // contactMode maps to BRepFill_TypeOfContact and only applies to
+        // Auxiliary. A non-positive tolerance leaves the OCCT default in
+        // place; those defaults are absolute (1e-4 / 1e-4 / 1e-2 rad), so
+        // large models need them scaled up explicitly.
         setup_code: "\
 BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(get(spineId)));
 switch (mode) {
@@ -3559,21 +3639,308 @@ switch (mode) {
         maker.SetMode(up);
         break;
     }
-    case 3:
-        maker.SetMode(TopoDS::Wire(get(auxSpineId)), Standard_True);
+    case 3: {
+        BRepFill_TypeOfContact contact;
+        switch (contactMode) {
+            case 0:
+                contact = BRepFill_NoContact;
+                break;
+            case 1:
+                contact = BRepFill_Contact;
+                break;
+            case 2:
+                contact = BRepFill_ContactOnBorder;
+                break;
+            default:
+                throw std::runtime_error(\"sweepOriented: invalid contact mode\");
+        }
+        maker.SetMode(TopoDS::Wire(get(auxSpineId)), curvilinearEquivalence, contact);
         break;
+    }
     default:
         throw std::runtime_error(\"sweepOriented: invalid mode\");
+}
+if (tol3d > 0.0 || boundTol > 0.0 || tolAngular > 0.0) {
+    maker.SetTolerance(tol3d > 0.0 ? tol3d : 1.0e-4,
+                       boundTol > 0.0 ? boundTol : 1.0e-4,
+                       tolAngular > 0.0 ? tolAngular : 1.0e-2);
 }
 maker.Add(get(profileId));
 maker.Build();
 if (!maker.IsDone()) {
-    throw std::runtime_error(\"sweepOriented: operation failed\");
+    switch (maker.GetStatus()) {
+        case BRepBuilderAPI_PlaneNotIntersectGuide:
+            throw std::runtime_error(
+                \"sweepOriented: a section plane does not intersect the guide wire. The guide \"
+                \"must span the whole spine and stay close enough to meet every section.\");
+        case BRepBuilderAPI_ImpossibleContact:
+            throw std::runtime_error(
+                \"sweepOriented: cannot keep the section in contact with the guide wire. The \"
+                \"guide must be close enough to the spine to intersect every section.\");
+        default:
+            throw std::runtime_error(\"sweepOriented: operation failed\");
+    }
 }
 maker.MakeSolid();
 return store(maker.Shape());",
         includes: &[
             "BRepOffsetAPI_MakePipeShell.hxx",
+            "BRepBuilderAPI_PipeError.hxx",
+            "BRepFill_TypeOfContact.hxx",
+            "TopoDS.hxx",
+            "gp_Dir.hxx",
+        ],
+        category: "sweep",
+        return_type: ReturnType::ShapeId,
+    },
+    MethodSpec {
+        name: "sweepAdvanced",
+        kind: MethodKind::CustomBody,
+        params: &[
+            FacadeParam::ShapeId("profileId"),
+            FacadeParam::ShapeId("spineId"),
+            FacadeParam::Int("mode"),
+            FacadeParam::Double("upX"),
+            FacadeParam::Double("upY"),
+            FacadeParam::Double("upZ"),
+            FacadeParam::ShapeId("auxSpineId"),
+            FacadeParam::Bool("curvilinearEquivalence"),
+            FacadeParam::Int("guideContact"),
+            FacadeParam::Int("transitionMode"),
+            FacadeParam::Bool("withContact"),
+            FacadeParam::Bool("withCorrection"),
+            FacadeParam::Double("tol3d"),
+            FacadeParam::Double("boundTol"),
+            FacadeParam::Double("tolAngular"),
+        ],
+        occt_class: "",
+        ctor_args: "",
+        // The union of sweepPipeShell and sweepOriented, plus the Add-level
+        // profile placement neither of them could express. Those two stay as
+        // they are: their Embind arity is load-bearing for callers that bind
+        // the raw kernel rather than the TS wrapper.
+        //
+        // mode matches sweepOriented (0 Fixed, 1 Frenet, 2 FixedUp, 3
+        // Auxiliary). guideContact is BRepFill_TypeOfContact on SetMode and
+        // governs how the section tracks the guide wire; withContact and
+        // withCorrection are Add parameters and govern how the profile sits on
+        // the spine. The two are unrelated despite both being "contact".
+        //
+        // A non-positive tolerance leaves the OCCT default in place; those
+        // defaults are absolute (1e-4 / 1e-4 / 1e-2 rad), so large models need
+        // them scaled up explicitly.
+        setup_code: "\
+BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(get(spineId)));
+switch (mode) {
+    case 0:
+        maker.SetMode(Standard_False);
+        break;
+    case 1:
+        maker.SetMode(Standard_True);
+        break;
+    case 2: {
+        gp_Dir up(upX, upY, upZ);
+        maker.SetMode(up);
+        break;
+    }
+    case 3: {
+        BRepFill_TypeOfContact contact;
+        switch (guideContact) {
+            case 0:
+                contact = BRepFill_NoContact;
+                break;
+            case 1:
+                contact = BRepFill_Contact;
+                break;
+            case 2:
+                contact = BRepFill_ContactOnBorder;
+                break;
+            default:
+                throw std::runtime_error(\"sweepAdvanced: invalid contact mode\");
+        }
+        maker.SetMode(TopoDS::Wire(get(auxSpineId)), curvilinearEquivalence, contact);
+        break;
+    }
+    default:
+        throw std::runtime_error(\"sweepAdvanced: invalid mode\");
+}
+if (transitionMode < 0 || transitionMode > 2) {
+    throw std::runtime_error(\"sweepAdvanced: invalid transition mode\");
+}
+maker.SetTransitionMode(static_cast<BRepBuilderAPI_TransitionMode>(transitionMode));
+if (tol3d > 0.0 || boundTol > 0.0 || tolAngular > 0.0) {
+    maker.SetTolerance(tol3d > 0.0 ? tol3d : 1.0e-4,
+                       boundTol > 0.0 ? boundTol : 1.0e-4,
+                       tolAngular > 0.0 ? tolAngular : 1.0e-2);
+}
+maker.Add(get(profileId), withContact, withCorrection);
+maker.Build();
+if (!maker.IsDone()) {
+    switch (maker.GetStatus()) {
+        case BRepBuilderAPI_PlaneNotIntersectGuide:
+            throw std::runtime_error(
+                \"sweepAdvanced: a section plane does not intersect the guide wire. The guide \"
+                \"must span the whole spine and stay close enough to meet every section.\");
+        case BRepBuilderAPI_ImpossibleContact:
+            throw std::runtime_error(
+                \"sweepAdvanced: cannot keep the section in contact with the guide wire. The \"
+                \"guide must be close enough to the spine to intersect every section.\");
+        default:
+            throw std::runtime_error(\"sweepAdvanced: operation failed\");
+    }
+}
+maker.MakeSolid();
+return store(maker.Shape());",
+        includes: &[
+            "BRepOffsetAPI_MakePipeShell.hxx",
+            "BRepBuilderAPI_PipeError.hxx",
+            "BRepBuilderAPI_TransitionMode.hxx",
+            "BRepFill_TypeOfContact.hxx",
+            "TopoDS.hxx",
+            "gp_Dir.hxx",
+        ],
+        category: "sweep",
+        return_type: ReturnType::ShapeId,
+    },
+    MethodSpec {
+        name: "sweepFull",
+        kind: MethodKind::CustomBody,
+        params: &[
+            FacadeParam::ShapeId("profileId"),
+            FacadeParam::ShapeId("spineId"),
+            FacadeParam::Int("mode"),
+            FacadeParam::Double("upX"),
+            FacadeParam::Double("upY"),
+            FacadeParam::Double("upZ"),
+            FacadeParam::ShapeId("auxSpineId"),
+            FacadeParam::Bool("curvilinearEquivalence"),
+            FacadeParam::Int("guideContact"),
+            FacadeParam::Int("transitionMode"),
+            FacadeParam::Bool("withContact"),
+            FacadeParam::Bool("withCorrection"),
+            FacadeParam::Double("tol3d"),
+            FacadeParam::Double("boundTol"),
+            FacadeParam::Double("tolAngular"),
+            FacadeParam::ShapeId("supportId"),
+            FacadeParam::Int("maxDegree"),
+            FacadeParam::Int("maxSegments"),
+            FacadeParam::Int("lawKind"),
+            FacadeParam::Double("lawLength"),
+            FacadeParam::Double("lawEndFactor"),
+        ],
+        occt_class: "",
+        ctor_args: "",
+        // Everything sweepAdvanced carries, plus the four MakePipeShell knobs
+        // it cannot reach: a spine support surface, the approximation budget,
+        // and a homothetic scaling law.
+        //
+        // sweepAdvanced stays as it is. Its Embind arity is load-bearing —
+        // brepjs binds the raw kernel and calls it positionally — so growing
+        // it would break every consumer pinned to 4.1.x. New work should call
+        // this; the narrower sweep entry points are superseded and are
+        // candidates for removal in the next major.
+        //
+        // supportId, maxDegree, maxSegments and lawKind are all opt-in: 0
+        // means "leave OCCT's default in place". lawKind 1 is Law_Linear and 2
+        // is Law_S, each set over [0,1] from lawStartFactor to lawEndFactor.
+        // SetLaw replaces Add rather than supplementing it — OCCT warns the
+        // two should not be combined — so it carries the same contact and
+        // correction flags Add would have.
+        setup_code: "\
+BRepOffsetAPI_MakePipeShell maker(TopoDS::Wire(get(spineId)));
+if (supportId != 0) {
+    if (!maker.SetMode(get(supportId))) {
+        throw std::runtime_error(
+            \"sweepFull: the support shape is not a valid spine support. It must contain the \"
+            \"spine and supply the surface the sweep follows.\");
+    }
+} else {
+    switch (mode) {
+        case 0:
+            maker.SetMode(Standard_False);
+            break;
+        case 1:
+            maker.SetMode(Standard_True);
+            break;
+        case 2: {
+            gp_Dir up(upX, upY, upZ);
+            maker.SetMode(up);
+            break;
+        }
+        case 3: {
+            BRepFill_TypeOfContact contact;
+            switch (guideContact) {
+                case 0:
+                    contact = BRepFill_NoContact;
+                    break;
+                case 1:
+                    contact = BRepFill_Contact;
+                    break;
+                case 2:
+                    contact = BRepFill_ContactOnBorder;
+                    break;
+                default:
+                    throw std::runtime_error(\"sweepFull: invalid contact mode\");
+            }
+            maker.SetMode(TopoDS::Wire(get(auxSpineId)), curvilinearEquivalence, contact);
+            break;
+        }
+        default:
+            throw std::runtime_error(\"sweepFull: invalid mode\");
+    }
+}
+if (transitionMode < 0 || transitionMode > 2) {
+    throw std::runtime_error(\"sweepFull: invalid transition mode\");
+}
+maker.SetTransitionMode(static_cast<BRepBuilderAPI_TransitionMode>(transitionMode));
+if (tol3d > 0.0 || boundTol > 0.0 || tolAngular > 0.0) {
+    maker.SetTolerance(tol3d > 0.0 ? tol3d : 1.0e-4,
+                       boundTol > 0.0 ? boundTol : 1.0e-4,
+                       tolAngular > 0.0 ? tolAngular : 1.0e-2);
+}
+if (maxDegree > 0) {
+    maker.SetMaxDegree(maxDegree);
+}
+if (maxSegments > 0) {
+    maker.SetMaxSegments(maxSegments);
+}
+if (lawKind == 0) {
+    maker.Add(get(profileId), withContact, withCorrection);
+} else if (lawKind == 1) {
+    Handle(Law_Linear) law = new Law_Linear();
+    law->Set(0.0, 1.0, lawLength, lawEndFactor);
+    maker.SetLaw(get(profileId), law, withContact, withCorrection);
+} else if (lawKind == 2) {
+    Handle(Law_S) law = new Law_S();
+    law->Set(0.0, 1.0, lawLength, lawEndFactor);
+    maker.SetLaw(get(profileId), law, withContact, withCorrection);
+} else {
+    throw std::runtime_error(\"sweepFull: invalid law kind\");
+}
+maker.Build();
+if (!maker.IsDone()) {
+    switch (maker.GetStatus()) {
+        case BRepBuilderAPI_PlaneNotIntersectGuide:
+            throw std::runtime_error(
+                \"sweepFull: a section plane does not intersect the guide wire. The guide must \"
+                \"span the whole spine and stay close enough to meet every section.\");
+        case BRepBuilderAPI_ImpossibleContact:
+            throw std::runtime_error(
+                \"sweepFull: cannot keep the section in contact with the guide wire. The guide \"
+                \"must be close enough to the spine to intersect every section.\");
+        default:
+            throw std::runtime_error(\"sweepFull: operation failed\");
+    }
+}
+maker.MakeSolid();
+return store(maker.Shape());",
+        includes: &[
+            "BRepOffsetAPI_MakePipeShell.hxx",
+            "BRepBuilderAPI_PipeError.hxx",
+            "BRepBuilderAPI_TransitionMode.hxx",
+            "BRepFill_TypeOfContact.hxx",
+            "Law_Linear.hxx",
+            "Law_S.hxx",
             "TopoDS.hxx",
             "gp_Dir.hxx",
         ],
@@ -5503,6 +5870,22 @@ mod tests {
             "bundled specs failed validation: {:?}",
             validate(target_methods()).err()
         );
+    }
+
+    #[test]
+    fn defeature_uses_occt_defeaturing_algorithm() {
+        let spec = target_methods()
+            .iter()
+            .find(|method| method.name == "defeature")
+            .expect("defeature method spec");
+
+        assert!(spec.includes.contains(&"BRepAlgoAPI_Defeaturing.hxx"));
+        assert!(spec.setup_code.contains("BRepAlgoAPI_Defeaturing maker"));
+        assert!(
+            spec.setup_code
+                .contains("maker.AddFacesToRemove(facesToRemove)")
+        );
+        assert!(!spec.setup_code.contains("MakeThickSolidByJoin"));
     }
 
     #[test]

@@ -11,7 +11,7 @@
 
 use std::fmt::Write as _;
 
-use super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+use super::types::{FacadeParam, MethodSpec, ReturnType};
 
 /// Convert `camelCase` to `snake_case`.
 pub fn camel_to_snake(s: &str) -> String {
@@ -746,7 +746,7 @@ pub fn emit_wasi_exports(methods: &[&MethodSpec]) -> String {
     let _ = writeln!(buf);
 
     for spec in methods {
-        if matches!(spec.kind, MethodKind::Skip) {
+        if !spec.has_wasi_binding() {
             continue;
         }
         emit_wasi_method(&mut buf, spec);
@@ -786,6 +786,7 @@ pub fn export_names(source: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::codegen::types::MethodKind;
 
     #[test]
     fn camel_to_snake_basic() {
@@ -813,7 +814,7 @@ mod tests {
 
     #[test]
     fn emits_simple_shape_method() {
-        use super::super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+        use super::super::types::{FacadeParam, MethodSpec, ReturnType};
 
         static MAKE_BOX: MethodSpec = MethodSpec {
             name: "makeBox",
@@ -842,7 +843,7 @@ mod tests {
 
     #[test]
     fn emits_string_param_method() {
-        use super::super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+        use super::super::types::{FacadeParam, MethodSpec, ReturnType};
 
         static IMPORT_STEP: MethodSpec = MethodSpec {
             name: "importStep",
@@ -863,7 +864,7 @@ mod tests {
 
     #[test]
     fn emits_vector_param_method() {
-        use super::super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+        use super::super::types::{FacadeParam, MethodSpec, ReturnType};
 
         static FUSE_ALL: MethodSpec = MethodSpec {
             name: "fuseAll",
@@ -888,7 +889,7 @@ mod tests {
 
     #[test]
     fn emits_string_return_method() {
-        use super::super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+        use super::super::types::{FacadeParam, MethodSpec, ReturnType};
 
         static EXPORT_STEP: MethodSpec = MethodSpec {
             name: "exportStep",

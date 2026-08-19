@@ -54,7 +54,7 @@ pub(crate) struct GeneratedFuncs {
     fn_offset: Option<TypedFunc<(u32, f64, f64), u32>>,
     fn_draft: Option<TypedFunc<(u32, u32, f64, f64, f64, f64), u32>>,
     fn_thicken: Option<TypedFunc<(u32, f64, f64), u32>>,
-    fn_defeature: Option<TypedFunc<(u32, i32, i32, f64), u32>>,
+    fn_defeature: TypedFunc<(u32, i32, i32, f64), u32>,
     fn_reverse_shape: TypedFunc<(u32,), u32>,
     fn_simplify: TypedFunc<(u32,), u32>,
     fn_fillet_variable: TypedFunc<(u32, u32, f64, f64), u32>,
@@ -93,6 +93,7 @@ pub(crate) struct GeneratedFuncs {
     fn_make_b_spline_edge: TypedFunc<(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32), u32>,
     fn_make_ellipse_arc: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
     fn_make_helix_wire: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
+    fn_make_helix_wire_handed: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, i32), u32>,
     fn_make_non_planar_face: Option<TypedFunc<(u32,), u32>>,
     fn_add_holes_in_face: TypedFunc<(u32, i32, i32), u32>,
     fn_remove_holes_from_face: TypedFunc<(u32, i32, i32), u32>,
@@ -167,7 +168,30 @@ pub(crate) struct GeneratedFuncs {
     fn_loft_with_vertices: Option<TypedFunc<(i32, i32, i32, i32, u32, u32), u32>>,
     fn_sweep: Option<TypedFunc<(u32, u32, i32), u32>>,
     fn_sweep_pipe_shell: Option<TypedFunc<(u32, u32, i32, i32), u32>>,
-    fn_sweep_oriented: Option<TypedFunc<(u32, u32, i32, f64, f64, f64, u32), u32>>,
+    fn_sweep_oriented:
+        Option<TypedFunc<(u32, u32, i32, f64, f64, f64, u32, i32, i32, f64, f64, f64), u32>>,
+    fn_sweep_advanced: Option<
+        TypedFunc<
+            (
+                u32,
+                u32,
+                i32,
+                f64,
+                f64,
+                f64,
+                u32,
+                i32,
+                i32,
+                i32,
+                i32,
+                i32,
+                f64,
+                f64,
+                f64,
+            ),
+            u32,
+        >,
+    >,
     fn_draft_prism: Option<TypedFunc<(u32, f64, f64, f64, f64), u32>>,
     fn_fix_shape: TypedFunc<(u32,), u32>,
     fn_unify_same_domain: TypedFunc<(u32,), u32>,
@@ -275,7 +299,7 @@ impl GeneratedFuncs {
             fn_offset: instance.get_typed_func(&mut store, "occt_offset").ok(),
             fn_draft: instance.get_typed_func(&mut store, "occt_draft").ok(),
             fn_thicken: instance.get_typed_func(&mut store, "occt_thicken").ok(),
-            fn_defeature: instance.get_typed_func(&mut store, "occt_defeature").ok(),
+            fn_defeature: instance.get_typed_func(&mut store, "occt_defeature")?,
             fn_reverse_shape: instance.get_typed_func(&mut store, "occt_reverse_shape")?,
             fn_simplify: instance.get_typed_func(&mut store, "occt_simplify")?,
             fn_fillet_variable: instance.get_typed_func(&mut store, "occt_fillet_variable")?,
@@ -318,6 +342,8 @@ impl GeneratedFuncs {
                 .get_typed_func(&mut store, "occt_make_b_spline_edge")?,
             fn_make_ellipse_arc: instance.get_typed_func(&mut store, "occt_make_ellipse_arc")?,
             fn_make_helix_wire: instance.get_typed_func(&mut store, "occt_make_helix_wire")?,
+            fn_make_helix_wire_handed: instance
+                .get_typed_func(&mut store, "occt_make_helix_wire_handed")?,
             fn_make_non_planar_face: instance
                 .get_typed_func(&mut store, "occt_make_non_planar_face")
                 .ok(),
@@ -465,6 +491,9 @@ impl GeneratedFuncs {
                 .ok(),
             fn_sweep_oriented: instance
                 .get_typed_func(&mut store, "occt_sweep_oriented")
+                .ok(),
+            fn_sweep_advanced: instance
+                .get_typed_func(&mut store, "occt_sweep_advanced")
                 .ok(),
             fn_draft_prism: instance.get_typed_func(&mut store, "occt_draft_prism").ok(),
             fn_fix_shape: instance.get_typed_func(&mut store, "occt_fix_shape")?,
@@ -1136,21 +1165,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    /// Requires the `offsetting` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn defeature(
         &mut self,
         shape_id: ShapeHandle,
         face_ids: &[ShapeHandle],
         tolerance: f64,
     ) -> OcctResult<ShapeHandle> {
-        let Some(func) = self.generated.fn_defeature.clone() else {
-            return Err(OcctError::MissingCapability("defeature"));
-        };
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = func.call(
+        let result = self.generated.fn_defeature.call(
             &mut self.store,
             (
                 shape_id.0,
@@ -2064,6 +2088,41 @@ impl crate::kernel::OcctKernel {
         self.check_error("make_helix_wire")?;
         if result == 0 {
             return Err(self.read_last_error("make_helix_wire"));
+        }
+        Ok(ShapeHandle(result))
+    }
+
+    pub fn make_helix_wire_handed(
+        &mut self,
+        px: f64,
+        py: f64,
+        pz: f64,
+        dx: f64,
+        dy: f64,
+        dz: f64,
+        pitch: f64,
+        height: f64,
+        radius: f64,
+        left_handed: bool,
+    ) -> OcctResult<ShapeHandle> {
+        let result = self.generated.fn_make_helix_wire_handed.call(
+            &mut self.store,
+            (
+                px,
+                py,
+                pz,
+                dx,
+                dy,
+                dz,
+                pitch,
+                height,
+                radius,
+                i32::from(left_handed),
+            ),
+        )?;
+        self.check_error("make_helix_wire_handed")?;
+        if result == 0 {
+            return Err(self.read_last_error("make_helix_wire_handed"));
         }
         Ok(ShapeHandle(result))
     }
@@ -3338,6 +3397,11 @@ impl crate::kernel::OcctKernel {
         up_y: f64,
         up_z: f64,
         aux_spine_id: ShapeHandle,
+        curvilinear_equivalence: bool,
+        contact_mode: i32,
+        tol3d: f64,
+        bound_tol: f64,
+        tol_angular: f64,
     ) -> OcctResult<ShapeHandle> {
         let Some(func) = self.generated.fn_sweep_oriented.clone() else {
             return Err(OcctError::MissingCapability("sweep_oriented"));
@@ -3352,11 +3416,66 @@ impl crate::kernel::OcctKernel {
                 up_y,
                 up_z,
                 aux_spine_id.0,
+                i32::from(curvilinear_equivalence),
+                contact_mode,
+                tol3d,
+                bound_tol,
+                tol_angular,
             ),
         )?;
         self.check_error("sweep_oriented")?;
         if result == 0 {
             return Err(self.read_last_error("sweep_oriented"));
+        }
+        Ok(ShapeHandle(result))
+    }
+
+    /// Requires the `sweep` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
+    pub fn sweep_advanced(
+        &mut self,
+        profile_id: ShapeHandle,
+        spine_id: ShapeHandle,
+        mode: i32,
+        up_x: f64,
+        up_y: f64,
+        up_z: f64,
+        aux_spine_id: ShapeHandle,
+        curvilinear_equivalence: bool,
+        guide_contact: i32,
+        transition_mode: i32,
+        with_contact: bool,
+        with_correction: bool,
+        tol3d: f64,
+        bound_tol: f64,
+        tol_angular: f64,
+    ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_sweep_advanced.clone() else {
+            return Err(OcctError::MissingCapability("sweep_advanced"));
+        };
+        let result = func.call(
+            &mut self.store,
+            (
+                profile_id.0,
+                spine_id.0,
+                mode,
+                up_x,
+                up_y,
+                up_z,
+                aux_spine_id.0,
+                i32::from(curvilinear_equivalence),
+                guide_contact,
+                transition_mode,
+                i32::from(with_contact),
+                i32::from(with_correction),
+                tol3d,
+                bound_tol,
+                tol_angular,
+            ),
+        )?;
+        self.check_error("sweep_advanced")?;
+        if result == 0 {
+            return Err(self.read_last_error("sweep_advanced"));
         }
         Ok(ShapeHandle(result))
     }

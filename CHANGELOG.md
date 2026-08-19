@@ -1,5 +1,66 @@
 # Changelog
 
+## [4.3.1](https://github.com/andymai/occt-wasm/compare/v4.3.0...v4.3.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **ts:** let bundlers resolve the Emscripten glue import ([#275](https://github.com/andymai/occt-wasm/issues/275)) ([5737231](https://github.com/andymai/occt-wasm/commit/57372314d0001f81e7ed911014f3ece925a2e2c7))
+
+## [4.3.0](https://github.com/andymai/occt-wasm/compare/v4.2.0...v4.3.0) (2026-08-09)
+
+
+### Features
+
+* **facade:** add makeHelixWireHanded and build the helix 3D curve ([#269](https://github.com/andymai/occt-wasm/issues/269)) ([a893a5c](https://github.com/andymai/occt-wasm/commit/a893a5c8fa773d871bbeb7e1b1b1f40ac6e5a6e7))
+
+## [4.2.0](https://github.com/andymai/occt-wasm/compare/v4.1.0...v4.2.0) (2026-08-08)
+
+
+### Features
+
+* **facade:** add sweepFull with law, support and approximation budget ([#266](https://github.com/andymai/occt-wasm/issues/266)) ([abae1d0](https://github.com/andymai/occt-wasm/commit/abae1d0a8da5d9022cd72c7d92db858422af8275))
+
+
+### Bug Fixes
+
+* **deps:** bump nanoid past GHSA-2v37-7h3g-55p8 ([#265](https://github.com/andymai/occt-wasm/issues/265)) ([0a0f569](https://github.com/andymai/occt-wasm/commit/0a0f569ff02a03b3bad69077377d218349e9c812))
+
+## [4.1.0](https://github.com/andymai/occt-wasm/compare/v4.0.0...v4.1.0) (2026-08-08)
+
+
+### Features
+
+* **facade:** add sweepAdvanced with profile contact, correction, and tolerances ([#263](https://github.com/andymai/occt-wasm/issues/263)) ([70495ee](https://github.com/andymai/occt-wasm/commit/70495ee8fdd2aa739090b7b250b80ad820511108))
+
+## [4.0.0](https://github.com/andymai/occt-wasm/compare/v3.8.4...v4.0.0) (2026-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **facade:** SweepMode.Auxiliary now matches spine and guide by parameter rather than by curvilinear abscissa. Pass `{ curvilinearEquivalence: true }` to restore the old behaviour.
+
+### Bug Fixes
+
+* **deps:** bump js-yaml past GHSA-5p4m-2wfm-xmqj ([#260](https://github.com/andymai/occt-wasm/issues/260)) ([8827948](https://github.com/andymai/occt-wasm/commit/88279482d7cfc8176fb342d7ea67f296ae743839))
+* **facade:** stop forcing curvilinear equivalence on auxiliary sweeps ([#259](https://github.com/andymai/occt-wasm/issues/259)) ([8b34316](https://github.com/andymai/occt-wasm/commit/8b34316f9a91a33a39594fef0ceb16ddacdcc71f))
+
+## [3.8.4](https://github.com/andymai/occt-wasm/compare/v3.8.3...v3.8.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **deps:** bump fast-uri past GHSA-7p8r-x3mc-p8w7 ([#252](https://github.com/andymai/occt-wasm/issues/252)) ([1eeeb13](https://github.com/andymai/occt-wasm/commit/1eeeb13b71d9d5f7e052389359bda09d93d16168))
+
+## [3.8.3](https://github.com/andymai/occt-wasm/compare/v3.8.2...v3.8.3) (2026-08-03)
+
+
+### Bug Fixes
+
+* **deps:** bump wasmtime to 46.0.2 past RUSTSEC-2026-0222/0223 ([#240](https://github.com/andymai/occt-wasm/issues/240)) ([c219451](https://github.com/andymai/occt-wasm/commit/c219451feb6d86aa3cec823d044ef112305e6761))
+* **facade:** use OCCT defeaturing API ([#242](https://github.com/andymai/occt-wasm/issues/242)) ([f4c96e7](https://github.com/andymai/occt-wasm/commit/f4c96e7dc847002c74ff6d8a5819b12ef6b69b32))
+* **occt:** bump submodule to V8.0.1 ([#246](https://github.com/andymai/occt-wasm/issues/246)) ([e774ad0](https://github.com/andymai/occt-wasm/commit/e774ad004532688077fea75d10214ef83c2ca1f5)), closes [#243](https://github.com/andymai/occt-wasm/issues/243)
+
 ## [3.8.2](https://github.com/andymai/occt-wasm/compare/v3.8.1...v3.8.2) (2026-07-31)
 
 

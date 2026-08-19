@@ -192,6 +192,143 @@ export enum SweepMode {
     Auxiliary = 3,
 }
 
+/** How the swept section relates to the guide spine (BRepFill_TypeOfContact). */
+export enum SweepContact {
+    /** The guide only orients the section; it does not touch the result. */
+    None = 0,
+    /** The section is widened to stay in contact with the guide; section width stays constant. */
+    Contact = 1,
+    /** The guide becomes a boundary of the swept surface; section width varies. */
+    ContactOnBorder = 2,
+}
+
+/**
+ * Approximation tolerances for the pipe-shell sweeps. All are absolute, not
+ * relative to model size.
+ */
+export interface SweepToleranceOptions {
+    /**
+     * 3D approximation tolerance. OCCT's default is an absolute `1e-4`, so
+     * models much larger than unit scale should raise this in proportion —
+     * otherwise the surface approximation runs out of spans and the sweep
+     * degrades or fails outright.
+     */
+    tol3d?: number;
+    /** Boundary tolerance. OCCT's default is an absolute `1e-4`. */
+    boundTol?: number;
+    /** Angular tolerance in radians. OCCT's default is `1e-2`. */
+    tolAngular?: number;
+}
+
+/**
+ * Controls for {@link OcctKernel.sweepAdvanced} — the union of the orientation
+ * controls of {@link OcctKernel.sweepOriented}, the corner transitions of
+ * {@link OcctKernel.sweepPipeShell}, and the profile placement that neither
+ * one exposes.
+ */
+export interface SweepAdvancedOptions extends SweepToleranceOptions {
+    /** Profile-orientation mode. Defaults to {@link SweepMode.Fixed}. */
+    mode?: SweepMode;
+    /** Constant binormal for {@link SweepMode.FixedUp}. Defaults to +Z. */
+    up?: Vec3;
+    /** Guide wire. Required for {@link SweepMode.Auxiliary}, ignored otherwise. */
+    auxSpine?: ShapeHandle;
+    /**
+     * {@link SweepMode.Auxiliary} only. Match spine and guide by curvilinear
+     * abscissa rather than by parameter. Defaults to `false`. See
+     * {@link SweepOrientedOptions.curvilinearEquivalence} for what the two
+     * settings actually construct.
+     */
+    curvilinearEquivalence?: boolean;
+    /**
+     * {@link SweepMode.Auxiliary} only. How the section tracks the *guide
+     * wire*. Defaults to {@link SweepContact.None}.
+     *
+     * Unrelated to {@link SweepAdvancedOptions.withContact}, which governs how
+     * the profile sits on the *spine*.
+     */
+    guideContact?: SweepContact;
+    /** Corner transition at spine vertices. Defaults to {@link TransitionMode.Transformed}. */
+    transitionMode?: TransitionMode;
+    /**
+     * Translate the profile so it touches the spine before sweeping
+     * (`BRepOffsetAPI_MakePipeShell::Add`'s `WithContact`). Defaults to
+     * `false`, which sweeps the profile where the caller placed it.
+     */
+    withContact?: boolean;
+    /**
+     * Rotate the profile to stay orthogonal to the spine tangent (`Add`'s
+     * `WithCorrection`). Defaults to `false`. A no-op on a straight spine.
+     */
+    withCorrection?: boolean;
+}
+
+/** Homothetic scaling law applied along the spine by {@link OcctKernel.sweepFull}. */
+export enum SweepLaw {
+    /** No scaling; the section keeps its authored size. */
+    None = 0,
+    /** Linear interpolation from 1 to `endFactor` (OCCT `Law_Linear`). */
+    Linear = 1,
+    /** S-curve with zero end derivatives, 1 to `endFactor` (OCCT `Law_S`). */
+    SCurve = 2,
+}
+
+/**
+ * Controls for {@link OcctKernel.sweepFull}: everything
+ * {@link SweepAdvancedOptions} carries, plus the four `MakePipeShell` knobs
+ * that entry point cannot reach.
+ */
+export interface SweepFullOptions extends SweepAdvancedOptions {
+    /**
+     * Surface the sweep follows, as a shape containing the spine
+     * (`MakePipeShell::SetMode(SpineSupport)`). Replaces {@link
+     * SweepAdvancedOptions.mode} when supplied, and raises if the shape is not
+     * a valid support for the spine.
+     */
+    support?: ShapeHandle;
+    /** Maximum degree of the approximating surfaces. OCCT default when omitted. */
+    maxDegree?: number;
+    /** Maximum number of spans. OCCT default when omitted. */
+    maxSegments?: number;
+    /** Scaling law along the spine. Defaults to {@link SweepLaw.None}. */
+    law?: SweepLaw;
+    /**
+     * Parametric length the law spans — the spine length, matching OCCT's
+     * `Law_Linear::Set(0, 1, length, endFactor)`. Required with a law.
+     */
+    lawLength?: number;
+    /** Section scale at the end of the law. 1 leaves the section unscaled. */
+    lawEndFactor?: number;
+}
+
+/**
+ * Extra controls for {@link OcctKernel.sweepOriented}. The guide-wire fields
+ * apply to {@link SweepMode.Auxiliary} only; the tolerances apply to every mode.
+ */
+export interface SweepOrientedOptions extends SweepToleranceOptions {
+    /**
+     * {@link SweepMode.Auxiliary} only. Match spine and guide by curvilinear
+     * abscissa rather than by parameter. Defaults to `false`.
+     *
+     * The two settings are different constructions, not two qualities of the
+     * same one. `false` orients each section by the plane through the spine
+     * point and the guide (`GeomFill_GuideTrihedronPlan`); `true` matches
+     * spine and guide by curvilinear abscissa and reparametrizes the spine
+     * (`GeomFill_GuideTrihedronAC` over `BRepFill_ACRLaw`), which forces every
+     * side surface to be approximated as a B-spline even when the exact
+     * answer is planar.
+     *
+     * `false` is exact wherever the guide spans the spine, and it raises
+     * rather than guessing when a section plane misses the guide. `true`
+     * always produces something, but that something can be far off — a guide
+     * covering only the middle of the spine yields a solid ~46% under true
+     * volume instead of an error.
+     */
+    curvilinearEquivalence?: boolean;
+    /** {@link SweepMode.Auxiliary} only. Defaults to {@link SweepContact.None}. */
+    contact?: SweepContact;
+}
+
 /** Join type for offset/fillet operations (BRepOffsetAPI_MakeOffset). */
 export enum JoinType {
     /** Arc interpolation at joints (default). */
@@ -404,6 +541,10 @@ function classifyError(operation: string, message: string): OcctErrorCode {
     if (msg.includes("document is closed")) return OcctErrorCode.DocumentClosed;
     if (msg.includes("boolean operation failed")) return OcctErrorCode.BooleanFailed;
     if (msg.includes("construction failed")) return OcctErrorCode.ConstructionFailed;
+    // sweepOriented reports MakePipeShell's status instead of the generic
+    // "operation failed", but it is still a construction failure.
+    if (msg.includes("does not intersect the guide wire")) return OcctErrorCode.ConstructionFailed;
+    if (msg.includes("in contact with the guide wire")) return OcctErrorCode.ConstructionFailed;
 
     // Operation-category fallback
     if (BOOLEAN_OPS.has(operation)) return OcctErrorCode.BooleanFailed;

@@ -209,3 +209,67 @@ fn extrude_rectangle() {
         "expected 10*20*5=1000, got {vol}"
     );
 }
+
+#[test]
+fn sweep_oriented_auxiliary_keeps_planes_exact() {
+    let mut kernel = kernel();
+    let corners = [
+        (-2.0, -2.0),
+        (2.0, -2.0),
+        (2.0, 2.0),
+        (-2.0, 2.0),
+        (-2.0, -2.0),
+    ];
+    let profile_edges: Vec<_> = corners
+        .windows(2)
+        .map(|w| {
+            kernel
+                .make_line_edge(w[0].0, w[0].1, 0.0, w[1].0, w[1].1, 0.0)
+                .unwrap()
+        })
+        .collect();
+    let profile = kernel.make_wire(&profile_edges).unwrap();
+    let spine_edge = kernel
+        .make_line_edge(0.0, 0.0, 0.0, 0.0, 0.0, 20.0)
+        .unwrap();
+    let spine = kernel.make_wire(&[spine_edge]).unwrap();
+    let guide_edge = kernel
+        .make_line_edge(5.0, 0.0, 0.0, 5.0, 0.0, 20.0)
+        .unwrap();
+    let guide = kernel.make_wire(&[guide_edge]).unwrap();
+
+    let solid = kernel
+        .sweep_oriented(
+            profile, spine, 3, 0.0, 0.0, 1.0, guide, false, 0, 0.0, 0.0, 0.0,
+        )
+        .unwrap();
+    let vol = kernel.get_volume(solid).unwrap().abs();
+    assert!((vol - 320.0).abs() < 1e-6, "expected 4*4*20=320, got {vol}");
+}
+
+#[test]
+fn helix_handedness_mirrors_across_the_axis_plane() {
+    let mut kernel = kernel();
+    // One turn: pitch 5, height 5, radius 3 about +Z through the origin.
+    let mut quarter_turn = |left_handed: bool| {
+        let wire = kernel
+            .make_helix_wire_handed(0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 5.0, 5.0, 3.0, left_handed)
+            .unwrap();
+        let range = kernel.curve_parameters(wire).unwrap();
+        let param = range[0] + (range[1] - range[0]) / 4.0;
+        kernel.curve_point_at_param(wire, param).unwrap()
+    };
+    let right = quarter_turn(false);
+    let left = quarter_turn(true);
+
+    assert!(
+        (right[1] - 3.0).abs() < 1e-6,
+        "right-handed quarter turn should reach +Y, got {right:?}"
+    );
+    assert!(
+        (left[1] + 3.0).abs() < 1e-6,
+        "left-handed quarter turn should reach -Y, got {left:?}"
+    );
+    assert!((left[0] - right[0]).abs() < 1e-6);
+    assert!((left[2] - right[2]).abs() < 1e-6);
+}

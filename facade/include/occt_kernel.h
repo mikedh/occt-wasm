@@ -178,7 +178,18 @@ class OcctKernel {
     uint32_t sweep(uint32_t wireId, uint32_t spineId, int transitionMode);
     uint32_t sweepPipeShell(uint32_t profileId, uint32_t spineId, bool freenet, bool smooth);
     uint32_t sweepOriented(uint32_t profileId, uint32_t spineId, int mode, double upX, double upY,
-                           double upZ, uint32_t auxSpineId);
+                           double upZ, uint32_t auxSpineId, bool curvilinearEquivalence,
+                           int contactMode, double tol3d, double boundTol, double tolAngular);
+    uint32_t sweepAdvanced(uint32_t profileId, uint32_t spineId, int mode, double upX, double upY,
+                           double upZ, uint32_t auxSpineId, bool curvilinearEquivalence,
+                           int guideContact, int transitionMode, bool withContact,
+                           bool withCorrection, double tol3d, double boundTol, double tolAngular);
+    uint32_t sweepFull(uint32_t profileId, uint32_t spineId, int mode, double upX, double upY,
+                       double upZ, uint32_t auxSpineId, bool curvilinearEquivalence,
+                       int guideContact, int transitionMode, bool withContact, bool withCorrection,
+                       double tol3d, double boundTol, double tolAngular, uint32_t supportId,
+                       int maxDegree, int maxSegments, int lawKind, double lawLength,
+                       double lawEndFactor);
     uint32_t draftPrism(uint32_t shapeId, double dx, double dy, double dz, double angleDeg);
     uint32_t revolveVec(uint32_t shapeId, double cx, double cy, double cz, double dx, double dy,
                         double dz, double angle);
@@ -206,6 +217,8 @@ class OcctKernel {
                             double x2, double y2, double z2);
     uint32_t makeHelixWire(double px, double py, double pz, double dx, double dy, double dz,
                            double pitch, double height, double radius);
+    uint32_t makeHelixWireHanded(double px, double py, double pz, double dx, double dy, double dz,
+                                 double pitch, double height, double radius, bool leftHanded);
     uint32_t makeWire(std::vector<uint32_t> edgeIds);
     uint32_t makeFace(uint32_t wireId);
     uint32_t makeNonPlanarFace(uint32_t wireId);

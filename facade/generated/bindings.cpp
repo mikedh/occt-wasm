@@ -133,6 +133,7 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("fillet", &OcctKernel::fillet)
         .function("chamfer", &OcctKernel::chamfer)
         .function("chamferDistAngle", &OcctKernel::chamferDistAngle)
+        .function("defeature", &OcctKernel::defeature)
         .function("reverseShape", &OcctKernel::reverseShape)
         .function("simplify", &OcctKernel::simplify)
         .function("filletVariable", &OcctKernel::filletVariable)
@@ -144,7 +145,6 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("offset", &OcctKernel::offset)
         .function("draft", &OcctKernel::draft)
         .function("thicken", &OcctKernel::thicken)
-        .function("defeature", &OcctKernel::defeature)
         .function("offsetWire2D", &OcctKernel::offsetWire2D)
         .function("draftPrism", &OcctKernel::draftPrism)
 
@@ -184,6 +184,7 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("makeBSplineEdge", &OcctKernel::makeBSplineEdge)
         .function("makeEllipseArc", &OcctKernel::makeEllipseArc)
         .function("makeHelixWire", &OcctKernel::makeHelixWire)
+        .function("makeHelixWireHanded", &OcctKernel::makeHelixWireHanded)
         .function("makeNonPlanarFace", &OcctKernel::makeNonPlanarFace)
         .function("addHolesInFace", &OcctKernel::addHolesInFace)
         .function("removeHolesFromFace", &OcctKernel::removeHolesFromFace)
@@ -264,6 +265,8 @@ EMSCRIPTEN_BINDINGS(occt_wasm) {
         .function("sweep", &OcctKernel::sweep)
         .function("sweepPipeShell", &OcctKernel::sweepPipeShell)
         .function("sweepOriented", &OcctKernel::sweepOriented)
+        .function("sweepAdvanced", &OcctKernel::sweepAdvanced)
+        .function("sweepFull", &OcctKernel::sweepFull)
 
         // healing
         .function("fixShape", &OcctKernel::fixShape)
