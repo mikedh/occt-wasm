@@ -3,9 +3,10 @@ name: rmesh minimal kernel
 # Fork-only workflow (mikedh/occt-wasm): builds the --minimal WASI kernel,
 # verifies the committed blob is fresh AND actually instantiates through the
 # crate, then publishes it to the rolling `rmesh-kernel-v1` release that
-# rmesh's `make fetch-kernel` downloads. The upstream workflows stay in-tree
-# but are disabled server-side (`gh workflow disable`) to keep the fork diff
-# additive-only.
+# rmesh's `make kernel` downloads. The upstream workflows stay in-tree but are
+# disabled server-side (`gh workflow disable`) so that the fork DELETES no file
+# upstream owns. That is a claim about the file inventory only — the diff itself
+# is 6896 insertions against 1203 deletions, mostly in the three emitters.
 
 on:
   push:
@@ -34,6 +35,13 @@ jobs:
         run: |
           cp -r /workspace/occt/build occt/build
           cp -r /workspace/3rdparty 3rdparty
+
+      # The xtask suite has never run in this fork's CI, and it owns the one
+      # test guarding the derived export set
+      # (`minimal_export_names_partitions_by_category`). Everything below builds
+      # a blob from whatever that predicate decides, so it runs FIRST.
+      - name: Spec validation, emitter shapes, derived-set partition
+        run: cargo test -p xtask
 
       - name: Snapshot committed minimal blob
         run: cp dist/occt-wasm-minimal.wasm.br /tmp/committed-minimal.wasm.br

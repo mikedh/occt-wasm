@@ -43,3 +43,6 @@ examples/node-cli/multiview.svg
 # Playwright
 test-results/
 playwright-report/
+
+# The builder container writes here as root; `target/` above does not match it.
+target-docker/

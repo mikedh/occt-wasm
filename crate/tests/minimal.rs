@@ -18,7 +18,10 @@
 //!
 //! The blob is read from `OCCT_WASM_MINIMAL` when set, else from
 //! `dist/occt-wasm-minimal.wasm.br` (where `cargo xtask build-wasi --minimal`
-//! installs it). Missing blob skips, mirroring `integration.rs`.
+//! installs it). **A missing blob PANICS** — see `module_bytes` below. This
+//! line said "missing blob skips, mirroring `integration.rs`" for three commits
+//! after `318d636` made it do the opposite, which is the failure mode that
+//! commit exists to prevent, written down one file away from itself.
 
 #![allow(clippy::unwrap_used, clippy::panic)]
 
