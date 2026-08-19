@@ -1,7 +1,7 @@
 //! Load-verification for the `--minimal` kernel blob.
 //!
-//! The minimal profile is the construction-op surface (see
-//! `config::OPTIONAL_CATEGORIES`); the crate binds everything else lazily.
+//! The minimal profile is exactly what the rmesh engine seam calls (see
+//! `config::REQUIRED_EXPORTS`); the crate binds everything else lazily.
 //! This file asserts the contract from the consumer side:
 //!
 //! 1. A minimal blob INSTANTIATES — i.e. every eagerly-bound export (generated

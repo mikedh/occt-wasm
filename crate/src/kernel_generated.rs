@@ -34,91 +34,92 @@ pub(crate) struct GeneratedFuncs {
     fn_make_ellipsoid: Option<TypedFunc<(f64, f64, f64), u32>>,
     fn_half_space: Option<TypedFunc<(f64, f64, f64, f64, f64, f64), u32>>,
     fn_make_rectangle: Option<TypedFunc<(f64, f64), u32>>,
-    fn_fuse: TypedFunc<(u32, u32), u32>,
-    fn_cut: TypedFunc<(u32, u32), u32>,
-    fn_common: TypedFunc<(u32, u32), u32>,
-    fn_section: TypedFunc<(u32, u32), u32>,
-    fn_intersect: TypedFunc<(u32, u32), u32>,
-    fn_fuse_all: TypedFunc<(i32, i32), u32>,
-    fn_intersection_cells: TypedFunc<(i32, i32), u32>,
-    fn_cut_all: TypedFunc<(u32, i32, i32), u32>,
-    fn_boolean_pipeline: TypedFunc<(u32, i32, i32, i32, i32), u32>,
-    fn_boolean_fuzzy: TypedFunc<(u32, u32, i32, f64), u32>,
-    fn_split: TypedFunc<(u32, i32, i32), u32>,
+    fn_fuse: Option<TypedFunc<(u32, u32), u32>>,
+    fn_cut: Option<TypedFunc<(u32, u32), u32>>,
+    fn_common: Option<TypedFunc<(u32, u32), u32>>,
+    fn_section: Option<TypedFunc<(u32, u32), u32>>,
+    fn_intersect: Option<TypedFunc<(u32, u32), u32>>,
+    fn_fuse_all: Option<TypedFunc<(i32, i32), u32>>,
+    fn_intersection_cells: Option<TypedFunc<(i32, i32), u32>>,
+    fn_cut_all: Option<TypedFunc<(u32, i32, i32), u32>>,
+    fn_boolean_pipeline: Option<TypedFunc<(u32, i32, i32, i32, i32), u32>>,
+    fn_boolean_fuzzy: Option<TypedFunc<(u32, u32, i32, f64), u32>>,
+    fn_split: Option<TypedFunc<(u32, i32, i32), u32>>,
     fn_extrude: TypedFunc<(u32, f64, f64, f64), u32>,
     fn_revolve: TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_fillet: TypedFunc<(u32, i32, i32, f64), u32>,
-    fn_chamfer: TypedFunc<(u32, i32, i32, f64), u32>,
-    fn_chamfer_dist_angle: TypedFunc<(u32, i32, i32, f64, f64), u32>,
+    fn_fillet: Option<TypedFunc<(u32, i32, i32, f64), u32>>,
+    fn_chamfer: Option<TypedFunc<(u32, i32, i32, f64), u32>>,
+    fn_chamfer_dist_angle: Option<TypedFunc<(u32, i32, i32, f64, f64), u32>>,
     fn_shell: Option<TypedFunc<(u32, i32, i32, f64, f64), u32>>,
     fn_offset: Option<TypedFunc<(u32, f64, f64), u32>>,
     fn_draft: Option<TypedFunc<(u32, u32, f64, f64, f64, f64), u32>>,
     fn_thicken: Option<TypedFunc<(u32, f64, f64), u32>>,
-    fn_defeature: TypedFunc<(u32, i32, i32, f64), u32>,
-    fn_reverse_shape: TypedFunc<(u32,), u32>,
-    fn_simplify: TypedFunc<(u32,), u32>,
-    fn_fillet_variable: TypedFunc<(u32, u32, f64, f64), u32>,
-    fn_fillet_batch: TypedFunc<(i32, i32, i32, i32, i32, i32, i32, i32), i32>,
+    fn_defeature: Option<TypedFunc<(u32, i32, i32, f64), u32>>,
+    fn_reverse_shape: Option<TypedFunc<(u32,), u32>>,
+    fn_simplify: Option<TypedFunc<(u32,), u32>>,
+    fn_fillet_variable: Option<TypedFunc<(u32, u32, f64, f64), u32>>,
+    fn_fillet_batch: Option<TypedFunc<(i32, i32, i32, i32, i32, i32, i32, i32), i32>>,
     fn_offset_wire2_d: Option<TypedFunc<(u32, f64, i32), u32>>,
-    fn_translate: TypedFunc<(u32, f64, f64, f64), u32>,
-    fn_rotate: TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_scale: TypedFunc<(u32, f64, f64, f64, f64), u32>,
-    fn_mirror: TypedFunc<(u32, f64, f64, f64, f64, f64, f64), u32>,
-    fn_copy: TypedFunc<(u32,), u32>,
-    fn_linear_pattern: TypedFunc<(u32, f64, f64, f64, f64, i32), u32>,
-    fn_circular_pattern: TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64, i32), u32>,
+    fn_translate: Option<TypedFunc<(u32, f64, f64, f64), u32>>,
+    fn_rotate: Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64), u32>>,
+    fn_scale: Option<TypedFunc<(u32, f64, f64, f64, f64), u32>>,
+    fn_mirror: Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64), u32>>,
+    fn_copy: Option<TypedFunc<(u32,), u32>>,
+    fn_linear_pattern: Option<TypedFunc<(u32, f64, f64, f64, f64, i32), u32>>,
+    fn_circular_pattern: Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64, i32), u32>>,
     fn_transform: TypedFunc<(u32, i32, i32), u32>,
-    fn_located: TypedFunc<(u32, i32, i32), u32>,
-    fn_general_transform: TypedFunc<(u32, i32, i32), u32>,
-    fn_translate_batch: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_compose_transform: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_transform_batch: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_rotate_batch: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_scale_batch: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_mirror_batch: TypedFunc<(i32, i32, i32, i32), i32>,
-    fn_make_vertex: TypedFunc<(f64, f64, f64), u32>,
-    fn_make_edge: TypedFunc<(u32, u32), u32>,
+    fn_located: Option<TypedFunc<(u32, i32, i32), u32>>,
+    fn_general_transform: Option<TypedFunc<(u32, i32, i32), u32>>,
+    fn_translate_batch: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_compose_transform: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_transform_batch: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_rotate_batch: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_scale_batch: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_mirror_batch: Option<TypedFunc<(i32, i32, i32, i32), i32>>,
+    fn_make_vertex: Option<TypedFunc<(f64, f64, f64), u32>>,
+    fn_make_edge: Option<TypedFunc<(u32, u32), u32>>,
     fn_make_wire: TypedFunc<(i32, i32), u32>,
     fn_make_face: TypedFunc<(u32,), u32>,
-    fn_make_face_on_surface: TypedFunc<(u32, u32), u32>,
-    fn_make_solid: TypedFunc<(u32,), u32>,
-    fn_sew: TypedFunc<(i32, i32, f64), u32>,
-    fn_make_compound: TypedFunc<(i32, i32), u32>,
+    fn_make_face_on_surface: Option<TypedFunc<(u32, u32), u32>>,
+    fn_make_solid: Option<TypedFunc<(u32,), u32>>,
+    fn_sew: Option<TypedFunc<(i32, i32, f64), u32>>,
+    fn_make_compound: Option<TypedFunc<(i32, i32), u32>>,
     fn_make_line_edge: TypedFunc<(f64, f64, f64, f64, f64, f64), u32>,
     fn_make_circle_edge: TypedFunc<(f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_make_circle_arc: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
+    fn_make_circle_arc: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
     fn_make_arc_edge: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_make_ellipse_edge: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64), u32>,
+    fn_make_ellipse_edge: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
     fn_make_bezier_edge: TypedFunc<(i32, i32), u32>,
     fn_make_b_spline_edge: TypedFunc<(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32), u32>,
-    fn_make_ellipse_arc: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_make_helix_wire: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_make_helix_wire_handed: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, i32), u32>,
+    fn_make_ellipse_arc: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
+    fn_make_helix_wire: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
+    fn_make_helix_wire_handed:
+        Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64, i32), u32>>,
     fn_make_non_planar_face: Option<TypedFunc<(u32,), u32>>,
     fn_add_holes_in_face: TypedFunc<(u32, i32, i32), u32>,
-    fn_remove_holes_from_face: TypedFunc<(u32, i32, i32), u32>,
-    fn_solid_from_shell: TypedFunc<(u32,), u32>,
-    fn_build_solid_from_faces: TypedFunc<(i32, i32, f64), u32>,
-    fn_sew_and_solidify: TypedFunc<(i32, i32, f64), u32>,
-    fn_build_tri_face: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
-    fn_make_tangent_arc: TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>,
+    fn_remove_holes_from_face: Option<TypedFunc<(u32, i32, i32), u32>>,
+    fn_solid_from_shell: Option<TypedFunc<(u32,), u32>>,
+    fn_build_solid_from_faces: Option<TypedFunc<(i32, i32, f64), u32>>,
+    fn_sew_and_solidify: Option<TypedFunc<(i32, i32, f64), u32>>,
+    fn_build_tri_face: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
+    fn_make_tangent_arc: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
     fn_bspline_surface: Option<TypedFunc<(i32, i32, i32, i32), u32>>,
-    fn_get_shape_type: TypedFunc<(u32,), i32>,
-    fn_get_sub_shapes: TypedFunc<(u32, i32, i32), i32>,
+    fn_get_shape_type: Option<TypedFunc<(u32,), i32>>,
+    fn_get_sub_shapes: Option<TypedFunc<(u32, i32, i32), i32>>,
     fn_non_degenerate_edges: TypedFunc<(u32,), i32>,
     fn_sub_shape_count: TypedFunc<(u32, i32, i32), i32>,
-    fn_sub_shape_hashes: TypedFunc<(u32, i32, i32, i32), i32>,
-    fn_distance_between: TypedFunc<(u32, u32), f64>,
-    fn_is_same: TypedFunc<(u32, u32), i32>,
-    fn_is_equal: TypedFunc<(u32, u32), i32>,
-    fn_is_null: TypedFunc<(u32,), i32>,
-    fn_hash_code: TypedFunc<(u32, i32), i32>,
-    fn_shape_orientation: TypedFunc<(u32,), i32>,
-    fn_iter_shapes: TypedFunc<(u32,), i32>,
-    fn_edge_to_face_map: TypedFunc<(u32, i32), i32>,
-    fn_downcast: TypedFunc<(u32, i32, i32), u32>,
-    fn_adjacent_faces: TypedFunc<(u32, u32), i32>,
-    fn_shared_edges: TypedFunc<(u32, u32), i32>,
+    fn_sub_shape_hashes: Option<TypedFunc<(u32, i32, i32, i32), i32>>,
+    fn_distance_between: Option<TypedFunc<(u32, u32), f64>>,
+    fn_is_same: Option<TypedFunc<(u32, u32), i32>>,
+    fn_is_equal: Option<TypedFunc<(u32, u32), i32>>,
+    fn_is_null: Option<TypedFunc<(u32,), i32>>,
+    fn_hash_code: Option<TypedFunc<(u32, i32), i32>>,
+    fn_shape_orientation: Option<TypedFunc<(u32,), i32>>,
+    fn_iter_shapes: Option<TypedFunc<(u32,), i32>>,
+    fn_edge_to_face_map: Option<TypedFunc<(u32, i32), i32>>,
+    fn_downcast: Option<TypedFunc<(u32, i32, i32), u32>>,
+    fn_adjacent_faces: Option<TypedFunc<(u32, u32), i32>>,
+    fn_shared_edges: Option<TypedFunc<(u32, u32), i32>>,
     fn_get_bounding_box: Option<TypedFunc<(u32, i32), i32>>,
     fn_get_volume: Option<TypedFunc<(u32,), f64>>,
     fn_get_surface_area: Option<TypedFunc<(u32,), f64>>,
@@ -136,7 +137,7 @@ pub(crate) struct GeneratedFuncs {
     fn_surface_curvature: Option<TypedFunc<(u32, f64, f64), i32>>,
     fn_uv_bounds: Option<TypedFunc<(u32,), i32>>,
     fn_get_face_cylinder_data: Option<TypedFunc<(u32,), i32>>,
-    fn_reverse_surface_u: TypedFunc<(u32,), u32>,
+    fn_reverse_surface_u: Option<TypedFunc<(u32,), u32>>,
     fn_uv_from_point: Option<TypedFunc<(u32, f64, f64, f64), i32>>,
     fn_project_point_on_face: Option<TypedFunc<(u32, f64, f64, f64), i32>>,
     fn_classify_point_on_face: Option<TypedFunc<(u32, f64, f64), i32>>,
@@ -194,16 +195,16 @@ pub(crate) struct GeneratedFuncs {
     >,
     fn_draft_prism: Option<TypedFunc<(u32, f64, f64, f64, f64), u32>>,
     fn_fix_shape: TypedFunc<(u32,), u32>,
-    fn_unify_same_domain: TypedFunc<(u32,), u32>,
+    fn_unify_same_domain: Option<TypedFunc<(u32,), u32>>,
     fn_is_valid: TypedFunc<(u32,), i32>,
     fn_check_shape: TypedFunc<(u32,), i32>,
-    fn_heal_solid: TypedFunc<(u32, f64), u32>,
-    fn_heal_face: TypedFunc<(u32, f64), u32>,
-    fn_heal_wire: TypedFunc<(u32, f64), u32>,
-    fn_fix_face_orientations: TypedFunc<(u32,), u32>,
-    fn_build_curves3d: TypedFunc<(u32,), i32>,
-    fn_fix_wire_on_face: TypedFunc<(u32, u32, f64), u32>,
-    fn_remove_degenerate_edges: TypedFunc<(u32,), u32>,
+    fn_heal_solid: Option<TypedFunc<(u32, f64), u32>>,
+    fn_heal_face: Option<TypedFunc<(u32, f64), u32>>,
+    fn_heal_wire: Option<TypedFunc<(u32, f64), u32>>,
+    fn_fix_face_orientations: Option<TypedFunc<(u32,), u32>>,
+    fn_build_curves3d: Option<TypedFunc<(u32,), i32>>,
+    fn_fix_wire_on_face: Option<TypedFunc<(u32, u32, f64), u32>>,
+    fn_remove_degenerate_edges: Option<TypedFunc<(u32,), u32>>,
     fn_import_step: Option<TypedFunc<(i32, i32), u32>>,
     fn_export_step: Option<TypedFunc<(u32,), i32>>,
     fn_export_stl: Option<TypedFunc<(u32, f64, i32), i32>>,
@@ -226,19 +227,19 @@ pub(crate) struct GeneratedFuncs {
     fn_shell_with_history: Option<TypedFunc<(u32, i32, i32, f64, f64, i32, i32, i32), i32>>,
     fn_offset_with_history: Option<TypedFunc<(u32, f64, f64, i32, i32, i32), i32>>,
     fn_thicken_with_history: Option<TypedFunc<(u32, f64, f64, i32, i32, i32), i32>>,
-    fn_tessellate: TypedFunc<(u32, f64, f64), i32>,
+    fn_tessellate: Option<TypedFunc<(u32, f64, f64), i32>>,
     fn_tessellate_relative: TypedFunc<(u32, f64, f64), i32>,
-    fn_mesh_shape: TypedFunc<(u32, f64, f64), i32>,
-    fn_mesh_batch: TypedFunc<(i32, i32, f64, f64), i32>,
-    fn_wireframe: TypedFunc<(u32, f64), i32>,
+    fn_mesh_shape: Option<TypedFunc<(u32, f64, f64), i32>>,
+    fn_mesh_batch: Option<TypedFunc<(i32, i32, f64, f64), i32>>,
+    fn_wireframe: Option<TypedFunc<(u32, f64), i32>>,
     fn_project_edges:
         Option<TypedFunc<(u32, f64, f64, f64, f64, f64, f64, f64, f64, f64, i32), i32>>,
     fn_release: TypedFunc<(u32,), i32>,
-    fn_release_all: TypedFunc<(), i32>,
-    fn_checkpoint: TypedFunc<(), u32>,
-    fn_release_since: TypedFunc<(u32,), i32>,
-    fn_get_shape_count: TypedFunc<(), u32>,
-    fn_make_null_shape: TypedFunc<(), u32>,
+    fn_release_all: Option<TypedFunc<(), i32>>,
+    fn_checkpoint: Option<TypedFunc<(), u32>>,
+    fn_release_since: Option<TypedFunc<(u32,), i32>>,
+    fn_get_shape_count: Option<TypedFunc<(), u32>>,
+    fn_make_null_shape: Option<TypedFunc<(), u32>>,
     fn_xcaf_new_document: Option<TypedFunc<(), u32>>,
     fn_xcaf_close: Option<TypedFunc<(u32,), i32>>,
     fn_xcaf_add_shape: Option<TypedFunc<(u32, u32), i32>>,
@@ -277,105 +278,171 @@ impl GeneratedFuncs {
             fn_make_rectangle: instance
                 .get_typed_func(&mut store, "occt_make_rectangle")
                 .ok(),
-            fn_fuse: instance.get_typed_func(&mut store, "occt_fuse")?,
-            fn_cut: instance.get_typed_func(&mut store, "occt_cut")?,
-            fn_common: instance.get_typed_func(&mut store, "occt_common")?,
-            fn_section: instance.get_typed_func(&mut store, "occt_section")?,
-            fn_intersect: instance.get_typed_func(&mut store, "occt_intersect")?,
-            fn_fuse_all: instance.get_typed_func(&mut store, "occt_fuse_all")?,
+            fn_fuse: instance.get_typed_func(&mut store, "occt_fuse").ok(),
+            fn_cut: instance.get_typed_func(&mut store, "occt_cut").ok(),
+            fn_common: instance.get_typed_func(&mut store, "occt_common").ok(),
+            fn_section: instance.get_typed_func(&mut store, "occt_section").ok(),
+            fn_intersect: instance.get_typed_func(&mut store, "occt_intersect").ok(),
+            fn_fuse_all: instance.get_typed_func(&mut store, "occt_fuse_all").ok(),
             fn_intersection_cells: instance
-                .get_typed_func(&mut store, "occt_intersection_cells")?,
-            fn_cut_all: instance.get_typed_func(&mut store, "occt_cut_all")?,
-            fn_boolean_pipeline: instance.get_typed_func(&mut store, "occt_boolean_pipeline")?,
-            fn_boolean_fuzzy: instance.get_typed_func(&mut store, "occt_boolean_fuzzy")?,
-            fn_split: instance.get_typed_func(&mut store, "occt_split")?,
+                .get_typed_func(&mut store, "occt_intersection_cells")
+                .ok(),
+            fn_cut_all: instance.get_typed_func(&mut store, "occt_cut_all").ok(),
+            fn_boolean_pipeline: instance
+                .get_typed_func(&mut store, "occt_boolean_pipeline")
+                .ok(),
+            fn_boolean_fuzzy: instance
+                .get_typed_func(&mut store, "occt_boolean_fuzzy")
+                .ok(),
+            fn_split: instance.get_typed_func(&mut store, "occt_split").ok(),
             fn_extrude: instance.get_typed_func(&mut store, "occt_extrude")?,
             fn_revolve: instance.get_typed_func(&mut store, "occt_revolve")?,
-            fn_fillet: instance.get_typed_func(&mut store, "occt_fillet")?,
-            fn_chamfer: instance.get_typed_func(&mut store, "occt_chamfer")?,
+            fn_fillet: instance.get_typed_func(&mut store, "occt_fillet").ok(),
+            fn_chamfer: instance.get_typed_func(&mut store, "occt_chamfer").ok(),
             fn_chamfer_dist_angle: instance
-                .get_typed_func(&mut store, "occt_chamfer_dist_angle")?,
+                .get_typed_func(&mut store, "occt_chamfer_dist_angle")
+                .ok(),
             fn_shell: instance.get_typed_func(&mut store, "occt_shell").ok(),
             fn_offset: instance.get_typed_func(&mut store, "occt_offset").ok(),
             fn_draft: instance.get_typed_func(&mut store, "occt_draft").ok(),
             fn_thicken: instance.get_typed_func(&mut store, "occt_thicken").ok(),
-            fn_defeature: instance.get_typed_func(&mut store, "occt_defeature")?,
-            fn_reverse_shape: instance.get_typed_func(&mut store, "occt_reverse_shape")?,
-            fn_simplify: instance.get_typed_func(&mut store, "occt_simplify")?,
-            fn_fillet_variable: instance.get_typed_func(&mut store, "occt_fillet_variable")?,
-            fn_fillet_batch: instance.get_typed_func(&mut store, "occt_fillet_batch")?,
+            fn_defeature: instance.get_typed_func(&mut store, "occt_defeature").ok(),
+            fn_reverse_shape: instance
+                .get_typed_func(&mut store, "occt_reverse_shape")
+                .ok(),
+            fn_simplify: instance.get_typed_func(&mut store, "occt_simplify").ok(),
+            fn_fillet_variable: instance
+                .get_typed_func(&mut store, "occt_fillet_variable")
+                .ok(),
+            fn_fillet_batch: instance
+                .get_typed_func(&mut store, "occt_fillet_batch")
+                .ok(),
             fn_offset_wire2_d: instance
                 .get_typed_func(&mut store, "occt_offset_wire2_d")
                 .ok(),
-            fn_translate: instance.get_typed_func(&mut store, "occt_translate")?,
-            fn_rotate: instance.get_typed_func(&mut store, "occt_rotate")?,
-            fn_scale: instance.get_typed_func(&mut store, "occt_scale")?,
-            fn_mirror: instance.get_typed_func(&mut store, "occt_mirror")?,
-            fn_copy: instance.get_typed_func(&mut store, "occt_copy")?,
-            fn_linear_pattern: instance.get_typed_func(&mut store, "occt_linear_pattern")?,
-            fn_circular_pattern: instance.get_typed_func(&mut store, "occt_circular_pattern")?,
+            fn_translate: instance.get_typed_func(&mut store, "occt_translate").ok(),
+            fn_rotate: instance.get_typed_func(&mut store, "occt_rotate").ok(),
+            fn_scale: instance.get_typed_func(&mut store, "occt_scale").ok(),
+            fn_mirror: instance.get_typed_func(&mut store, "occt_mirror").ok(),
+            fn_copy: instance.get_typed_func(&mut store, "occt_copy").ok(),
+            fn_linear_pattern: instance
+                .get_typed_func(&mut store, "occt_linear_pattern")
+                .ok(),
+            fn_circular_pattern: instance
+                .get_typed_func(&mut store, "occt_circular_pattern")
+                .ok(),
             fn_transform: instance.get_typed_func(&mut store, "occt_transform")?,
-            fn_located: instance.get_typed_func(&mut store, "occt_located")?,
-            fn_general_transform: instance.get_typed_func(&mut store, "occt_general_transform")?,
-            fn_translate_batch: instance.get_typed_func(&mut store, "occt_translate_batch")?,
-            fn_compose_transform: instance.get_typed_func(&mut store, "occt_compose_transform")?,
-            fn_transform_batch: instance.get_typed_func(&mut store, "occt_transform_batch")?,
-            fn_rotate_batch: instance.get_typed_func(&mut store, "occt_rotate_batch")?,
-            fn_scale_batch: instance.get_typed_func(&mut store, "occt_scale_batch")?,
-            fn_mirror_batch: instance.get_typed_func(&mut store, "occt_mirror_batch")?,
-            fn_make_vertex: instance.get_typed_func(&mut store, "occt_make_vertex")?,
-            fn_make_edge: instance.get_typed_func(&mut store, "occt_make_edge")?,
+            fn_located: instance.get_typed_func(&mut store, "occt_located").ok(),
+            fn_general_transform: instance
+                .get_typed_func(&mut store, "occt_general_transform")
+                .ok(),
+            fn_translate_batch: instance
+                .get_typed_func(&mut store, "occt_translate_batch")
+                .ok(),
+            fn_compose_transform: instance
+                .get_typed_func(&mut store, "occt_compose_transform")
+                .ok(),
+            fn_transform_batch: instance
+                .get_typed_func(&mut store, "occt_transform_batch")
+                .ok(),
+            fn_rotate_batch: instance
+                .get_typed_func(&mut store, "occt_rotate_batch")
+                .ok(),
+            fn_scale_batch: instance.get_typed_func(&mut store, "occt_scale_batch").ok(),
+            fn_mirror_batch: instance
+                .get_typed_func(&mut store, "occt_mirror_batch")
+                .ok(),
+            fn_make_vertex: instance.get_typed_func(&mut store, "occt_make_vertex").ok(),
+            fn_make_edge: instance.get_typed_func(&mut store, "occt_make_edge").ok(),
             fn_make_wire: instance.get_typed_func(&mut store, "occt_make_wire")?,
             fn_make_face: instance.get_typed_func(&mut store, "occt_make_face")?,
             fn_make_face_on_surface: instance
-                .get_typed_func(&mut store, "occt_make_face_on_surface")?,
-            fn_make_solid: instance.get_typed_func(&mut store, "occt_make_solid")?,
-            fn_sew: instance.get_typed_func(&mut store, "occt_sew")?,
-            fn_make_compound: instance.get_typed_func(&mut store, "occt_make_compound")?,
+                .get_typed_func(&mut store, "occt_make_face_on_surface")
+                .ok(),
+            fn_make_solid: instance.get_typed_func(&mut store, "occt_make_solid").ok(),
+            fn_sew: instance.get_typed_func(&mut store, "occt_sew").ok(),
+            fn_make_compound: instance
+                .get_typed_func(&mut store, "occt_make_compound")
+                .ok(),
             fn_make_line_edge: instance.get_typed_func(&mut store, "occt_make_line_edge")?,
             fn_make_circle_edge: instance.get_typed_func(&mut store, "occt_make_circle_edge")?,
-            fn_make_circle_arc: instance.get_typed_func(&mut store, "occt_make_circle_arc")?,
+            fn_make_circle_arc: instance
+                .get_typed_func(&mut store, "occt_make_circle_arc")
+                .ok(),
             fn_make_arc_edge: instance.get_typed_func(&mut store, "occt_make_arc_edge")?,
-            fn_make_ellipse_edge: instance.get_typed_func(&mut store, "occt_make_ellipse_edge")?,
+            fn_make_ellipse_edge: instance
+                .get_typed_func(&mut store, "occt_make_ellipse_edge")
+                .ok(),
             fn_make_bezier_edge: instance.get_typed_func(&mut store, "occt_make_bezier_edge")?,
             fn_make_b_spline_edge: instance
                 .get_typed_func(&mut store, "occt_make_b_spline_edge")?,
-            fn_make_ellipse_arc: instance.get_typed_func(&mut store, "occt_make_ellipse_arc")?,
-            fn_make_helix_wire: instance.get_typed_func(&mut store, "occt_make_helix_wire")?,
+            fn_make_ellipse_arc: instance
+                .get_typed_func(&mut store, "occt_make_ellipse_arc")
+                .ok(),
+            fn_make_helix_wire: instance
+                .get_typed_func(&mut store, "occt_make_helix_wire")
+                .ok(),
             fn_make_helix_wire_handed: instance
-                .get_typed_func(&mut store, "occt_make_helix_wire_handed")?,
+                .get_typed_func(&mut store, "occt_make_helix_wire_handed")
+                .ok(),
             fn_make_non_planar_face: instance
                 .get_typed_func(&mut store, "occt_make_non_planar_face")
                 .ok(),
             fn_add_holes_in_face: instance.get_typed_func(&mut store, "occt_add_holes_in_face")?,
             fn_remove_holes_from_face: instance
-                .get_typed_func(&mut store, "occt_remove_holes_from_face")?,
-            fn_solid_from_shell: instance.get_typed_func(&mut store, "occt_solid_from_shell")?,
+                .get_typed_func(&mut store, "occt_remove_holes_from_face")
+                .ok(),
+            fn_solid_from_shell: instance
+                .get_typed_func(&mut store, "occt_solid_from_shell")
+                .ok(),
             fn_build_solid_from_faces: instance
-                .get_typed_func(&mut store, "occt_build_solid_from_faces")?,
-            fn_sew_and_solidify: instance.get_typed_func(&mut store, "occt_sew_and_solidify")?,
-            fn_build_tri_face: instance.get_typed_func(&mut store, "occt_build_tri_face")?,
-            fn_make_tangent_arc: instance.get_typed_func(&mut store, "occt_make_tangent_arc")?,
+                .get_typed_func(&mut store, "occt_build_solid_from_faces")
+                .ok(),
+            fn_sew_and_solidify: instance
+                .get_typed_func(&mut store, "occt_sew_and_solidify")
+                .ok(),
+            fn_build_tri_face: instance
+                .get_typed_func(&mut store, "occt_build_tri_face")
+                .ok(),
+            fn_make_tangent_arc: instance
+                .get_typed_func(&mut store, "occt_make_tangent_arc")
+                .ok(),
             fn_bspline_surface: instance
                 .get_typed_func(&mut store, "occt_bspline_surface")
                 .ok(),
-            fn_get_shape_type: instance.get_typed_func(&mut store, "occt_get_shape_type")?,
-            fn_get_sub_shapes: instance.get_typed_func(&mut store, "occt_get_sub_shapes")?,
+            fn_get_shape_type: instance
+                .get_typed_func(&mut store, "occt_get_shape_type")
+                .ok(),
+            fn_get_sub_shapes: instance
+                .get_typed_func(&mut store, "occt_get_sub_shapes")
+                .ok(),
             fn_non_degenerate_edges: instance
                 .get_typed_func(&mut store, "occt_non_degenerate_edges")?,
             fn_sub_shape_count: instance.get_typed_func(&mut store, "occt_sub_shape_count")?,
-            fn_sub_shape_hashes: instance.get_typed_func(&mut store, "occt_sub_shape_hashes")?,
-            fn_distance_between: instance.get_typed_func(&mut store, "occt_distance_between")?,
-            fn_is_same: instance.get_typed_func(&mut store, "occt_is_same")?,
-            fn_is_equal: instance.get_typed_func(&mut store, "occt_is_equal")?,
-            fn_is_null: instance.get_typed_func(&mut store, "occt_is_null")?,
-            fn_hash_code: instance.get_typed_func(&mut store, "occt_hash_code")?,
-            fn_shape_orientation: instance.get_typed_func(&mut store, "occt_shape_orientation")?,
-            fn_iter_shapes: instance.get_typed_func(&mut store, "occt_iter_shapes")?,
-            fn_edge_to_face_map: instance.get_typed_func(&mut store, "occt_edge_to_face_map")?,
-            fn_downcast: instance.get_typed_func(&mut store, "occt_downcast")?,
-            fn_adjacent_faces: instance.get_typed_func(&mut store, "occt_adjacent_faces")?,
-            fn_shared_edges: instance.get_typed_func(&mut store, "occt_shared_edges")?,
+            fn_sub_shape_hashes: instance
+                .get_typed_func(&mut store, "occt_sub_shape_hashes")
+                .ok(),
+            fn_distance_between: instance
+                .get_typed_func(&mut store, "occt_distance_between")
+                .ok(),
+            fn_is_same: instance.get_typed_func(&mut store, "occt_is_same").ok(),
+            fn_is_equal: instance.get_typed_func(&mut store, "occt_is_equal").ok(),
+            fn_is_null: instance.get_typed_func(&mut store, "occt_is_null").ok(),
+            fn_hash_code: instance.get_typed_func(&mut store, "occt_hash_code").ok(),
+            fn_shape_orientation: instance
+                .get_typed_func(&mut store, "occt_shape_orientation")
+                .ok(),
+            fn_iter_shapes: instance.get_typed_func(&mut store, "occt_iter_shapes").ok(),
+            fn_edge_to_face_map: instance
+                .get_typed_func(&mut store, "occt_edge_to_face_map")
+                .ok(),
+            fn_downcast: instance.get_typed_func(&mut store, "occt_downcast").ok(),
+            fn_adjacent_faces: instance
+                .get_typed_func(&mut store, "occt_adjacent_faces")
+                .ok(),
+            fn_shared_edges: instance
+                .get_typed_func(&mut store, "occt_shared_edges")
+                .ok(),
             fn_get_bounding_box: instance
                 .get_typed_func(&mut store, "occt_get_bounding_box")
                 .ok(),
@@ -417,7 +484,9 @@ impl GeneratedFuncs {
             fn_get_face_cylinder_data: instance
                 .get_typed_func(&mut store, "occt_get_face_cylinder_data")
                 .ok(),
-            fn_reverse_surface_u: instance.get_typed_func(&mut store, "occt_reverse_surface_u")?,
+            fn_reverse_surface_u: instance
+                .get_typed_func(&mut store, "occt_reverse_surface_u")
+                .ok(),
             fn_uv_from_point: instance
                 .get_typed_func(&mut store, "occt_uv_from_point")
                 .ok(),
@@ -497,18 +566,26 @@ impl GeneratedFuncs {
                 .ok(),
             fn_draft_prism: instance.get_typed_func(&mut store, "occt_draft_prism").ok(),
             fn_fix_shape: instance.get_typed_func(&mut store, "occt_fix_shape")?,
-            fn_unify_same_domain: instance.get_typed_func(&mut store, "occt_unify_same_domain")?,
+            fn_unify_same_domain: instance
+                .get_typed_func(&mut store, "occt_unify_same_domain")
+                .ok(),
             fn_is_valid: instance.get_typed_func(&mut store, "occt_is_valid")?,
             fn_check_shape: instance.get_typed_func(&mut store, "occt_check_shape")?,
-            fn_heal_solid: instance.get_typed_func(&mut store, "occt_heal_solid")?,
-            fn_heal_face: instance.get_typed_func(&mut store, "occt_heal_face")?,
-            fn_heal_wire: instance.get_typed_func(&mut store, "occt_heal_wire")?,
+            fn_heal_solid: instance.get_typed_func(&mut store, "occt_heal_solid").ok(),
+            fn_heal_face: instance.get_typed_func(&mut store, "occt_heal_face").ok(),
+            fn_heal_wire: instance.get_typed_func(&mut store, "occt_heal_wire").ok(),
             fn_fix_face_orientations: instance
-                .get_typed_func(&mut store, "occt_fix_face_orientations")?,
-            fn_build_curves3d: instance.get_typed_func(&mut store, "occt_build_curves3d")?,
-            fn_fix_wire_on_face: instance.get_typed_func(&mut store, "occt_fix_wire_on_face")?,
+                .get_typed_func(&mut store, "occt_fix_face_orientations")
+                .ok(),
+            fn_build_curves3d: instance
+                .get_typed_func(&mut store, "occt_build_curves3d")
+                .ok(),
+            fn_fix_wire_on_face: instance
+                .get_typed_func(&mut store, "occt_fix_wire_on_face")
+                .ok(),
             fn_remove_degenerate_edges: instance
-                .get_typed_func(&mut store, "occt_remove_degenerate_edges")?,
+                .get_typed_func(&mut store, "occt_remove_degenerate_edges")
+                .ok(),
             fn_import_step: instance.get_typed_func(&mut store, "occt_import_step").ok(),
             fn_export_step: instance.get_typed_func(&mut store, "occt_export_step").ok(),
             fn_export_stl: instance.get_typed_func(&mut store, "occt_export_stl").ok(),
@@ -557,21 +634,27 @@ impl GeneratedFuncs {
             fn_thicken_with_history: instance
                 .get_typed_func(&mut store, "occt_thicken_with_history")
                 .ok(),
-            fn_tessellate: instance.get_typed_func(&mut store, "occt_tessellate")?,
+            fn_tessellate: instance.get_typed_func(&mut store, "occt_tessellate").ok(),
             fn_tessellate_relative: instance
                 .get_typed_func(&mut store, "occt_tessellate_relative")?,
-            fn_mesh_shape: instance.get_typed_func(&mut store, "occt_mesh_shape")?,
-            fn_mesh_batch: instance.get_typed_func(&mut store, "occt_mesh_batch")?,
-            fn_wireframe: instance.get_typed_func(&mut store, "occt_wireframe")?,
+            fn_mesh_shape: instance.get_typed_func(&mut store, "occt_mesh_shape").ok(),
+            fn_mesh_batch: instance.get_typed_func(&mut store, "occt_mesh_batch").ok(),
+            fn_wireframe: instance.get_typed_func(&mut store, "occt_wireframe").ok(),
             fn_project_edges: instance
                 .get_typed_func(&mut store, "occt_project_edges")
                 .ok(),
             fn_release: instance.get_typed_func(&mut store, "occt_release")?,
-            fn_release_all: instance.get_typed_func(&mut store, "occt_release_all")?,
-            fn_checkpoint: instance.get_typed_func(&mut store, "occt_checkpoint")?,
-            fn_release_since: instance.get_typed_func(&mut store, "occt_release_since")?,
-            fn_get_shape_count: instance.get_typed_func(&mut store, "occt_get_shape_count")?,
-            fn_make_null_shape: instance.get_typed_func(&mut store, "occt_make_null_shape")?,
+            fn_release_all: instance.get_typed_func(&mut store, "occt_release_all").ok(),
+            fn_checkpoint: instance.get_typed_func(&mut store, "occt_checkpoint").ok(),
+            fn_release_since: instance
+                .get_typed_func(&mut store, "occt_release_since")
+                .ok(),
+            fn_get_shape_count: instance
+                .get_typed_func(&mut store, "occt_get_shape_count")
+                .ok(),
+            fn_make_null_shape: instance
+                .get_typed_func(&mut store, "occt_make_null_shape")
+                .ok(),
             fn_xcaf_new_document: instance
                 .get_typed_func(&mut store, "occt_xcaf_new_document")
                 .ok(),
@@ -757,8 +840,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fuse(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_fuse.call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_fuse.clone() else {
+            return Err(OcctError::MissingCapability("fuse"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("fuse")?;
         if result == 0 {
             return Err(self.read_last_error("fuse"));
@@ -766,8 +854,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn cut(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_cut.call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_cut.clone() else {
+            return Err(OcctError::MissingCapability("cut"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("cut")?;
         if result == 0 {
             return Err(self.read_last_error("cut"));
@@ -775,8 +868,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn common(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_common.call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_common.clone() else {
+            return Err(OcctError::MissingCapability("common"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("common")?;
         if result == 0 {
             return Err(self.read_last_error("common"));
@@ -784,11 +882,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn section(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_section
-            .call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_section.clone() else {
+            return Err(OcctError::MissingCapability("section"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("section")?;
         if result == 0 {
             return Err(self.read_last_error("section"));
@@ -796,11 +896,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn intersect(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_intersect
-            .call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_intersect.clone() else {
+            return Err(OcctError::MissingCapability("intersect"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("intersect")?;
         if result == 0 {
             return Err(self.read_last_error("intersect"));
@@ -808,11 +910,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fuse_all(&mut self, shape_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_fuse_all.clone() else {
+            return Err(OcctError::MissingCapability("fuse_all"));
+        };
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_fuse_all.call(
+        let result = func.call(
             &mut self.store,
             (shape_ids_ptr as i32, shape_ids_len as i32),
         );
@@ -826,11 +933,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn intersection_cells(&mut self, shape_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_intersection_cells.clone() else {
+            return Err(OcctError::MissingCapability("intersection_cells"));
+        };
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_intersection_cells.call(
+        let result = func.call(
             &mut self.store,
             (shape_ids_ptr as i32, shape_ids_len as i32),
         );
@@ -844,15 +956,20 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn cut_all(
         &mut self,
         shape_id: ShapeHandle,
         tool_ids: &[ShapeHandle],
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_cut_all.clone() else {
+            return Err(OcctError::MissingCapability("cut_all"));
+        };
         let tool_ids_bytes: Vec<u8> = tool_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let tool_ids_ptr = self.write_bytes(&tool_ids_bytes)?;
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_cut_all.call(
+        let result = func.call(
             &mut self.store,
             (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32),
         );
@@ -866,12 +983,17 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn boolean_pipeline(
         &mut self,
         base_id: ShapeHandle,
         op_codes: &[i32],
         tool_ids: &[ShapeHandle],
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_boolean_pipeline.clone() else {
+            return Err(OcctError::MissingCapability("boolean_pipeline"));
+        };
         let op_codes_bytes: Vec<u8> = op_codes.iter().flat_map(|v| v.to_le_bytes()).collect();
         let op_codes_ptr = self.write_bytes(&op_codes_bytes)?;
         let op_codes_len = op_codes.len() as u32;
@@ -884,7 +1006,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_boolean_pipeline.call(
+        let result = func.call(
             &mut self.store,
             (
                 base_id.0,
@@ -906,6 +1028,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn boolean_fuzzy(
         &mut self,
         a: ShapeHandle,
@@ -913,10 +1037,10 @@ impl crate::kernel::OcctKernel {
         op_code: i32,
         fuzz: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_boolean_fuzzy
-            .call(&mut self.store, (a.0, b.0, op_code, fuzz))?;
+        let Some(func) = self.generated.fn_boolean_fuzzy.clone() else {
+            return Err(OcctError::MissingCapability("boolean_fuzzy"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0, op_code, fuzz))?;
         self.check_error("boolean_fuzzy")?;
         if result == 0 {
             return Err(self.read_last_error("boolean_fuzzy"));
@@ -924,15 +1048,20 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `booleans` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn split(
         &mut self,
         shape_id: ShapeHandle,
         tool_ids: &[ShapeHandle],
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_split.clone() else {
+            return Err(OcctError::MissingCapability("split"));
+        };
         let tool_ids_bytes: Vec<u8> = tool_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let tool_ids_ptr = self.write_bytes(&tool_ids_bytes)?;
         let tool_ids_len = tool_ids.len() as u32;
-        let result = self.generated.fn_split.call(
+        let result = func.call(
             &mut self.store,
             (shape_id.0, tool_ids_ptr as i32, tool_ids_len as i32),
         );
@@ -986,16 +1115,21 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fillet(
         &mut self,
         solid_id: ShapeHandle,
         edge_ids: &[ShapeHandle],
         radius: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_fillet.clone() else {
+            return Err(OcctError::MissingCapability("fillet"));
+        };
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_fillet.call(
+        let result = func.call(
             &mut self.store,
             (solid_id.0, edge_ids_ptr as i32, edge_ids_len as i32, radius),
         );
@@ -1009,16 +1143,21 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn chamfer(
         &mut self,
         solid_id: ShapeHandle,
         edge_ids: &[ShapeHandle],
         distance: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_chamfer.clone() else {
+            return Err(OcctError::MissingCapability("chamfer"));
+        };
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_chamfer.call(
+        let result = func.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -1037,6 +1176,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn chamfer_dist_angle(
         &mut self,
         solid_id: ShapeHandle,
@@ -1044,10 +1185,13 @@ impl crate::kernel::OcctKernel {
         distance: f64,
         angle_deg: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_chamfer_dist_angle.clone() else {
+            return Err(OcctError::MissingCapability("chamfer_dist_angle"));
+        };
         let edge_ids_bytes: Vec<u8> = edge_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let edge_ids_ptr = self.write_bytes(&edge_ids_bytes)?;
         let edge_ids_len = edge_ids.len() as u32;
-        let result = self.generated.fn_chamfer_dist_angle.call(
+        let result = func.call(
             &mut self.store,
             (
                 solid_id.0,
@@ -1165,16 +1309,21 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn defeature(
         &mut self,
         shape_id: ShapeHandle,
         face_ids: &[ShapeHandle],
         tolerance: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_defeature.clone() else {
+            return Err(OcctError::MissingCapability("defeature"));
+        };
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_defeature.call(
+        let result = func.call(
             &mut self.store,
             (
                 shape_id.0,
@@ -1193,11 +1342,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn reverse_shape(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_reverse_shape
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_reverse_shape.clone() else {
+            return Err(OcctError::MissingCapability("reverse_shape"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("reverse_shape")?;
         if result == 0 {
             return Err(self.read_last_error("reverse_shape"));
@@ -1205,8 +1356,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn simplify(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_simplify.call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_simplify.clone() else {
+            return Err(OcctError::MissingCapability("simplify"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("simplify")?;
         if result == 0 {
             return Err(self.read_last_error("simplify"));
@@ -1214,6 +1370,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fillet_variable(
         &mut self,
         solid_id: ShapeHandle,
@@ -1221,7 +1379,10 @@ impl crate::kernel::OcctKernel {
         start_radius: f64,
         end_radius: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_fillet_variable.call(
+        let Some(func) = self.generated.fn_fillet_variable.clone() else {
+            return Err(OcctError::MissingCapability("fillet_variable"));
+        };
+        let result = func.call(
             &mut self.store,
             (solid_id.0, edge_id.0, start_radius, end_radius),
         )?;
@@ -1232,6 +1393,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fillet_batch(
         &mut self,
         solid_ids: &[ShapeHandle],
@@ -1239,6 +1402,9 @@ impl crate::kernel::OcctKernel {
         flat_edge_ids: &[ShapeHandle],
         radii: &[f64],
     ) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_fillet_batch.clone() else {
+            return Err(OcctError::MissingCapability("fillet_batch"));
+        };
         let solid_ids_bytes: Vec<u8> = solid_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let solid_ids_ptr = self.write_bytes(&solid_ids_bytes)?;
         let solid_ids_len = solid_ids.len() as u32;
@@ -1275,7 +1441,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let radii_len = radii.len() as u32;
-        let len = self.generated.fn_fillet_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 solid_ids_ptr as i32,
@@ -1322,6 +1488,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn translate(
         &mut self,
         id: ShapeHandle,
@@ -1329,10 +1497,10 @@ impl crate::kernel::OcctKernel {
         dy: f64,
         dz: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_translate
-            .call(&mut self.store, (id.0, dx, dy, dz))?;
+        let Some(func) = self.generated.fn_translate.clone() else {
+            return Err(OcctError::MissingCapability("translate"));
+        };
+        let result = func.call(&mut self.store, (id.0, dx, dy, dz))?;
         self.check_error("translate")?;
         if result == 0 {
             return Err(self.read_last_error("translate"));
@@ -1340,6 +1508,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn rotate(
         &mut self,
         id: ShapeHandle,
@@ -1351,10 +1521,10 @@ impl crate::kernel::OcctKernel {
         dz: f64,
         angle_rad: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_rotate
-            .call(&mut self.store, (id.0, px, py, pz, dx, dy, dz, angle_rad))?;
+        let Some(func) = self.generated.fn_rotate.clone() else {
+            return Err(OcctError::MissingCapability("rotate"));
+        };
+        let result = func.call(&mut self.store, (id.0, px, py, pz, dx, dy, dz, angle_rad))?;
         self.check_error("rotate")?;
         if result == 0 {
             return Err(self.read_last_error("rotate"));
@@ -1362,6 +1532,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn scale(
         &mut self,
         id: ShapeHandle,
@@ -1370,10 +1542,10 @@ impl crate::kernel::OcctKernel {
         pz: f64,
         factor: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_scale
-            .call(&mut self.store, (id.0, px, py, pz, factor))?;
+        let Some(func) = self.generated.fn_scale.clone() else {
+            return Err(OcctError::MissingCapability("scale"));
+        };
+        let result = func.call(&mut self.store, (id.0, px, py, pz, factor))?;
         self.check_error("scale")?;
         if result == 0 {
             return Err(self.read_last_error("scale"));
@@ -1381,6 +1553,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn mirror(
         &mut self,
         id: ShapeHandle,
@@ -1391,10 +1565,10 @@ impl crate::kernel::OcctKernel {
         ny: f64,
         nz: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_mirror
-            .call(&mut self.store, (id.0, px, py, pz, nx, ny, nz))?;
+        let Some(func) = self.generated.fn_mirror.clone() else {
+            return Err(OcctError::MissingCapability("mirror"));
+        };
+        let result = func.call(&mut self.store, (id.0, px, py, pz, nx, ny, nz))?;
         self.check_error("mirror")?;
         if result == 0 {
             return Err(self.read_last_error("mirror"));
@@ -1402,8 +1576,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn copy(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_copy.call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_copy.clone() else {
+            return Err(OcctError::MissingCapability("copy"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("copy")?;
         if result == 0 {
             return Err(self.read_last_error("copy"));
@@ -1411,6 +1590,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn linear_pattern(
         &mut self,
         id: ShapeHandle,
@@ -1420,10 +1601,10 @@ impl crate::kernel::OcctKernel {
         spacing: f64,
         count: i32,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_linear_pattern
-            .call(&mut self.store, (id.0, dx, dy, dz, spacing, count))?;
+        let Some(func) = self.generated.fn_linear_pattern.clone() else {
+            return Err(OcctError::MissingCapability("linear_pattern"));
+        };
+        let result = func.call(&mut self.store, (id.0, dx, dy, dz, spacing, count))?;
         self.check_error("linear_pattern")?;
         if result == 0 {
             return Err(self.read_last_error("linear_pattern"));
@@ -1431,6 +1612,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn circular_pattern(
         &mut self,
         id: ShapeHandle,
@@ -1443,7 +1626,10 @@ impl crate::kernel::OcctKernel {
         angle: f64,
         count: i32,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_circular_pattern.call(
+        let Some(func) = self.generated.fn_circular_pattern.clone() else {
+            return Err(OcctError::MissingCapability("circular_pattern"));
+        };
+        let result = func.call(
             &mut self.store,
             (id.0, cx, cy, cz, ax, ay, az, angle, count),
         )?;
@@ -1472,11 +1658,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn located(&mut self, id: ShapeHandle, matrix: &[f64]) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_located.clone() else {
+            return Err(OcctError::MissingCapability("located"));
+        };
         let matrix_bytes: Vec<u8> = matrix.iter().flat_map(|v| v.to_le_bytes()).collect();
         let matrix_ptr = self.write_bytes(&matrix_bytes)?;
         let matrix_len = matrix.len() as u32;
-        let result = self.generated.fn_located.call(
+        let result = func.call(
             &mut self.store,
             (id.0, matrix_ptr as i32, matrix_len as i32),
         );
@@ -1490,15 +1681,20 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn general_transform(
         &mut self,
         id: ShapeHandle,
         matrix: &[f64],
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_general_transform.clone() else {
+            return Err(OcctError::MissingCapability("general_transform"));
+        };
         let matrix_bytes: Vec<u8> = matrix.iter().flat_map(|v| v.to_le_bytes()).collect();
         let matrix_ptr = self.write_bytes(&matrix_bytes)?;
         let matrix_len = matrix.len() as u32;
-        let result = self.generated.fn_general_transform.call(
+        let result = func.call(
             &mut self.store,
             (id.0, matrix_ptr as i32, matrix_len as i32),
         );
@@ -1512,11 +1708,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn translate_batch(
         &mut self,
         ids: &[ShapeHandle],
         offsets: &[f64],
     ) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_translate_batch.clone() else {
+            return Err(OcctError::MissingCapability("translate_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1529,7 +1730,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let offsets_len = offsets.len() as u32;
-        let len = self.generated.fn_translate_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -1549,7 +1750,12 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn compose_transform(&mut self, m1: &[f64], m2: &[f64]) -> OcctResult<Vec<f64>> {
+        let Some(func) = self.generated.fn_compose_transform.clone() else {
+            return Err(OcctError::MissingCapability("compose_transform"));
+        };
         let m1_bytes: Vec<u8> = m1.iter().flat_map(|v| v.to_le_bytes()).collect();
         let m1_ptr = self.write_bytes(&m1_bytes)?;
         let m1_len = m1.len() as u32;
@@ -1562,7 +1768,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let m2_len = m2.len() as u32;
-        let len = self.generated.fn_compose_transform.call(
+        let len = func.call(
             &mut self.store,
             (m1_ptr as i32, m1_len as i32, m2_ptr as i32, m2_len as i32),
         );
@@ -1577,11 +1783,16 @@ impl crate::kernel::OcctKernel {
         self.read_vec_f64_result()
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn transform_batch(
         &mut self,
         ids: &[ShapeHandle],
         matrices: &[f64],
     ) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_transform_batch.clone() else {
+            return Err(OcctError::MissingCapability("transform_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1594,7 +1805,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let matrices_len = matrices.len() as u32;
-        let len = self.generated.fn_transform_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -1614,7 +1825,12 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn rotate_batch(&mut self, ids: &[ShapeHandle], params: &[f64]) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_rotate_batch.clone() else {
+            return Err(OcctError::MissingCapability("rotate_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1627,7 +1843,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_rotate_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -1647,7 +1863,12 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn scale_batch(&mut self, ids: &[ShapeHandle], params: &[f64]) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_scale_batch.clone() else {
+            return Err(OcctError::MissingCapability("scale_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1660,7 +1881,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_scale_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -1680,7 +1901,12 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
+    /// Requires the `transforms` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn mirror_batch(&mut self, ids: &[ShapeHandle], params: &[f64]) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_mirror_batch.clone() else {
+            return Err(OcctError::MissingCapability("mirror_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
@@ -1693,7 +1919,7 @@ impl crate::kernel::OcctKernel {
             }
         };
         let params_len = params.len() as u32;
-        let len = self.generated.fn_mirror_batch.call(
+        let len = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -1713,11 +1939,13 @@ impl crate::kernel::OcctKernel {
         self.read_vec_u32_result()
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_vertex(&mut self, x: f64, y: f64, z: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_vertex
-            .call(&mut self.store, (x, y, z))?;
+        let Some(func) = self.generated.fn_make_vertex.clone() else {
+            return Err(OcctError::MissingCapability("make_vertex"));
+        };
+        let result = func.call(&mut self.store, (x, y, z))?;
         self.check_error("make_vertex")?;
         if result == 0 {
             return Err(self.read_last_error("make_vertex"));
@@ -1725,11 +1953,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_edge(&mut self, v1: ShapeHandle, v2: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_edge
-            .call(&mut self.store, (v1.0, v2.0))?;
+        let Some(func) = self.generated.fn_make_edge.clone() else {
+            return Err(OcctError::MissingCapability("make_edge"));
+        };
+        let result = func.call(&mut self.store, (v1.0, v2.0))?;
         self.check_error("make_edge")?;
         if result == 0 {
             return Err(self.read_last_error("make_edge"));
@@ -1767,15 +1997,17 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_face_on_surface(
         &mut self,
         face_id: ShapeHandle,
         wire_id: ShapeHandle,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_face_on_surface
-            .call(&mut self.store, (face_id.0, wire_id.0))?;
+        let Some(func) = self.generated.fn_make_face_on_surface.clone() else {
+            return Err(OcctError::MissingCapability("make_face_on_surface"));
+        };
+        let result = func.call(&mut self.store, (face_id.0, wire_id.0))?;
         self.check_error("make_face_on_surface")?;
         if result == 0 {
             return Err(self.read_last_error("make_face_on_surface"));
@@ -1783,11 +2015,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_solid(&mut self, shell_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_solid
-            .call(&mut self.store, (shell_id.0,))?;
+        let Some(func) = self.generated.fn_make_solid.clone() else {
+            return Err(OcctError::MissingCapability("make_solid"));
+        };
+        let result = func.call(&mut self.store, (shell_id.0,))?;
         self.check_error("make_solid")?;
         if result == 0 {
             return Err(self.read_last_error("make_solid"));
@@ -1795,11 +2029,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn sew(&mut self, shape_ids: &[ShapeHandle], tolerance: f64) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_sew.clone() else {
+            return Err(OcctError::MissingCapability("sew"));
+        };
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_sew.call(
+        let result = func.call(
             &mut self.store,
             (shape_ids_ptr as i32, shape_ids_len as i32, tolerance),
         );
@@ -1813,11 +2052,16 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_compound(&mut self, shape_ids: &[ShapeHandle]) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_make_compound.clone() else {
+            return Err(OcctError::MissingCapability("make_compound"));
+        };
         let shape_ids_bytes: Vec<u8> = shape_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let shape_ids_ptr = self.write_bytes(&shape_ids_bytes)?;
         let shape_ids_len = shape_ids.len() as u32;
-        let result = self.generated.fn_make_compound.call(
+        let result = func.call(
             &mut self.store,
             (shape_ids_ptr as i32, shape_ids_len as i32),
         );
@@ -1872,6 +2116,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_circle_arc(
         &mut self,
         cx: f64,
@@ -1884,7 +2130,10 @@ impl crate::kernel::OcctKernel {
         start_angle: f64,
         end_angle: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_circle_arc.call(
+        let Some(func) = self.generated.fn_make_circle_arc.clone() else {
+            return Err(OcctError::MissingCapability("make_circle_arc"));
+        };
+        let result = func.call(
             &mut self.store,
             (cx, cy, cz, nx, ny, nz, radius, start_angle, end_angle),
         )?;
@@ -1918,6 +2167,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_ellipse_edge(
         &mut self,
         cx: f64,
@@ -1929,7 +2180,10 @@ impl crate::kernel::OcctKernel {
         major_radius: f64,
         minor_radius: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_ellipse_edge.call(
+        let Some(func) = self.generated.fn_make_ellipse_edge.clone() else {
+            return Err(OcctError::MissingCapability("make_ellipse_edge"));
+        };
+        let result = func.call(
             &mut self.store,
             (cx, cy, cz, nx, ny, nz, major_radius, minor_radius),
         )?;
@@ -2034,6 +2288,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_ellipse_arc(
         &mut self,
         cx: f64,
@@ -2047,7 +2303,10 @@ impl crate::kernel::OcctKernel {
         start_angle: f64,
         end_angle: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_ellipse_arc.call(
+        let Some(func) = self.generated.fn_make_ellipse_arc.clone() else {
+            return Err(OcctError::MissingCapability("make_ellipse_arc"));
+        };
+        let result = func.call(
             &mut self.store,
             (
                 cx,
@@ -2069,6 +2328,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_helix_wire(
         &mut self,
         px: f64,
@@ -2081,7 +2342,10 @@ impl crate::kernel::OcctKernel {
         height: f64,
         radius: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_helix_wire.call(
+        let Some(func) = self.generated.fn_make_helix_wire.clone() else {
+            return Err(OcctError::MissingCapability("make_helix_wire"));
+        };
+        let result = func.call(
             &mut self.store,
             (px, py, pz, dx, dy, dz, pitch, height, radius),
         )?;
@@ -2092,6 +2356,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_helix_wire_handed(
         &mut self,
         px: f64,
@@ -2105,7 +2371,10 @@ impl crate::kernel::OcctKernel {
         radius: f64,
         left_handed: bool,
     ) -> OcctResult<ShapeHandle> {
-        let result = self.generated.fn_make_helix_wire_handed.call(
+        let Some(func) = self.generated.fn_make_helix_wire_handed.clone() else {
+            return Err(OcctError::MissingCapability("make_helix_wire_handed"));
+        };
+        let result = func.call(
             &mut self.store,
             (
                 px,
@@ -2170,16 +2439,21 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn remove_holes_from_face(
         &mut self,
         face_id: ShapeHandle,
         hole_indices: &[i32],
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_remove_holes_from_face.clone() else {
+            return Err(OcctError::MissingCapability("remove_holes_from_face"));
+        };
         let hole_indices_bytes: Vec<u8> =
             hole_indices.iter().flat_map(|v| v.to_le_bytes()).collect();
         let hole_indices_ptr = self.write_bytes(&hole_indices_bytes)?;
         let hole_indices_len = hole_indices.len() as u32;
-        let result = self.generated.fn_remove_holes_from_face.call(
+        let result = func.call(
             &mut self.store,
             (face_id.0, hole_indices_ptr as i32, hole_indices_len as i32),
         );
@@ -2193,11 +2467,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn solid_from_shell(&mut self, shell_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_solid_from_shell
-            .call(&mut self.store, (shell_id.0,))?;
+        let Some(func) = self.generated.fn_solid_from_shell.clone() else {
+            return Err(OcctError::MissingCapability("solid_from_shell"));
+        };
+        let result = func.call(&mut self.store, (shell_id.0,))?;
         self.check_error("solid_from_shell")?;
         if result == 0 {
             return Err(self.read_last_error("solid_from_shell"));
@@ -2205,15 +2481,20 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn build_solid_from_faces(
         &mut self,
         face_ids: &[ShapeHandle],
         tolerance: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_build_solid_from_faces.clone() else {
+            return Err(OcctError::MissingCapability("build_solid_from_faces"));
+        };
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_build_solid_from_faces.call(
+        let result = func.call(
             &mut self.store,
             (face_ids_ptr as i32, face_ids_len as i32, tolerance),
         );
@@ -2227,15 +2508,20 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn sew_and_solidify(
         &mut self,
         face_ids: &[ShapeHandle],
         tolerance: f64,
     ) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_sew_and_solidify.clone() else {
+            return Err(OcctError::MissingCapability("sew_and_solidify"));
+        };
         let face_ids_bytes: Vec<u8> = face_ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let face_ids_ptr = self.write_bytes(&face_ids_bytes)?;
         let face_ids_len = face_ids.len() as u32;
-        let result = self.generated.fn_sew_and_solidify.call(
+        let result = func.call(
             &mut self.store,
             (face_ids_ptr as i32, face_ids_len as i32, tolerance),
         );
@@ -2249,6 +2535,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn build_tri_face(
         &mut self,
         ax: f64,
@@ -2261,10 +2549,10 @@ impl crate::kernel::OcctKernel {
         cy2: f64,
         cz2: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_build_tri_face
-            .call(&mut self.store, (ax, ay, az, bx, by, bz, cx2, cy2, cz2))?;
+        let Some(func) = self.generated.fn_build_tri_face.clone() else {
+            return Err(OcctError::MissingCapability("build_tri_face"));
+        };
+        let result = func.call(&mut self.store, (ax, ay, az, bx, by, bz, cx2, cy2, cz2))?;
         self.check_error("build_tri_face")?;
         if result == 0 {
             return Err(self.read_last_error("build_tri_face"));
@@ -2272,6 +2560,8 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `construction` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_tangent_arc(
         &mut self,
         x1: f64,
@@ -2284,10 +2574,10 @@ impl crate::kernel::OcctKernel {
         y2: f64,
         z2: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_tangent_arc
-            .call(&mut self.store, (x1, y1, z1, tx, ty, tz, x2, y2, z2))?;
+        let Some(func) = self.generated.fn_make_tangent_arc.clone() else {
+            return Err(OcctError::MissingCapability("make_tangent_arc"));
+        };
+        let result = func.call(&mut self.store, (x1, y1, z1, tx, ty, tz, x2, y2, z2))?;
         self.check_error("make_tangent_arc")?;
         if result == 0 {
             return Err(self.read_last_error("make_tangent_arc"));
@@ -2323,21 +2613,28 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn get_shape_type(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_get_shape_type
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_get_shape_type.clone() else {
+            return Err(OcctError::MissingCapability("get_shape_type"));
+        };
+        let len = func.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_shape_type"));
         }
         self.read_string_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn get_sub_shapes(&mut self, id: ShapeHandle, shape_type: &str) -> OcctResult<Vec<u32>> {
+        let Some(func) = self.generated.fn_get_sub_shapes.clone() else {
+            return Err(OcctError::MissingCapability("get_sub_shapes"));
+        };
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let len = self.generated.fn_get_sub_shapes.call(
+        let len = func.call(
             &mut self.store,
             (id.0, shape_type_ptr as i32, shape_type_len as i32),
         );
@@ -2375,15 +2672,20 @@ impl crate::kernel::OcctKernel {
         Ok(result)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn sub_shape_hashes(
         &mut self,
         id: ShapeHandle,
         shape_type: &str,
         hash_upper_bound: i32,
     ) -> OcctResult<Vec<i32>> {
+        let Some(func) = self.generated.fn_sub_shape_hashes.clone() else {
+            return Err(OcctError::MissingCapability("sub_shape_hashes"));
+        };
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let len = self.generated.fn_sub_shape_hashes.call(
+        let len = func.call(
             &mut self.store,
             (
                 id.0,
@@ -2401,95 +2703,119 @@ impl crate::kernel::OcctKernel {
         self.read_vec_i32_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn distance_between(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<f64> {
-        let result = self
-            .generated
-            .fn_distance_between
-            .call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_distance_between.clone() else {
+            return Err(OcctError::MissingCapability("distance_between"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         self.check_error("distance_between")?;
         Ok(result)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn is_same(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_is_same
-            .call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_is_same.clone() else {
+            return Err(OcctError::MissingCapability("is_same"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         if result < 0 {
             return Err(self.read_last_error("is_same"));
         }
         Ok(result != 0)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn is_equal(&mut self, a: ShapeHandle, b: ShapeHandle) -> OcctResult<bool> {
-        let result = self
-            .generated
-            .fn_is_equal
-            .call(&mut self.store, (a.0, b.0))?;
+        let Some(func) = self.generated.fn_is_equal.clone() else {
+            return Err(OcctError::MissingCapability("is_equal"));
+        };
+        let result = func.call(&mut self.store, (a.0, b.0))?;
         if result < 0 {
             return Err(self.read_last_error("is_equal"));
         }
         Ok(result != 0)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn is_null(&mut self, id: ShapeHandle) -> OcctResult<bool> {
-        let result = self.generated.fn_is_null.call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_is_null.clone() else {
+            return Err(OcctError::MissingCapability("is_null"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("is_null"));
         }
         Ok(result != 0)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn hash_code(&mut self, id: ShapeHandle, upper_bound: i32) -> OcctResult<i32> {
-        let result = self
-            .generated
-            .fn_hash_code
-            .call(&mut self.store, (id.0, upper_bound))?;
+        let Some(func) = self.generated.fn_hash_code.clone() else {
+            return Err(OcctError::MissingCapability("hash_code"));
+        };
+        let result = func.call(&mut self.store, (id.0, upper_bound))?;
         self.check_error("hash_code")?;
         Ok(result)
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn shape_orientation(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let len = self
-            .generated
-            .fn_shape_orientation
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_shape_orientation.clone() else {
+            return Err(OcctError::MissingCapability("shape_orientation"));
+        };
+        let len = func.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("shape_orientation"));
         }
         self.read_string_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn iter_shapes(&mut self, id: ShapeHandle) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_iter_shapes
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_iter_shapes.clone() else {
+            return Err(OcctError::MissingCapability("iter_shapes"));
+        };
+        let len = func.call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("iter_shapes"));
         }
         self.read_vec_u32_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn edge_to_face_map(
         &mut self,
         id: ShapeHandle,
         hash_upper_bound: i32,
     ) -> OcctResult<Vec<i32>> {
-        let len = self
-            .generated
-            .fn_edge_to_face_map
-            .call(&mut self.store, (id.0, hash_upper_bound))?;
+        let Some(func) = self.generated.fn_edge_to_face_map.clone() else {
+            return Err(OcctError::MissingCapability("edge_to_face_map"));
+        };
+        let len = func.call(&mut self.store, (id.0, hash_upper_bound))?;
         if len < 0 {
             return Err(self.read_last_error("edge_to_face_map"));
         }
         self.read_vec_i32_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn downcast(&mut self, id: ShapeHandle, target_type: &str) -> OcctResult<ShapeHandle> {
+        let Some(func) = self.generated.fn_downcast.clone() else {
+            return Err(OcctError::MissingCapability("downcast"));
+        };
         let target_type_ptr = self.write_bytes(target_type.as_bytes())?;
         let target_type_len = target_type.len() as u32;
-        let result = self.generated.fn_downcast.call(
+        let result = func.call(
             &mut self.store,
             (id.0, target_type_ptr as i32, target_type_len as i32),
         );
@@ -2503,30 +2829,34 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn adjacent_faces(
         &mut self,
         shape_id: ShapeHandle,
         face_id: ShapeHandle,
     ) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_adjacent_faces
-            .call(&mut self.store, (shape_id.0, face_id.0))?;
+        let Some(func) = self.generated.fn_adjacent_faces.clone() else {
+            return Err(OcctError::MissingCapability("adjacent_faces"));
+        };
+        let len = func.call(&mut self.store, (shape_id.0, face_id.0))?;
         if len < 0 {
             return Err(self.read_last_error("adjacent_faces"));
         }
         self.read_vec_u32_result()
     }
 
+    /// Requires the `topology` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn shared_edges(
         &mut self,
         face_a: ShapeHandle,
         face_b: ShapeHandle,
     ) -> OcctResult<Vec<u32>> {
-        let len = self
-            .generated
-            .fn_shared_edges
-            .call(&mut self.store, (face_a.0, face_b.0))?;
+        let Some(func) = self.generated.fn_shared_edges.clone() else {
+            return Err(OcctError::MissingCapability("shared_edges"));
+        };
+        let len = func.call(&mut self.store, (face_a.0, face_b.0))?;
         if len < 0 {
             return Err(self.read_last_error("shared_edges"));
         }
@@ -2770,11 +3100,13 @@ impl crate::kernel::OcctKernel {
         self.read_vec_f64_result()
     }
 
+    /// Requires the `modeling` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn reverse_surface_u(&mut self, face_id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_reverse_surface_u
-            .call(&mut self.store, (face_id.0,))?;
+        let Some(func) = self.generated.fn_reverse_surface_u.clone() else {
+            return Err(OcctError::MissingCapability("reverse_surface_u"));
+        };
+        let result = func.call(&mut self.store, (face_id.0,))?;
         self.check_error("reverse_surface_u")?;
         if result == 0 {
             return Err(self.read_last_error("reverse_surface_u"));
@@ -3510,11 +3842,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn unify_same_domain(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_unify_same_domain
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_unify_same_domain.clone() else {
+            return Err(OcctError::MissingCapability("unify_same_domain"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("unify_same_domain")?;
         if result == 0 {
             return Err(self.read_last_error("unify_same_domain"));
@@ -3541,11 +3875,13 @@ impl crate::kernel::OcctKernel {
         Ok(result != 0)
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn heal_solid(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_solid
-            .call(&mut self.store, (id.0, tolerance))?;
+        let Some(func) = self.generated.fn_heal_solid.clone() else {
+            return Err(OcctError::MissingCapability("heal_solid"));
+        };
+        let result = func.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_solid")?;
         if result == 0 {
             return Err(self.read_last_error("heal_solid"));
@@ -3553,11 +3889,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn heal_face(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_face
-            .call(&mut self.store, (id.0, tolerance))?;
+        let Some(func) = self.generated.fn_heal_face.clone() else {
+            return Err(OcctError::MissingCapability("heal_face"));
+        };
+        let result = func.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_face")?;
         if result == 0 {
             return Err(self.read_last_error("heal_face"));
@@ -3565,11 +3903,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn heal_wire(&mut self, id: ShapeHandle, tolerance: f64) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_heal_wire
-            .call(&mut self.store, (id.0, tolerance))?;
+        let Some(func) = self.generated.fn_heal_wire.clone() else {
+            return Err(OcctError::MissingCapability("heal_wire"));
+        };
+        let result = func.call(&mut self.store, (id.0, tolerance))?;
         self.check_error("heal_wire")?;
         if result == 0 {
             return Err(self.read_last_error("heal_wire"));
@@ -3577,11 +3917,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fix_face_orientations(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_fix_face_orientations
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_fix_face_orientations.clone() else {
+            return Err(OcctError::MissingCapability("fix_face_orientations"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("fix_face_orientations")?;
         if result == 0 {
             return Err(self.read_last_error("fix_face_orientations"));
@@ -3589,27 +3931,31 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn build_curves3d(&mut self, wire_id: ShapeHandle) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_build_curves3d
-            .call(&mut self.store, (wire_id.0,))?;
+        let Some(func) = self.generated.fn_build_curves3d.clone() else {
+            return Err(OcctError::MissingCapability("build_curves3d"));
+        };
+        let result = func.call(&mut self.store, (wire_id.0,))?;
         if result < 0 {
             return Err(self.read_last_error("build_curves3d"));
         }
         Ok(())
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn fix_wire_on_face(
         &mut self,
         wire_id: ShapeHandle,
         face_id: ShapeHandle,
         tolerance: f64,
     ) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_fix_wire_on_face
-            .call(&mut self.store, (wire_id.0, face_id.0, tolerance))?;
+        let Some(func) = self.generated.fn_fix_wire_on_face.clone() else {
+            return Err(OcctError::MissingCapability("fix_wire_on_face"));
+        };
+        let result = func.call(&mut self.store, (wire_id.0, face_id.0, tolerance))?;
         self.check_error("fix_wire_on_face")?;
         if result == 0 {
             return Err(self.read_last_error("fix_wire_on_face"));
@@ -3617,11 +3963,13 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
+    /// Requires the `healing` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn remove_degenerate_edges(&mut self, id: ShapeHandle) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_remove_degenerate_edges
-            .call(&mut self.store, (id.0,))?;
+        let Some(func) = self.generated.fn_remove_degenerate_edges.clone() else {
+            return Err(OcctError::MissingCapability("remove_degenerate_edges"));
+        };
+        let result = func.call(&mut self.store, (id.0,))?;
         self.check_error("remove_degenerate_edges")?;
         if result == 0 {
             return Err(self.read_last_error("remove_degenerate_edges"));
@@ -4286,13 +4634,18 @@ impl crate::kernel::OcctKernel {
         self.read_evolution_result()
     }
 
+    /// Requires the `tessellate` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn tessellate(
         &mut self,
         id: ShapeHandle,
         linear_deflection: f64,
         angular_deflection: f64,
     ) -> OcctResult<Mesh> {
-        let status = self.generated.fn_tessellate.call(
+        let Some(func) = self.generated.fn_tessellate.clone() else {
+            return Err(OcctError::MissingCapability("tessellate"));
+        };
+        let status = func.call(
             &mut self.store,
             (id.0, linear_deflection, angular_deflection),
         )?;
@@ -4318,13 +4671,18 @@ impl crate::kernel::OcctKernel {
         self.read_mesh_result()
     }
 
+    /// Requires the `tessellate` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn mesh_shape(
         &mut self,
         id: ShapeHandle,
         linear_deflection: f64,
         angular_deflection: f64,
     ) -> OcctResult<Mesh> {
-        let status = self.generated.fn_mesh_shape.call(
+        let Some(func) = self.generated.fn_mesh_shape.clone() else {
+            return Err(OcctError::MissingCapability("mesh_shape"));
+        };
+        let status = func.call(
             &mut self.store,
             (id.0, linear_deflection, angular_deflection),
         )?;
@@ -4334,16 +4692,21 @@ impl crate::kernel::OcctKernel {
         self.read_mesh_result()
     }
 
+    /// Requires the `tessellate` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn mesh_batch(
         &mut self,
         ids: &[ShapeHandle],
         linear_deflection: f64,
         angular_deflection: f64,
     ) -> OcctResult<MeshBatch> {
+        let Some(func) = self.generated.fn_mesh_batch.clone() else {
+            return Err(OcctError::MissingCapability("mesh_batch"));
+        };
         let ids_bytes: Vec<u8> = ids.iter().flat_map(|h| h.0.to_le_bytes()).collect();
         let ids_ptr = self.write_bytes(&ids_bytes)?;
         let ids_len = ids.len() as u32;
-        let status = self.generated.fn_mesh_batch.call(
+        let status = func.call(
             &mut self.store,
             (
                 ids_ptr as i32,
@@ -4361,11 +4724,13 @@ impl crate::kernel::OcctKernel {
         self.read_mesh_batch_result()
     }
 
+    /// Requires the `tessellate` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn wireframe(&mut self, id: ShapeHandle, deflection: f64) -> OcctResult<EdgeData> {
-        let status = self
-            .generated
-            .fn_wireframe
-            .call(&mut self.store, (id.0, deflection))?;
+        let Some(func) = self.generated.fn_wireframe.clone() else {
+            return Err(OcctError::MissingCapability("wireframe"));
+        };
+        let status = func.call(&mut self.store, (id.0, deflection))?;
         if status < 0 {
             return Err(self.read_last_error("wireframe"));
         }
@@ -4421,45 +4786,61 @@ impl crate::kernel::OcctKernel {
         Ok(())
     }
 
+    /// Requires the `kernel` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn release_all(&mut self) -> OcctResult<()> {
-        let result = self.generated.fn_release_all.call(&mut self.store, ())?;
+        let Some(func) = self.generated.fn_release_all.clone() else {
+            return Err(OcctError::MissingCapability("release_all"));
+        };
+        let result = func.call(&mut self.store, ())?;
         if result < 0 {
             return Err(self.read_last_error("release_all"));
         }
         Ok(())
     }
 
+    /// Requires the `kernel` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn checkpoint(&mut self) -> OcctResult<u32> {
-        let result = self.generated.fn_checkpoint.call(&mut self.store, ())?;
+        let Some(func) = self.generated.fn_checkpoint.clone() else {
+            return Err(OcctError::MissingCapability("checkpoint"));
+        };
+        let result = func.call(&mut self.store, ())?;
         self.check_error("checkpoint")?;
         Ok(result)
     }
 
+    /// Requires the `kernel` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn release_since(&mut self, mark: u32) -> OcctResult<()> {
-        let result = self
-            .generated
-            .fn_release_since
-            .call(&mut self.store, (mark,))?;
+        let Some(func) = self.generated.fn_release_since.clone() else {
+            return Err(OcctError::MissingCapability("release_since"));
+        };
+        let result = func.call(&mut self.store, (mark,))?;
         if result < 0 {
             return Err(self.read_last_error("release_since"));
         }
         Ok(())
     }
 
+    /// Requires the `kernel` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn get_shape_count(&mut self) -> OcctResult<u32> {
-        let result = self
-            .generated
-            .fn_get_shape_count
-            .call(&mut self.store, ())?;
+        let Some(func) = self.generated.fn_get_shape_count.clone() else {
+            return Err(OcctError::MissingCapability("get_shape_count"));
+        };
+        let result = func.call(&mut self.store, ())?;
         self.check_error("get_shape_count")?;
         Ok(result)
     }
 
+    /// Requires the `kernel` capability; minimal kernel builds return
+    /// [`OcctError::MissingCapability`].
     pub fn make_null_shape(&mut self) -> OcctResult<ShapeHandle> {
-        let result = self
-            .generated
-            .fn_make_null_shape
-            .call(&mut self.store, ())?;
+        let Some(func) = self.generated.fn_make_null_shape.clone() else {
+            return Err(OcctError::MissingCapability("make_null_shape"));
+        };
+        let result = func.call(&mut self.store, ())?;
         self.check_error("make_null_shape")?;
         if result == 0 {
             return Err(self.read_last_error("make_null_shape"));

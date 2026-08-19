@@ -31,11 +31,10 @@ enum Cli {
         /// Enable release optimizations (LTO, wasm-opt)
         #[arg(long)]
         release: bool,
-        /// Root the export set at the core spec categories (everything
-        /// outside `codegen::config::OPTIONAL_CATEGORIES`) and install to
+        /// Root the export set at what the consumer actually calls
+        /// (`codegen::config::REQUIRED_EXPORTS`) and install to
         /// dist/occt-wasm-minimal.wasm.br instead of crate/src/ — dead-code
-        /// elimination drops the optional subsystems (STEP/STL exchange,
-        /// XCAF, HLR projection).
+        /// elimination drops everything unreachable from those roots.
         #[arg(long)]
         minimal: bool,
     },

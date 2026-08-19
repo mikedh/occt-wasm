@@ -11,14 +11,15 @@ pub mod types;
 pub mod wasi_emitter;
 
 /// The `--minimal` dead-code root set, derived from the specs: every `occt_*`
-/// export the WASI emitter itself produces for the core spec set — method
+/// export the WASI emitter itself produces for the required spec set — method
 /// wrappers, lifecycle, the error protocol, and exactly the accessor groups
-/// those specs' return types require. Core means not [`MethodKind::Skip`], not
-/// the Embind-only `"marshal"` helpers (mirroring `run::run`), and not in
-/// [`config::OPTIONAL_CATEGORIES`]. No name list is maintained by hand, and
-/// the Rust host lazily binds exactly the optional-category wrappers, so
-/// "every eagerly-bound export exists in a minimal blob" holds by
-/// construction.
+/// those specs' return types require. Required means it has a WASI binding at
+/// all, is not one of the Embind-only `"marshal"` helpers (mirroring
+/// `run::run`), and is named in [`config::REQUIRED_EXPORTS`] — the list of what
+/// the CONSUMER calls, not a set of categories to subtract. The Rust host binds
+/// everything else lazily, so "every eagerly-bound export exists in a minimal
+/// blob" holds by construction, and now holds for a much smaller eager set: 18
+/// generated wrappers rather than 96.
 ///
 /// Hand-written facade extensions (`facade/src/*.cpp`) export their own
 /// symbols; `build_wasi` scrapes and appends those separately.
@@ -27,7 +28,7 @@ pub fn minimal_export_names() -> anyhow::Result<Vec<String>> {
     config::validate(all)?;
     let core: Vec<&types::MethodSpec> = all
         .iter()
-        .filter(|m| !matches!(m.kind, types::MethodKind::Skip))
+        .filter(|m| m.has_wasi_binding())
         .filter(|m| m.category != "marshal")
         .filter(|m| !config::spec_is_optional(m))
         .collect();
@@ -40,15 +41,15 @@ pub fn minimal_export_names() -> anyhow::Result<Vec<String>> {
 mod tests {
     use super::*;
 
-    /// The derived minimal root set: core method wrappers in, optional
-    /// wrappers and their accessor groups out, lifecycle always in.
+    /// The derived minimal root set: required method wrappers in, everything
+    /// else and its accessor groups out, lifecycle always in.
     #[test]
-    fn minimal_export_names_partitions_by_category() {
+    fn minimal_export_names_partitions_by_required_set() {
         let names = minimal_export_names().expect("derivation failed");
         let has = |n: &str| names.iter().any(|x| x == n);
 
         for m in config::target_methods() {
-            if matches!(m.kind, types::MethodKind::Skip) || m.category == "marshal" {
+            if !m.has_wasi_binding() || m.category == "marshal" {
                 continue;
             }
             let export = format!("occt_{}", wasi_emitter::camel_to_snake(m.name));

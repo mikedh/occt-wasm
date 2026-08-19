@@ -5697,68 +5697,90 @@ pub const CATEGORIES: &[&str] = &[
     "xcaf",
 ];
 
-/// Categories excluded from the `--minimal` WASI profile (`cargo xtask
-/// build-wasi --minimal`). The minimal export root set is derived as "every
-/// export the WASI emitter produces for the specs NOT in these categories",
-/// so wasm-ld's dead-code elimination drops the OCCT subsystems behind them.
-/// The Rust host binds these specs' wrappers lazily and returns
-/// [`OcctError::MissingCapability`] when the export is absent — which is what
-/// keeps a minimal blob instantiable.
+/// **Every generated export the rmesh engine seam actually calls.**
 ///
-/// The minimal profile is the construction-op surface: sketch lowering
-/// (edges/wires/faces), extrude/revolve, fillet/chamfer, booleans + their
-/// reliability ladder (healing stays core for the validate→fix recovery
-/// rung), transforms, tessellation, and topology walks (fillet/chamfer are
-/// unusable without sub-shape enumeration, and face/edge picking needs them
-/// too). Everything else — exchange formats, XCAF, HLR, offset-family
-/// modeling, primitives, queries, curve authoring, sweeps, BREP io — is
-/// optional.
+/// The root set the `--minimal` profile is derived from, stated as the CONSUMER'S
+/// list rather than as a set of categories to subtract. That inversion is the
+/// whole point:
 ///
-/// `evolution` is OPTIONAL, and that reverses an earlier decision on its own
-/// reasoning rather than against it.
+/// - Subtracting categories answers "what did we decide to drop?", and the answer
+///   drifts every time upstream adds a method to a category nobody re-read. It
+///   left 103 of 162 exports in the shipped blob that no caller anywhere can
+///   reach — every `occt_fillet*`, every `occt_chamfer*`, `occt_boolean_pipeline`
+///   and `occt_boolean_fuzzy` (rmesh goes through the out-of-tree
+///   `occt_rmesh_history_*` channels for all of those), and the whole retired
+///   hash surface.
+/// - Naming the required set answers "what does the consumer call?", which is a
+///   question with one true answer, checked on the consumer's side at
+///   instantiation.
 ///
-/// It was made core because the `*WithHistory` builders answer "which input
-/// face produced this output face", and a stable name for a face cannot be
-/// derived from geometry alone — a construction-op concern, so it belonged in
-/// the profile the app ships. That argument still holds. It just no longer
-/// points here: `facade/src/rmesh_history.cpp` answers the same question, for
-/// edges as well as faces, keyed by index instead of by a `TShape` hash taken
-/// modulo an i32. Hand-written facade files are exported in every profile, so
-/// the capability the rationale was defending is core unconditionally.
+/// **Copied verbatim from rmesh's `engine::open_cascade::facade::DIRECT` and
+/// `wasmtime_host::required_exports`'s `NATIVE_ONLY`**, minus the entries that
+/// are not generated from specs at all: the lifecycle and error-protocol exports
+/// (`occt_init`, `occt_alloc`, `occt_free`, `occt_has_error`, `occt_get_error*`,
+/// `occt_destroy`) come from the emitter's own lifecycle emission, the
+/// `(pointer, length)` accessor groups are derived from the surviving specs'
+/// return types, and every `occt_rmesh_*` name is an out-of-tree facade
+/// extension that `build_wasi` scrapes from `facade/src/*.cpp` separately.
 ///
-/// What remains behind `evolution` is twelve builders no rmesh code calls, each
-/// taking `inputFaceHashes`. Keeping them core would link them — and, because
-/// `shellWithHistory` / `offsetWithHistory` / `thickenWithHistory` root
-/// `BRepOffsetAPI_*`, would drag the whole offset family back into a profile
-/// that lists `offsetting` as optional two lines below. They stay in the spec
-/// list for the npm package, which is upstream's to own; they simply stop being
-/// linked into the minimal blob.
-pub const OPTIONAL_CATEGORIES: &[&str] = &[
-    "curve",
-    "evolution",
-    "exchange",
-    "io",
-    "offsetting",
-    "primitives",
-    "projection",
-    "query",
-    "sweep",
-    "xcaf",
+/// Drift between this list and rmesh's is not silent: rmesh checks
+/// `required_module_exports()` against the loaded module at instantiation, and
+/// `engine_occt::the_shipped_module_carries_every_required_export` fails on the
+/// real blob when one is missing.
+///
+/// `occt_shell` is deliberately ABSENT. rmesh SAMPLES it (`OpenCascade::exports`)
+/// and reports `Capability::Shell` accordingly, so a blob without it is a
+/// supported configuration rather than a broken one — which is exactly the
+/// property a required list must not quietly destroy.
+pub const REQUIRED_EXPORTS: &[&str] = &[
+    // the profile door's builders
+    "occt_make_line_edge",
+    "occt_make_circle_edge",
+    "occt_make_arc_edge",
+    "occt_make_bezier_edge",
+    "occt_make_b_spline_edge",
+    "occt_make_wire",
+    "occt_make_face",
+    "occt_add_holes_in_face",
+    // soundness and repair
+    "occt_is_valid",
+    "occt_check_shape",
+    "occt_fix_shape",
+    // the operations
+    "occt_extrude",
+    "occt_revolve",
+    "occt_transform",
+    // lift + counting + lifetime
+    "occt_sub_shape_count",
+    "occt_non_degenerate_edges",
+    "occt_release",
+    // native-only: the kernel's own mesher, which is rmesh's differential oracle
+    "occt_tessellate_relative",
 ];
 
-/// Individual specs excluded from the `--minimal` profile although their
-/// category stays core: heavyweight-toolkit rooters that basic construction
-/// never needs (`makeNonPlanarFace` → `BRepOffsetAPI_MakeFilling`/`TKOffset`,
-/// `bsplineSurface` → `GeomAPI_PointsToBSplineSurface`/`TKGeomAlgo`). Validated
-/// against the spec list, so a typo or a renamed spec is a codegen error.
-pub const OPTIONAL_SPECS: &[&str] = &["makeNonPlanarFace", "bsplineSurface"];
+/// This spec's WASI export name — `makeLineEdge` -> `occt_make_line_edge`.
+///
+/// The one place the convention is written down for [`spec_is_optional`]; the
+/// emitters spell it inline because they are emitting the definition.
+#[must_use]
+pub fn export_name(spec: &MethodSpec) -> String {
+    format!("occt_{}", super::wasi_emitter::camel_to_snake(spec.name))
+}
 
 /// Whether a spec is excluded from the `--minimal` profile — the ONE
 /// predicate shared by the Rust emitter (lazy `Option` bindings), the WASI
 /// export derivation, and validation, so "every eagerly-bound export exists
 /// in a minimal blob" holds by construction.
+///
+/// Inverted: optional is now the DEFAULT, and [`REQUIRED_EXPORTS`] is the
+/// exception list. That strengthens the invariant rather than weakening it —
+/// everything not named there binds as `Option<TypedFunc>` and answers
+/// `MissingCapability`, so a blob missing an unrequired export still
+/// instantiates. Under the old direction a category the fork had not classified
+/// bound eagerly and took instantiation down with it, which is the failure
+/// `crate/tests/minimal.rs` exists to catch after the fact.
 pub fn spec_is_optional(spec: &MethodSpec) -> bool {
-    OPTIONAL_CATEGORIES.contains(&spec.category) || OPTIONAL_SPECS.contains(&spec.name)
+    !REQUIRED_EXPORTS.contains(&export_name(spec).as_str())
 }
 
 /// Validate the method specs before emission, returning a descriptive error
@@ -5766,31 +5788,13 @@ pub fn spec_is_optional(spec: &MethodSpec) -> bool {
 /// malformed hand-edited spec is rejected up front rather than producing broken
 /// C++/Rust that only fails much later at the em++/cargo build.
 pub fn validate(methods: &[MethodSpec]) -> Result<()> {
-    for c in OPTIONAL_CATEGORIES {
-        if !CATEGORIES.contains(c) {
-            bail!("OPTIONAL_CATEGORIES entry '{c}' is not in CATEGORIES");
-        }
-        // The kernel lifecycle and the marshal helpers are load-bearing for
-        // every profile; they can never be optional.
-        if *c == "kernel" || *c == "marshal" {
-            bail!("category '{c}' cannot be optional");
-        }
-    }
-    for name in OPTIONAL_SPECS {
-        let Some(spec) = methods.iter().find(|m| m.name == *name) else {
-            bail!("OPTIONAL_SPECS entry '{name}' names no spec (typo or renamed?)");
-        };
-        if spec.category == "kernel" || spec.category == "marshal" {
-            bail!(
-                "OPTIONAL_SPECS entry '{name}' is in load-bearing category '{}'",
-                spec.category
-            );
-        }
-        if OPTIONAL_CATEGORIES.contains(&spec.category) {
-            bail!(
-                "OPTIONAL_SPECS entry '{name}' is already optional via category '{}'",
-                spec.category
-            );
+    // Every REQUIRED_EXPORTS entry must name a real spec. Without this the
+    // inversion fails OPEN: a renamed or removed spec silently drops out of the
+    // required set, binds lazily, and the first call answers MissingCapability
+    // on a blob that was built without ever being asked for it.
+    for name in REQUIRED_EXPORTS {
+        if !methods.iter().any(|m| export_name(m) == *name) {
+            bail!("REQUIRED_EXPORTS entry '{name}' names no spec (typo, or renamed upstream?)");
         }
     }
     let mut seen = std::collections::HashSet::new();

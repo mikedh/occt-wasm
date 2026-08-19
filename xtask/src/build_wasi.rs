@@ -135,7 +135,7 @@ fn link(root: &Path, objects: &[PathBuf], release: bool, minimal: bool) -> Resul
     let generated_names = extract_export_names(&root.join("facade/generated/wasi_exports.cpp"))?;
     let mut export_names = if minimal {
         // The minimal dead-code root set is derived from the codegen specs
-        // (everything outside `config::OPTIONAL_CATEGORIES`) — see
+        // named in `config::REQUIRED_EXPORTS` — see
         // `codegen::minimal_export_names`. Guard against a stale generated
         // facade: every derived root must exist on disk.
         let names = crate::codegen::minimal_export_names()?;

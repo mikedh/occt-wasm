@@ -7,7 +7,7 @@
 use std::fmt::Write as _;
 
 use super::config;
-use super::types::{FacadeParam, MethodKind, MethodSpec, ReturnType};
+use super::types::{FacadeParam, MethodSpec, ReturnType};
 use super::wasi_emitter::camel_to_snake;
 
 /// Whether a spec's wrapper binds lazily: optional exports are absent from
@@ -761,11 +761,20 @@ mod tests {
         assert!(output.contains("b.0"));
     }
 
+    /// Field types track the spec's parameter and return types.
+    ///
+    /// Both fixtures are OPTIONAL under the inverted root set (neither
+    /// `occt_make_box` nor `occt_fuse` is in `config::REQUIRED_EXPORTS` — rmesh
+    /// builds boxes from a profile and fuses through the out-of-tree
+    /// `occt_rmesh_history_boolean`), so the `Option<..>` wrapper is part of what
+    /// this asserts. The EAGER spelling is covered by `IS_VALID` in
+    /// `optional_category_method_binds_lazily`, which is the one fixture here
+    /// that names a required export.
     #[test]
     fn generates_struct_fields() {
         let output = emit_rust_host(&[&MAKE_BOX, &FUSE]);
-        assert!(output.contains("fn_make_box: TypedFunc<(f64, f64, f64), u32>"));
-        assert!(output.contains("fn_fuse: TypedFunc<(u32, u32), u32>"));
+        assert!(output.contains("fn_make_box: Option<TypedFunc<(f64, f64, f64), u32>>"));
+        assert!(output.contains("fn_fuse: Option<TypedFunc<(u32, u32), u32>>"));
     }
 
     #[test]
@@ -830,7 +839,12 @@ mod tests {
         assert!(output.contains(
             "pub fn get_bounding_box(&mut self, id: ShapeHandle, use_tri: bool) -> OcctResult<BoundingBox>"
         ));
-        assert!(output.contains("let status = self.generated.fn_get_bounding_box.call"));
+        // `getBoundingBox` is not in `config::REQUIRED_EXPORTS`, so the call goes
+        // through the lazy binding's `func` — the status capture and the guard
+        // below are what this test is actually about, and they are the same on
+        // both binding paths.
+        assert!(output.contains("let Some(func) = self.generated.fn_get_bounding_box.clone()"));
+        assert!(output.contains("let status = func.call("));
         assert!(output.contains("if status < 0 {"));
         assert!(output.contains("self.read_bbox_result()"));
     }
