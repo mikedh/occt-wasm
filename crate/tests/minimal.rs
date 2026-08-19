@@ -84,6 +84,22 @@ fn constructed_cube(kernel: &mut OcctKernel, x: f64, y: f64, size: f64) -> Shape
     kernel.extrude(face, 0.0, 0.0, s).unwrap()
 }
 
+/// The edges of `solid`, by the route rmesh uses.
+///
+/// `non_degenerate_edges`, NOT `get_sub_shapes`. The latter is a `topology`
+/// export nothing in rmesh calls, so it is not in `config::REQUIRED_EXPORTS` and
+/// is absent from the profile the app ships. Three tests here reached for it —
+/// which is exactly the drift a consumer-rooted export set makes visible: they
+/// were exercising a path the shipped blob does not have.
+fn edges_of(kernel: &mut OcctKernel, solid: ShapeHandle) -> Vec<ShapeHandle> {
+    kernel
+        .non_degenerate_edges(solid)
+        .unwrap()
+        .into_iter()
+        .map(ShapeHandle::from_raw)
+        .collect()
+}
+
 /// The load-bearing assertion: a minimal blob must instantiate. Every export
 /// the crate binds eagerly has to exist in it; a failure here means the
 /// derived export set and the crate's binding surface have diverged.
@@ -114,17 +130,17 @@ fn minimal_blob_construction_path_works() {
     let (topology, geometry) = kernel.to_brep_ir(solid).unwrap();
     assert!(!topology.is_empty() && !geometry.is_empty());
 
-    // Fillet/chamfer are core by policy; they need topology's sub-shape
-    // enumeration, which is why `topology` is core too.
-    let edges: Vec<ShapeHandle> = kernel
-        .get_sub_shapes(solid, "edge")
-        .unwrap()
-        .into_iter()
-        .map(ShapeHandle::from_raw)
-        .collect();
-    assert!(!edges.is_empty());
-    let filleted = kernel.fillet(solid, &edges[..1], 1.0).unwrap();
-    assert!(kernel.is_valid(filleted).unwrap());
+    // Blends go through the out-of-tree `occt_rmesh_history_blend`, which builds
+    // the fillet itself (`BRepFilletAPI_MakeFillet`) and reports provenance —
+    // `occt_fillet` is not in the profile, because nothing calls it.
+    let edges = edges_of(&mut kernel, solid);
+    assert!(!edges.is_empty(), "an extruded cube has edges to blend");
+    let blended = kernel.history_blend(solid, &edges[..1], 1.0, 0).unwrap();
+    assert!(
+        kernel
+            .is_valid(ShapeHandle::from_raw(blended.result_id))
+            .unwrap()
+    );
 }
 
 #[test]
@@ -136,12 +152,26 @@ fn minimal_blob_boolean_reliability_primitives_work() {
     let a = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
     let b = constructed_cube(&mut kernel, 5.0, 5.0, 10.0);
 
-    // Rung 1: pipeline single-step cut (includes the UnifySameDomain refine).
-    let cut = kernel.boolean_pipeline(a, &[1], &[b]).unwrap();
+    // Rung 1: the cut, through the entry point rmesh's ladder calls. It runs
+    // `BRepAlgoAPI_Cut` plus `SimplifyResult`'s refine itself, which is why
+    // `occt_boolean_pipeline` is not in the profile: it is a second door onto
+    // the same OCCT toolkit with no caller.
+    let cut = ShapeHandle::from_raw(
+        kernel
+            .history_boolean(a, b, 1, -1.0, true)
+            .unwrap()
+            .result_id,
+    );
     assert!(kernel.is_valid(cut).unwrap());
 
-    // Rung 2: fuzzy retry entry point.
-    let fuzzy = kernel.boolean_fuzzy(a, b, 1, 1e-6).unwrap();
+    // Rung 2: the same call with a fuzzy tolerance — the retry the ladder makes
+    // when rung 1 comes back unsound.
+    let fuzzy = ShapeHandle::from_raw(
+        kernel
+            .history_boolean(a, b, 1, 1e-6, true)
+            .unwrap()
+            .result_id,
+    );
     assert!(kernel.is_valid(fuzzy).unwrap());
 
     // Rungs 3-4: the validity gate and repair must exist on minimal blobs.
@@ -168,6 +198,16 @@ fn minimal_blob_reports_missing_capabilities() {
 
     // One probe per optional subsystem.
     missing(kernel.make_box(1.0, 1.0, 1.0).map(drop), "primitives");
+    // Two doors onto toolkits the profile DOES carry, with no caller: rmesh
+    // reaches both through `occt_rmesh_history_*`, which builds them itself.
+    missing(
+        kernel.boolean_pipeline(solid, &[1], &[solid]).map(drop),
+        "boolean_pipeline",
+    );
+    missing(
+        kernel.get_sub_shapes(solid, "edge").map(drop),
+        "get_sub_shapes",
+    );
     missing(kernel.get_volume(solid).map(drop), "query");
     missing(kernel.offset(solid, 1.0, 1e-4).map(drop), "offsetting");
     missing(kernel.curve_length(solid).map(drop), "curve");
@@ -290,12 +330,7 @@ fn minimal_blob_reports_index_keyed_history() {
     // the blend surface. Nothing else in the kernel reports that, and it is the
     // one channel that cannot be expressed by any same-kind relation.
     let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
-    let edges: Vec<ShapeHandle> = kernel
-        .get_sub_shapes(solid, "edge")
-        .unwrap()
-        .into_iter()
-        .map(ShapeHandle::from_raw)
-        .collect();
+    let edges = edges_of(&mut kernel, solid);
     let blended = kernel.history_blend(solid, &edges[..1], 1.0, 0).unwrap();
     assert_ne!(blended.result_id, 0, "the fillet must produce a shape");
     check_history(&blended, "fillet");
@@ -349,12 +384,7 @@ fn an_unknown_blend_kind_is_refused() {
     let bytes = minimal_bytes();
     let mut kernel = OcctKernel::from_compressed_module_bytes(&bytes).unwrap();
     let solid = constructed_cube(&mut kernel, 0.0, 0.0, 10.0);
-    let edges: Vec<ShapeHandle> = kernel
-        .get_sub_shapes(solid, "edge")
-        .unwrap()
-        .into_iter()
-        .map(ShapeHandle::from_raw)
-        .collect();
+    let edges = edges_of(&mut kernel, solid);
 
     let outcome = kernel.history_blend(solid, &edges[..1], 1.0, 9);
     assert!(

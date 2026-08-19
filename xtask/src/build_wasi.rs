@@ -138,11 +138,29 @@ fn link(root: &Path, objects: &[PathBuf], release: bool, minimal: bool) -> Resul
         // named in `config::REQUIRED_EXPORTS` — see
         // `codegen::minimal_export_names`. Guard against a stale generated
         // facade: every derived root must exist on disk.
-        let names = crate::codegen::minimal_export_names()?;
+        let mut names = crate::codegen::minimal_export_names()?;
+        // ...UNION the exports the crate binds EAGERLY by hand.
+        //
+        // `crate/src/kernel.rs` resolves 33 infra and result-accessor exports
+        // with `get_fn!`, which is `get_typed_func(..)?` — absent means the
+        // MODULE DOES NOT INSTANTIATE, for any caller, whatever profile it is.
+        // They are not spec-derived, so nothing in the codegen root set knows
+        // they exist; under the category policy they survived by accident,
+        // because some core-category spec happened to return each accessor
+        // group's type.
+        //
+        // Rooting the required set alone broke exactly that accident: no
+        // required spec returns `MeshBatchData`, the eight
+        // `occt_get_mesh_batch_*` accessors were dropped, and the blob stopped
+        // instantiating at all. `crate/tests/minimal.rs` caught it on the first
+        // run — which is the whole reason that file exists, and the reason it
+        // says "generated core wrappers PLUS the hand-written infra/accessor
+        // bindings in kernel.rs" rather than just the first half.
+        names.extend(eager_host_bindings(&root.join("crate/src/kernel.rs"))?);
         for name in &names {
             if !generated_names.contains(name) {
                 bail!(
-                    "derived minimal export `{name}` is missing from \
+                    "minimal export root `{name}` is missing from \
                      wasi_exports.cpp — run `cargo xtask codegen` first"
                 );
             }
@@ -199,6 +217,37 @@ fn link(root: &Path, objects: &[PathBuf], release: bool, minimal: bool) -> Resul
 /// Extract `occt_*` export names from a C++ source file — the scanning itself
 /// lives in `codegen::wasi_emitter::export_names` so the `--minimal`
 /// derivation and this on-disk scrape can never disagree.
+/// Every `occt_*` export `crate/src/kernel.rs` binds EAGERLY, scraped from its
+/// `get_fn!("…")` sites.
+///
+/// Scraped rather than listed for the same reason the facade extensions are:
+/// a hand-maintained copy of a hand-written list is two lists, and the one that
+/// goes stale is whichever nobody is compiling against. These bindings use
+/// `get_typed_func(..)?` — a missing one is an instantiation failure, not a
+/// `MissingCapability` — so they are hard roots of every profile.
+fn eager_host_bindings(path: &Path) -> Result<Vec<String>> {
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("failed to read {}", path.display()))?;
+    let mut names = Vec::new();
+    for rest in content.split("get_fn!(\"").skip(1) {
+        let Some(name) = rest.split('"').next() else {
+            continue;
+        };
+        if name.starts_with("occt_") {
+            names.push(name.to_owned());
+        }
+    }
+    if names.is_empty() {
+        bail!(
+            "no `get_fn!(\"occt_…\")` bindings found in {} — the scrape convention \
+             changed, and every one of those exports would now be dropped from the \
+             minimal profile, which does not instantiate without them",
+            path.display()
+        );
+    }
+    Ok(names)
+}
+
 fn extract_export_names(path: &Path) -> Result<Vec<String>> {
     let content = std::fs::read_to_string(path).with_context(|| {
         format!(
