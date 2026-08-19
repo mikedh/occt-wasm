@@ -64,12 +64,18 @@ convenient (`git push origin --delete rmesh-old rmesh-old1 rmesh-old2`).
 
 **`rmesh-crate` is gone**, along with `scripts/make-rmesh-crate.sh`. It was a
 generated orphan branch holding `crate/` alone, published so rmesh could take a
-cargo git dependency without cargo cloning `occt/` (335 MB of checkout, 520 MB
-of it OpenCASCADE source, at zero features) to obtain 370 KB of Rust. rmesh
-**vendors** those bindings now — `crates/occt_wasm/`, byte for byte, with a lint
-comparing them against `crate/src/` here and a `make sync-kernel-bindings` that
-re-copies them. Both artifacts this fork produces now reach rmesh the same way:
-copied, not fetched by cargo.
+cargo git dependency without cargo cloning `occt/` — 335 MB of checkout, 520 MB
+of it OpenCASCADE source, resolved at ZERO features — to obtain 370 KB of Rust.
+
+It was stale by fourteen commits, local-only, and wired into nothing. rmesh takes
+the **plain git dependency** on `rmesh-minimal` instead and pays that 335 MB once
+per machine — on machines that already carry a ~1.2 GB checkout of this repo. One
+pin, one branch, nothing generated.
+
+The kernel BLOB is the other artifact this repo produces, and it is the one whose
+cost actually matters: a ~3 MB brotli download from the `rmesh-kernel-v1`
+release, digest-pinned, fetched lazily by rmesh's `make kernel` — or built here
+and copied into place by `make build-wasm`. It never goes through cargo.
 
 ## Tracking upstream
 
