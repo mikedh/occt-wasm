@@ -104,8 +104,8 @@ pub(crate) struct GeneratedFuncs {
     fn_build_tri_face: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
     fn_make_tangent_arc: Option<TypedFunc<(f64, f64, f64, f64, f64, f64, f64, f64, f64), u32>>,
     fn_bspline_surface: Option<TypedFunc<(i32, i32, i32, i32), u32>>,
-    fn_get_shape_type: Option<TypedFunc<(u32,), i32>>,
-    fn_get_sub_shapes: Option<TypedFunc<(u32, i32, i32), i32>>,
+    fn_get_shape_type: TypedFunc<(u32,), i32>,
+    fn_get_sub_shapes: TypedFunc<(u32, i32, i32), i32>,
     fn_non_degenerate_edges: TypedFunc<(u32,), i32>,
     fn_sub_shape_count: TypedFunc<(u32, i32, i32), i32>,
     fn_sub_shape_hashes: Option<TypedFunc<(u32, i32, i32, i32), i32>>,
@@ -238,7 +238,7 @@ pub(crate) struct GeneratedFuncs {
     fn_release_all: Option<TypedFunc<(), i32>>,
     fn_checkpoint: Option<TypedFunc<(), u32>>,
     fn_release_since: Option<TypedFunc<(u32,), i32>>,
-    fn_get_shape_count: Option<TypedFunc<(), u32>>,
+    fn_get_shape_count: TypedFunc<(), u32>,
     fn_make_null_shape: Option<TypedFunc<(), u32>>,
     fn_xcaf_new_document: Option<TypedFunc<(), u32>>,
     fn_xcaf_close: Option<TypedFunc<(u32,), i32>>,
@@ -410,12 +410,8 @@ impl GeneratedFuncs {
             fn_bspline_surface: instance
                 .get_typed_func(&mut store, "occt_bspline_surface")
                 .ok(),
-            fn_get_shape_type: instance
-                .get_typed_func(&mut store, "occt_get_shape_type")
-                .ok(),
-            fn_get_sub_shapes: instance
-                .get_typed_func(&mut store, "occt_get_sub_shapes")
-                .ok(),
+            fn_get_shape_type: instance.get_typed_func(&mut store, "occt_get_shape_type")?,
+            fn_get_sub_shapes: instance.get_typed_func(&mut store, "occt_get_sub_shapes")?,
             fn_non_degenerate_edges: instance
                 .get_typed_func(&mut store, "occt_non_degenerate_edges")?,
             fn_sub_shape_count: instance.get_typed_func(&mut store, "occt_sub_shape_count")?,
@@ -649,9 +645,7 @@ impl GeneratedFuncs {
             fn_release_since: instance
                 .get_typed_func(&mut store, "occt_release_since")
                 .ok(),
-            fn_get_shape_count: instance
-                .get_typed_func(&mut store, "occt_get_shape_count")
-                .ok(),
+            fn_get_shape_count: instance.get_typed_func(&mut store, "occt_get_shape_count")?,
             fn_make_null_shape: instance
                 .get_typed_func(&mut store, "occt_make_null_shape")
                 .ok(),
@@ -2613,28 +2607,21 @@ impl crate::kernel::OcctKernel {
         Ok(ShapeHandle(result))
     }
 
-    /// Requires the `topology` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn get_shape_type(&mut self, id: ShapeHandle) -> OcctResult<String> {
-        let Some(func) = self.generated.fn_get_shape_type.clone() else {
-            return Err(OcctError::MissingCapability("get_shape_type"));
-        };
-        let len = func.call(&mut self.store, (id.0,))?;
+        let len = self
+            .generated
+            .fn_get_shape_type
+            .call(&mut self.store, (id.0,))?;
         if len < 0 {
             return Err(self.read_last_error("get_shape_type"));
         }
         self.read_string_result()
     }
 
-    /// Requires the `topology` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn get_sub_shapes(&mut self, id: ShapeHandle, shape_type: &str) -> OcctResult<Vec<u32>> {
-        let Some(func) = self.generated.fn_get_sub_shapes.clone() else {
-            return Err(OcctError::MissingCapability("get_sub_shapes"));
-        };
         let shape_type_ptr = self.write_bytes(shape_type.as_bytes())?;
         let shape_type_len = shape_type.len() as u32;
-        let len = func.call(
+        let len = self.generated.fn_get_sub_shapes.call(
             &mut self.store,
             (id.0, shape_type_ptr as i32, shape_type_len as i32),
         );
@@ -4823,13 +4810,11 @@ impl crate::kernel::OcctKernel {
         Ok(())
     }
 
-    /// Requires the `kernel` capability; minimal kernel builds return
-    /// [`OcctError::MissingCapability`].
     pub fn get_shape_count(&mut self) -> OcctResult<u32> {
-        let Some(func) = self.generated.fn_get_shape_count.clone() else {
-            return Err(OcctError::MissingCapability("get_shape_count"));
-        };
-        let result = func.call(&mut self.store, ())?;
+        let result = self
+            .generated
+            .fn_get_shape_count
+            .call(&mut self.store, ())?;
         self.check_error("get_shape_count")?;
         Ok(result)
     }

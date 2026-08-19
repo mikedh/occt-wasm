@@ -198,15 +198,20 @@ fn minimal_blob_reports_missing_capabilities() {
 
     // One probe per optional subsystem.
     missing(kernel.make_box(1.0, 1.0, 1.0).map(drop), "primitives");
-    // Two doors onto toolkits the profile DOES carry, with no caller: rmesh
-    // reaches both through `occt_rmesh_history_*`, which builds them itself.
+    // A door onto a toolkit the profile DOES carry, with no caller: rmesh runs
+    // booleans through `occt_rmesh_history_boolean`, which calls
+    // `BRepAlgoAPI_Cut`/`Fuse`/`Common` itself.
     missing(
         kernel.boolean_pipeline(solid, &[1], &[solid]).map(drop),
         "boolean_pipeline",
     );
-    missing(
-        kernel.get_sub_shapes(solid, "edge").map(drop),
-        "get_sub_shapes",
+    // `get_sub_shapes` sat on this list for one commit and should not have: the
+    // native host calls it in `blend_target`, to unwrap the `TopoDS_COMPOUND` a
+    // boolean hands back before filleting it. Asserting its ABSENCE asserted the
+    // bug — a blob without it fails at the first fillet on a boolean result.
+    assert!(
+        kernel.get_sub_shapes(solid, "edge").is_ok(),
+        "`get_sub_shapes` is REQUIRED: `blend_target` unwraps a boolean's compound with it"
     );
     missing(kernel.get_volume(solid).map(drop), "query");
     missing(kernel.offset(solid, 1.0, 1e-4).map(drop), "offsetting");
