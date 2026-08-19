@@ -55,11 +55,21 @@ own shape and belong here.
 
 | branch | what it is |
 |---|---|
-| `rmesh-minimal` | **the fork.** What rmesh's `Cargo.toml` rev points into. |
-| `rmesh-crate` | a generated snapshot of `crate/` alone, so a cargo git dep does not drag `occt/` and the committed blobs (838 MB of checkout). Produced by `scripts/make-rmesh-crate.sh`. **Local only, and stale** — generated from `cb79b16`, before every commit above. |
+| `rmesh-minimal` | **the fork.** The only branch that matters. |
 | `main` | upstream tracking. |
-| `rmesh-minback`, `archive/rmesh-minimal-merged` | dead ends from the 2026-08-01 rebase-vs-merge episode, kept only as an undo. |
-| `origin/rmesh-old{,1,2}` | the same three, pushed. Nothing reads them. |
+
+`origin/rmesh-old{,1,2}` are still on GitHub — three dead ends from the
+2026-08-01 rebase-vs-merge episode. Nothing reads them; delete them when
+convenient (`git push origin --delete rmesh-old rmesh-old1 rmesh-old2`).
+
+**`rmesh-crate` is gone**, along with `scripts/make-rmesh-crate.sh`. It was a
+generated orphan branch holding `crate/` alone, published so rmesh could take a
+cargo git dependency without cargo cloning `occt/` (335 MB of checkout, 520 MB
+of it OpenCASCADE source, at zero features) to obtain 370 KB of Rust. rmesh
+**vendors** those bindings now — `crates/occt_wasm/`, byte for byte, with a lint
+comparing them against `crate/src/` here and a `make sync-kernel-bindings` that
+re-copies them. Both artifacts this fork produces now reach rmesh the same way:
+copied, not fetched by cargo.
 
 ## Tracking upstream
 
