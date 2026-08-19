@@ -5756,6 +5756,19 @@ pub const REQUIRED_EXPORTS: &[&str] = &[
     "occt_release",
     // native-only: the kernel's own mesher, which is rmesh's differential oracle
     "occt_tessellate_relative",
+    // native-only: `blend_target` unwraps the TopoDS_COMPOUND a boolean hands
+    // back before filleting it, and `live_shape_count` is the arena-hygiene
+    // property's only instrument. These three were MISSING from this list when it
+    // was first written, because they were missing from rmesh's `NATIVE_ONLY` —
+    // it named two of the five exports the native host calls past the `Facade`.
+    // A blob built without them instantiated fine and then failed at the first
+    // fillet on a body that came out of a boolean, which is the one way to reach
+    // that path. rmesh now checks the list against its own call sites
+    // (`arch_guard::the_native_host_declares_every_kernel_call`); this is the
+    // other half of the same fix.
+    "occt_get_shape_type",
+    "occt_get_sub_shapes",
+    "occt_get_shape_count",
 ];
 
 /// This spec's WASI export name — `makeLineEdge` -> `occt_make_line_edge`.
